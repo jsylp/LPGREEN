@@ -1,0 +1,56 @@
+package org.lpgreen.service;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.UUID;
+
+import org.lpgreen.util.InvalidDataValueException;
+import org.lpgreen.util.MissingRequiredDataException;
+import org.lpgreen.domain.Department;
+import org.springframework.dao.DuplicateKeyException;
+
+/**
+ * DepartmentManager is the interface for all Department related objects
+ * 
+ * Creation date:Jan. 13, 2013
+ * Last modify date: Jan. 22, 2013
+ * 
+ * @author  J Stephen Yu
+ * @version 1.0
+ */
+public interface DepartmentManager {
+	////////////////////////////////////////////
+	// Department related methods
+	////////////////////////////////////////////
+	
+	// get all Departments owned by a specific account id
+	public List<Department> findAllSiteDepartments(int ownerAccountId);
+	
+	// get a specific Department by a given id
+	public Department findDepartmentById(int id);
+
+	// get a specific Department by a given name
+	public Department findDepartmentByName(int ownerAccountId, String name);
+
+	// get all Departments owned by a specific account id and have the same parent department
+	public List<Department> findAllSiteDepartmentsByParentDept(int ownerAccountId, int parentDeptId);
+	
+	// Create services
+	public Department createDepartment(UUID userId, int userOwnerAccountId, Department dept) 
+			throws MissingRequiredDataException, InvalidDataValueException, DuplicateKeyException, Exception;
+
+	// Update services
+	public Department updateDepartment(UUID userId, Department dept) 
+			throws MissingRequiredDataException, InvalidDataValueException, DuplicateKeyException, Exception;
+
+	// Delete services
+	public void deleteDepartment(UUID userId, int ownerAccountId, int deptId)
+			throws MissingRequiredDataException, Exception;
+	
+	// Export/import to/from CSV file
+	public void exportDepartmentsToCSV(List<Department> depts, OutputStream os)
+			throws Exception;
+	public List<Department> importDepartmentsFromCSV(UUID userId, int userOwnerAccountId, InputStream is, boolean bOverrideDup)
+			throws Exception;
+}
