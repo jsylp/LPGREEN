@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 
 public class Role implements Serializable {
 
-	private static final long serialVersionUID = 4211824501050120552L; // ToDo: find a new number
+	private static final long serialVersionUID = 4211824501050121552L; // ToDo: find a new number
 	private int             id; 	// database generated id
 	private String          roleName;
 	private String          description;
@@ -40,6 +40,41 @@ public class Role implements Serializable {
 		this.ownerAccountId = ownerAccountId;
 	}	
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 19;
+		int hash = 1;
+		hash = prime * hash + id + ownerAccountId;
+		hash += (roleName == null) ? 0 : roleName.hashCode();
+		hash += (description == null) ? 0 : description.hashCode();
+		return hash;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (obj == null || obj.getClass() != this.getClass())
+			return false;
+
+		Role role = (Role)obj;
+		return  role.id == this.id &&
+				role.ownerAccountId == this.ownerAccountId &&
+				(role.roleName == this.roleName ||
+				 (role.roleName != null && role.roleName.equals(this.roleName))) &&
+				(role.description == this.description ||
+				 (role.description != null && role.description.equals(this.description)));
+	}
+
+	/*
+	 * property gets and sets
+	 */
 	public int getId() {
 		return id;
 	}
