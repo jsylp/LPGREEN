@@ -19,7 +19,7 @@ import org.springframework.test.AbstractTransactionalDataSourceSpringContextTest
 public class JdbcDepartmentDaoTests  extends AbstractTransactionalDataSourceSpringContextTests  {
 
 	private DepartmentDao departmentDao;
-	public void setRequestDao(DepartmentDao departmentDao) {
+	public void setDepartmentDao(DepartmentDao departmentDao) {
 		this.departmentDao = departmentDao;
 	}
 	
@@ -36,7 +36,7 @@ public class JdbcDepartmentDaoTests  extends AbstractTransactionalDataSourceSpri
 		// Test find all Departments
 		List<Department> allDepts = departmentDao.findAllSiteDepartments(1);
 		assertNotNull(allDepts);
-		assertTrue(allDepts.size() >= 9);
+		assertTrue(allDepts.size() >= 4);
 		
 		// Test find one specific Department
 		Department dept = departmentDao.findDepartmentById(1);

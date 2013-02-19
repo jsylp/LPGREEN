@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 
 public class RoleHierarchy implements Serializable {
 
-	private static final long serialVersionUID = 4211824501050120552L; // ToDo: find a new number
+	private static final long serialVersionUID = -9207571163059812615L;
 	private int             roleId;
 	private int             includedRoleId;
 	private int             ownerAccountId;

@@ -15,12 +15,12 @@ import org.joda.time.DateTime;
 
 public class AccessControlList implements Serializable {
 
-	private static final long serialVersionUID = 4211824501050120552L; // ToDo: find a new number
+	private static final long serialVersionUID = 7697797138591781838L;
 	private int             roleId;
 	private String          objectName;
-	private int 		operationRightId;
-	private int 		ownerAccountId;
-	private DateTime 	createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
+	private int             operationRightId;
+	private int             ownerAccountId;
+	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
 	
 	/*
 	RoleId                  int REFERENCES Role(Id) NOT NULL,

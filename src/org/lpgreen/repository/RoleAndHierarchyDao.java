@@ -50,25 +50,16 @@ public interface RoleAndHierarchyDao {
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get a specific RoleHierarchy by a given Role
-	public RoleHierarchy findRoleHierarchy(Role role) throws Exception;
+	public RoleHierarchy findRoleHierarchy(Role role, Role roleInc) throws Exception;
 
 	// get a specific RoleHierarchy by a given RoleId
-	public RoleHierarchy findRoleHierarchyByRoleId(int ownerAccountId, int roleId);
-
-	// get a specific RoleHierarchy by a given IncludedRole
-	public RoleHierarchy findRoleHierarchyByIncludedRole(Role role) throws Exception;
-
-	// get a specific RoleHierarchy by a given IncludedRoleId
-	public RoleHierarchy findRoleHierarchyByIncludedRoleId(int ownerAccountId, int roleId);
+	public RoleHierarchy findRoleHierarchyByRoleIds(int ownerAccountId, int roleId, int roleIdInc)
+			throws Exception;
 
 	// Add a RoleHierarchy.
 	public int addRoleHierarchy(RoleHierarchy roleHiera) 
 			throws DuplicateKeyException, Exception;
 
-	// Save the changes of an existing RoleHierarchy object. Return the # of record updated
-	public int saveRoleHierarchy(RoleHierarchy roleHiera) 
-			throws DuplicateKeyException, Exception;
-
 	// Delete a RoleHierarchy object. Return the # of record deleted
-	public int deleteRoleHierarchy(int ownerAccountId, int roleId) throws Exception;
+	public int deleteRoleHierarchy(int ownerAccountId, int roleId, int roleIdInc) throws Exception;
 }

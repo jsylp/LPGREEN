@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 
 public class OperationRight implements Serializable {
 
-	private static final long serialVersionUID = 4211824501050120552L; // ToDo: find a new number
+	private static final long serialVersionUID = 3466990910052306883L;
 	private int             id; 	// database generated id
 	private String          operationName;
 	private String          description;

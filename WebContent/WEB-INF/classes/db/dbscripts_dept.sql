@@ -54,7 +54,10 @@ CREATE TABLE Department (
 ------------------------------------------------------------------------------
 -- Load testing data
 ------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
 -- Load Account
+------------------------------------------------------------------------------
 INSERT INTO Account(UniqueId, Name)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D00', 'LogixPath LLC');
 INSERT INTO Account(UniqueId, Name)
@@ -62,13 +65,23 @@ INSERT INTO Account(UniqueId, Name)
 INSERT INTO Account(UniqueId, Name)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D02', 'Bobby Company');
 INSERT INTO Account(UniqueId, Name)
-	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D03', 'Cindy Company');
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D03', 'Cathy Company');
+INSERT INTO Account(UniqueId, Name)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D04', 'David Company');
+INSERT INTO Account(UniqueId, Name)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D05', 'Ethan Company');
+INSERT INTO Account(UniqueId, Name)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D06', 'Frank Company');
 
+------------------------------------------------------------------------------
 -- Load Contact
+------------------------------------------------------------------------------
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D10', 'Lpmini', 'LogixPath', 'lpmini@logixpath.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D11', 'Lpgreen', 'LogixPath', 'lpgreen@logixpath.com');
+INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D12', 'Lpsec', 'LogixPath', 'lpsec@logixpath.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D20', 'Allen', 'Alaph', 'allen.alpha@alpha.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
@@ -76,23 +89,33 @@ INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D22', 'Alex', 'Alaph', 'alex.alpha@alpha.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D23', 'Alan', 'Alaph', 'alan.alpha@alpha.com');
+INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D30', 'Bobby', 'Beta', 'bobby.beta@beta.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D31', 'Bill', 'Beta', 'bill.beta@beta.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D32', 'Beth', 'Beta', 'beth.beta@beta.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
-	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D40', 'Cindy', 'Gamma', 'cindy.gamma@gamma.com');
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D33', 'Bart', 'Beta', 'bart.beta@beta.com');
+INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D40', 'Cathy', 'Gamma', 'cathy.gamma@gamma.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D41', 'Carl', 'Gamma', 'carl.gamma@gamma.com');
 INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
 	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D42', 'Cate', 'Gamma', 'cate.gamma@gamma.com');
+INSERT INTO Contact(UniqueId, FirstName, LastName, Email)
+	VALUES('07771AE4-236A-49d3-A49E-B1F9E1934D43', 'Carol', 'Gamma', 'carol.gamma@gamma.com');
 
+------------------------------------------------------------------------------
 -- Load Employee
+------------------------------------------------------------------------------
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('010', '07771AE4-236A-49d3-A49E-B1F9E1934D10');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('011', '07771AE4-236A-49d3-A49E-B1F9E1934D11');
+INSERT INTO Employee(EmployeeNumber, ContactUuid)
+	VALUES('012', '07771AE4-236A-49d3-A49E-B1F9E1934D12');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('100', '07771AE4-236A-49d3-A49E-B1F9E1934D20');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
@@ -100,19 +123,27 @@ INSERT INTO Employee(EmployeeNumber, ContactUuid)
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('102', '07771AE4-236A-49d3-A49E-B1F9E1934D22');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
+	VALUES('103', '07771AE4-236A-49d3-A49E-B1F9E1934D23');
+INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('200', '07771AE4-236A-49d3-A49E-B1F9E1934D30');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('201', '07771AE4-236A-49d3-A49E-B1F9E1934D31');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('202', '07771AE4-236A-49d3-A49E-B1F9E1934D32');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
+	VALUES('203', '07771AE4-236A-49d3-A49E-B1F9E1934D33');
+INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('300', '07771AE4-236A-49d3-A49E-B1F9E1934D40');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('301', '07771AE4-236A-49d3-A49E-B1F9E1934D41');
 INSERT INTO Employee(EmployeeNumber, ContactUuid)
 	VALUES('302', '07771AE4-236A-49d3-A49E-B1F9E1934D42');
+INSERT INTO Employee(EmployeeNumber, ContactUuid)
+	VALUES('303', '07771AE4-236A-49d3-A49E-B1F9E1934D43');
 
+------------------------------------------------------------------------------
 -- Load Department
+------------------------------------------------------------------------------
 INSERT INTO Department (Name, Description, DeptHead, ParentDeptId, OwnerAccountId)
 	VALUES('Super Admin',
                'Super Admin for the LogixPath',
@@ -131,6 +162,13 @@ INSERT INTO Department (Name, Description, DeptHead, ParentDeptId, OwnerAccountI
 	VALUES('Site User Admin',
                'Site Admin for the LogixPath',
                (SELECT Id FROM Employee WHERE EmployeeNumber='011'),
+               null,
+               (SELECT Id FROM Account WHERE Name='LogixPath LLC'));
+
+INSERT INTO Department (Name, Description, DeptHead, ParentDeptId, OwnerAccountId)
+	VALUES('Site User Admin2',
+               'Site Admin for the LogixPath',
+               (SELECT Id FROM Employee WHERE EmployeeNumber='012'),
                null,
                (SELECT Id FROM Account WHERE Name='LogixPath LLC'));
 

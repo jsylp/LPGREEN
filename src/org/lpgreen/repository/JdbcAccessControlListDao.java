@@ -6,7 +6,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.lpgreen.domain.Department;
+import org.lpgreen.domain.AccessControlList;
+import org.lpgreen.domain.LoginUserRoles;
+import org.lpgreen.domain.OperationRight;
+import org.lpgreen.domain.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,217 +19,276 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
- * JdbcDepartmentDao is the JDBC implementation of the DepartmentDao for Department related entity's persistence layer
+ * JdbcAccessControlListDao is the JDBC implementation of the AccessControlListDao for AccessControlList related entity's persistence layer
  * 
- * Creation date: Jan. 13, 2013
- * Last modify date: Jan. 22, 2013
+ * Creation date: Feb. 16, 2013
+ * Last modify date: Feb. 16, 2013
  * 
  * @author  J Stephen Yu
  * @version 1.0
  */
 
 @Repository
-public class JdbcAccessControlListDao implements DepartmentDao {
+public class JdbcAccessControlListDao implements AccessControlListDao {
+
+	private LoginUserRolesDao userRoleDao;
+	@Autowired
+	public void setLoginUserRolesDao(LoginUserRolesDao userRoleDao) {
+		this.userRoleDao = userRoleDao;
+	}
+
+	private OperationRightDao opRightDao;
+	@Autowired
+	public void setOperationRightDao(OperationRightDao opRightDao) {
+		this.opRightDao = opRightDao;
+	}
+
+	private RoleAndHierarchyDao roleAndHiera;
+	@Autowired
+	public void setRoleAndHierarchyDao(RoleAndHierarchyDao roleAndHiera) {
+		this.roleAndHiera = roleAndHiera;
+	}
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertDepartment;
+	private SimpleJdbcInsert insertAccessControlList;
 	public void setDataSource(DataSource dataSource) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertDepartment = new SimpleJdbcInsert(dataSource).withTableName("Department").usingGeneratedKeyColumns("id");
+		insertAccessControlList = new SimpleJdbcInsert(dataSource).withTableName("AccessControlList");
 	}
-	
-	// o: the main object: this Department; 
-	protected final static String fieldSelectionForReadDepartment =
-			"o.Id,o.Name,o.Description,o.DeptHead,o.ParentDeptId,o.OwnerAccountId";
 
-	protected final static String fieldSetForUpdateDepartment = 
-			"Name=:Name,Description=:Description,DeptHead=:DeptHead,ParentDeptId=:ParentDeptId,OwnerAccountId=:OwnerAccountId";
-	
+	// o: the main object: this AccessControlList; 
+	protected final static String fieldSelectionForReadAccessControlList =
+			"o.RoleId,o.ObjectName,o.OperationRightId,o.OwnerAccountId";
+
+	protected final static String fieldSetForUpdateAccessControlList =
+			"RoleId=:RoleId,ObjectName=:ObjectName,OperationRightId=:OperationRightId,OwnerAccountId=:OwnerAccountId";
+
+	// query AccessControlList using OwnerAccountId
+	protected final static String strAccessControlListQueryWithOwnerAccountId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId";
+
+	// query AccessControlList using RoleId
+	protected final static String strAccessControlListQueryWithRoleId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId";
+
+	// query AccessControlList using OperationRightId
+	protected final static String strAccessControlListQueryWithOperationRightId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and OperationRightId=:OperationRightId";
+
+	// query AccessControlList using ObjectName
+	protected final static String strAccessControlListQueryWithObjectName = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and ObjectName=:ObjectName";
+
+	// query AccessControlList using RoleId, ObjectName and OperationRightId
+	protected final static String strAccessControlListQueryWithAll = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
+			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Department related methods
+	// AccessControlList related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static class DepartmentMapper implements RowMapper<Department> {
-		
-		public Department mapRow(ResultSet rs, int rowNum) throws SQLException {
-			
-			Department dept = new Department();
-			
-			dept.setId(rs.getInt("Id"));
-			dept.setName(rs.getString("Name"));
-			dept.setDescription(rs.getString("Description"));
-			dept.setDeptHead(rs.getInt("DeptHead"));
-			dept.setParentDeptId(rs.getInt("ParentDeptId"));
-			dept.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			
-			return dept;
+	private static class AccessControlListMapper implements RowMapper<AccessControlList> {
+
+		public AccessControlList mapRow(ResultSet rs, int rowNum) throws SQLException {
+			AccessControlList acList = new AccessControlList();
+			acList.setRoleId(rs.getInt("RoleId"));
+			acList.setObjectName(rs.getString("ObjectName"));
+			acList.setOperationRightId(rs.getInt("OperationRightId"));
+			acList.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return acList;
 		}
 	}
-	
-	// get all Departments owned by a specific account id
-	@Override
-	public List<Department> findAllSiteDepartments(int ownerAccountId) {
 
+	// get all AccessControlLists owned by a specific account id
+	@Override
+	public List<AccessControlList> findAllSiteAccessControlLists(int ownerAccountId) {
 		try {
-			String strQuery = "select " + fieldSelectionForReadDepartment + 
-					" from Department as o where OwnerAccountId=:OwnerAccountId " + 
-					" order by o.Id";
-			List<Department> depts = namedParameterJdbcTemplate.query(
-					strQuery,
+			List<AccessControlList> acLists = namedParameterJdbcTemplate.query(
+					strAccessControlListQueryWithOwnerAccountId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new DepartmentMapper());
-			return depts;
+					new AccessControlListMapper());
+			return acLists;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findAllSiteDepartments Exception: " + e.getMessage());
+			System.out.println("JdbcAccessControlListDao.findAllSiteAccessControlLists Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get a specific Department by a given id
+	// get a specific AccessControlList by a given roleId
 	@Override
-	public Department findDepartmentById(int id) {
+	public AccessControlList findAccessControlListByRoleId(int ownerAccountId, int roleId) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadDepartment);
-			sbQuery.append(" from Department as o");
-			sbQuery.append(" WHERE o.Id = :Id;");
+			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+					strAccessControlListQueryWithRoleId,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId),
+					new AccessControlListMapper());
+			return acList;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcAccessControlListDao.findAccessControlListByRoleId Exception: " + e.getMessage());
+			return null;
+		}
+	}
 
-			Department dept = namedParameterJdbcTemplate.queryForObject(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("Id", id),
-					new DepartmentMapper());
-			
-			return dept;
+	// get a specific AccessControlList by a given opRightId
+	public AccessControlList findAccessControlListByOperationRightId(int ownerAccountId, int opRightId) {
+		try {
+			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+					strAccessControlListQueryWithOperationRightId,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("OperationRightId", opRightId),
+					new AccessControlListMapper());
+			return acList;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcAccessControlListDao.findAccessControlListByOperationRightId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get a specific AccessControlList by a given name
+	@Override
+	public AccessControlList findAccessControlListByName(int ownerAccountId, String name) {
+		try {
+			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+					strAccessControlListQueryWithObjectName,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ObjectName", name),
+					new AccessControlListMapper());
+			return acList;
 		} 
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentById Exception: " + e.getMessage());
+			System.out.println("JdbcAccessControlListDao.findAccessControlListByName Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get a specific Department by a given name
+	// get a specific AccessControlList by a given roleId, name and opRightId
 	@Override
-	public Department findDepartmentByName(int ownerAccountId, String name) {
+	public AccessControlList findAccessControlListByAll(int ownerAccountId, int roleId, String name, int opRightId) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadDepartment);
-			sbQuery.append(" from Department as o");
-			sbQuery.append(" WHERE o.OwnerAccountId = :OwnerAccountId and o.Name = :Name order by o.Id;");
-
-			Department dept = namedParameterJdbcTemplate.queryForObject(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Name", name),
-					new DepartmentMapper());
-			
-			return dept;
+			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+					strAccessControlListQueryWithAll,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId).
+						addValue("ObjectName", name).addValue("OperationRightId", opRightId),
+					new AccessControlListMapper());
+			return acList;
 		} 
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentByName Exception: " + e.getMessage());
-			return null;
-		}
-	}
-	
-	// get all Departments owned by a parent Department
-	@Override
-	public List<Department> findDepartmentsByParent(int ownerAccountId, int parentDeptId) {
-
-		try {
-			String strQuery = "select " + fieldSelectionForReadDepartment + 
-					" from Department as o where o.OwnerAccountId = :OwnerAccountId and o.ParentDeptId = :ParentDeptId " + 
-					" order by o.Id";
-			List<Department> depts = namedParameterJdbcTemplate.query(
-					strQuery,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ParentDeptId", parentDeptId),
-					new DepartmentMapper());
-			return depts;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentsByParent Exception: " + e.getMessage());
+			System.out.println("JdbcAccessControlListDao.findAccessControlListByAll Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
 	/**
-	 * Set SQL Parameters used for creating Department
-	 * @param dept
+	 * Set SQL Parameters used for creating AccessControlList
+	 * @param acList
 	 * @param bNew
 	 * @return
 	 */
-	private MapSqlParameterSource getDepartmentMapSqlParameterSource(Department dept, boolean bNew) {
-
+	private MapSqlParameterSource getAccessControlListMapSqlParameterSource(AccessControlList acList) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-
-		if (!bNew)
-			parameters.addValue("Id", dept.getId());	// auto generated when insert a Department, use it as the primary key when update it
-		parameters.addValue("Name", dept.getName());
-		parameters.addValue("Description", dept.getDescription());
-		parameters.addValue("DeptHead", dept.getDeptHead());
-		parameters.addValue("ParentDeptId", dept.getParentDeptId());
-		parameters.addValue("OwnerAccountId", dept.getOwnerAccountId());
+		parameters.addValue("RoleId", acList.getRoleId());
+		parameters.addValue("ObjectName", acList.getObjectName());
+		parameters.addValue("OperationRightId", acList.getOperationRightId());
+		parameters.addValue("OwnerAccountId", acList.getOwnerAccountId());
 		return parameters;
 	}
-	
-	// Add a Department. Return the generated id
+
+	// Add a AccessControlList. Return the generated id
 	@Override
-	public int addDepartment(Department dept) 
+	public int addAccessControlList(AccessControlList acList) 
 			throws DuplicateKeyException, Exception {
+		if (acList == null)
+			throw new Exception("Missing input acList");
 		
-		if (dept == null)
-			throw new Exception("Missing input dept");
-		
-		MapSqlParameterSource parameters = this.getDepartmentMapSqlParameterSource(dept, true);	
+		MapSqlParameterSource parameters = this.getAccessControlListMapSqlParameterSource(acList);	
 		try {
-			// insert Department record
-			int retId = insertDepartment.executeAndReturnKey(parameters).intValue();
-			dept.setId(retId);
-			return retId;
+			// insert AccessControlList record
+			int retRows = insertAccessControlList.execute(parameters);
+			return retRows;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.addDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcAccessControlListDao.addAccessControlList Exception: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
-			System.out.println("JdbcDepartmentDao.addDepartment Exception: " + e2.getMessage());
+			System.out.println("JdbcAccessControlListDao.addAccessControlList Exception: " + e2.getMessage());
 			throw e2;
 		}
 	}
 
-	// Save the changes of an existing Department object. Return the # of record updated
+	// Save a the changes of an existing AccessControlList object. Return the # of record updated
 	@Override
-	public int saveDepartment(Department dept) 
+	public int saveAccessControlList(AccessControlList acList)
 			throws DuplicateKeyException, Exception {
-		if (dept == null)
-			throw new Exception("Missing input dept");
+		if (acList == null)
+			throw new Exception("Missing input acList");
 		try {
 			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update Department set " + fieldSetForUpdateDepartment + " where Id=:Id;",
-					getDepartmentMapSqlParameterSource(dept, false));
+					"update AccessControlList set " + fieldSetForUpdateAccessControlList + " where RoleId=:RoleId;",
+					getAccessControlListMapSqlParameterSource(acList));
 			return numRecUpdated;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.saveDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcAccessControlListDao.saveAccessControlList Exception: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
-			System.out.println("JdbcDepartmentDao.saveDepartment Exception: " + e2.getMessage());
+			System.out.println("JdbcAccessControlListDao.saveAccessControlList Exception: " + e2.getMessage());
 			throw e2;
 		}
 	}
 
-	// Delete a Department object. Return the # of record deleted
+	// Delete a AccessControlList object. Return the # of record deleted
 	@Override
-	public int deleteDepartment(int ownerAccountId, int id)	
+	public int deleteAccessControlList(int ownerAccountId, int roleId)
 			throws Exception {
-		if (ownerAccountId < 0 || id <= 0)
+		if (ownerAccountId < 0 || roleId <= 0)
 			return 0;
 		try {
 			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from Department where Id=:Id and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
+					"delete from AccessControlList where RoleId=:RoleId and OwnerAccountId=:OwnerAccountId", 
+					new MapSqlParameterSource().addValue("RoleId", roleId).addValue("OwnerAccountId", ownerAccountId));
 			return numRecDeleted;
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+	}
+
+	// Get the user's roles and included roles to check for permission
+	// Since there is no LoginUser domain object here, use LoginUserId instead
+	public boolean hasPermission(int userId, String objectName, String operation, int ownerAccountId)
+			throws Exception {
+		try {
+			OperationRight opRight = opRightDao.findOperationRightByName(ownerAccountId, operation);
+			if (opRight == null)
+				return false;
+			List<LoginUserRoles> userRoles = userRoleDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
+			if (userRoles == null || userRoles.size() == 0)
+				return false;
+
+			boolean permit = false;
+			for (LoginUserRoles userRole : userRoles) {
+				Role role = roleAndHiera.findRoleById(ownerAccountId, userRole.getRoleId());
+				if (role == null)
+					continue;
+
+				List<Role> roles = roleAndHiera.getAllIncludedRoles(role);
+				if (roles == null || roles.size() == 0)
+					continue;
+
+				for (Role r : roles) {
+					AccessControlList acList = findAccessControlListByAll(ownerAccountId, r.getId(),
+						objectName,	opRight.getId());
+					if (acList != null) {
+						permit = true;
+						break;
+					}
+				}
+			}
+			return permit;
 		}
 		catch (Exception e) {
 			throw new Exception(e.getMessage());

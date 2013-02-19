@@ -2,14 +2,14 @@ package org.lpgreen.repository;
 
 import java.util.List;
 
-import org.lpgreen.domain.Department;
+import org.lpgreen.domain.OperationRight;
 import org.springframework.dao.DuplicateKeyException;
 
 /**
- * DepartmentDao is the interface for Department related entity's persistence layer
+ * OperationRightDao is the interface for OperationRight related entity's persistence layer
  * 
  * Creation date: Jan. 13, 2013
- * Last modify date: Jan. 22, 2013
+ * Last modify date: Feb. 15, 2013
  * 
  * @author  J Stephen Yu
  * @version 1.0
@@ -18,30 +18,27 @@ import org.springframework.dao.DuplicateKeyException;
 public interface OperationRightDao {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Department related methods
+	// OperationRight related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	// get all Department owned by a specific account id
-	public List<Department> findAllSiteDepartments(int ownerAccountId);
-	
-	// get a specific Department by a given id
-	public Department findDepartmentById(int id);
-	
-	// get a specific Department by a given name
-	public Department findDepartmentByName(int ownerAccountId, String name);
 
-	// get all Department owned by the same parent department
-	public List<Department> findDepartmentsByParent(int ownerAccountId, int parentDeptId);
-	
-	// Add a Department. Return the generated id
-	public int addDepartment(Department dept) 
-			throws DuplicateKeyException, Exception;
-	
-	// Save a the changes of an existing Department object. Return the # of record updated
-	public int saveDepartment(Department dept) 
+	// get all OperationRight owned by a specific account id
+	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId);
+
+	// get a specific OperationRight by a given id
+	public OperationRight findOperationRightById(int ownerAccountId, int id);
+
+	// get a specific OperationRight by a given name
+	public OperationRight findOperationRightByName(int ownerAccountId, String name);
+
+	// Add an OperationRight. Return the generated id
+	public int addOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception;
 
-	// Delete a Department object. Return the # of record deleted
-	public int deleteDepartment(int ownerAccountId, int id) throws Exception;
+	// Save a the changes of an existing OperationRight object. Return the # of record updated
+	public int saveOperationRight(OperationRight opRight) 
+			throws DuplicateKeyException, Exception;
+
+	// Delete an OperationRight object. Return the # of record deleted
+	public int deleteOperationRight(int ownerAccountId, int id) throws Exception;
 	
 }

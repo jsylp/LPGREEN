@@ -51,7 +51,7 @@
 	<bean id="requestManager" class="org.lpgreen.service.RequestManagerImpl" >
 		<property name="requestDao" ref="requestDao" />
 	</bean>
-	
+
 	<bean id="departmentDao" class="org.lpgreen.repository.JdbcDepartmentDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>

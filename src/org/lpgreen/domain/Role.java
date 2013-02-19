@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 
 public class Role implements Serializable {
 
-	private static final long serialVersionUID = 4211824501050121552L; // ToDo: find a new number
+	private static final long serialVersionUID = -4422968459046358568L;
 	private int             id; 	// database generated id
 	private String          roleName;
 	private String          description;

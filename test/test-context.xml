@@ -4,7 +4,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="listOfValueDao" class="org.lpmini.repository.JdbcListOfValueDao">
+	<bean id="listOfValueDao" class="org.lpgreen.repository.JdbcListOfValueDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
@@ -27,19 +27,36 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
-	<bean id="requestDao" class="org.lpmini.repository.JdbcRequestDao">
+	<bean id="requestDao" class="org.lpgreen.repository.JdbcRequestDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
-	<bean id="requestManager" class="org.lpmini.service.RequestManagerImpl" >
+	<bean id="requestManager" class="org.lpgreen.service.RequestManagerImpl" >
 		<property name="requestDao" ref="requestDao" />
 	</bean>
-	
-	<bean id="departmentDao" class="org.lpmini.repository.JdbcDepartmentDao">
+
+	<bean id="departmentDao" class="org.lpgreen.repository.JdbcDepartmentDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
-	<bean id="departmentManager" class="org.lpmini.service.DepartmentManagerImpl" >
+	<bean id="departmentManager" class="org.lpgreen.service.DepartmentManagerImpl" >
 		<property name="departmentDao" ref="departmentDao" />
 	</bean>
+
+	<bean id="roleAndHieraDao" class="org.lpgreen.repository.JdbcRoleAndHierarchyDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="opRightDao" class="org.lpgreen.repository.JdbcOperationRightDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="loginUserRolesDao" class="org.lpgreen.repository.JdbcLoginUserRolesDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="accessControlListDao" class="org.lpgreen.repository.JdbcAccessControlListDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
 </beans>

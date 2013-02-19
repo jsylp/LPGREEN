@@ -6,7 +6,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.lpgreen.domain.Department;
+import org.lpgreen.domain.OperationRight;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,10 +15,10 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
- * JdbcDepartmentDao is the JDBC implementation of the DepartmentDao for Department related entity's persistence layer
+ * JdbcOperationRightDao is the JDBC implementation of the OperationRightDao for OperationRight related entity's persistence layer
  * 
  * Creation date: Jan. 13, 2013
- * Last modify date: Jan. 22, 2013
+ * Last modify date: Feb. 15, 2013
  * 
  * @author  J Stephen Yu
  * @version 1.0
@@ -28,202 +28,167 @@ import org.springframework.stereotype.Repository;
 public class JdbcOperationRightDao implements OperationRightDao {
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertDepartment;
+	private SimpleJdbcInsert insertOperationRight;
 	public void setDataSource(DataSource dataSource) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertDepartment = new SimpleJdbcInsert(dataSource).withTableName("Department").usingGeneratedKeyColumns("id");
+		insertOperationRight = new SimpleJdbcInsert(dataSource).withTableName("OperationRight").usingGeneratedKeyColumns("id");
 	}
-	
-	// o: the main object: this Department; 
-	protected final static String fieldSelectionForReadDepartment =
-			"o.Id,o.Name,o.Description,o.DeptHead,o.ParentDeptId,o.OwnerAccountId";
 
-	protected final static String fieldSetForUpdateDepartment = 
-			"Name=:Name,Description=:Description,DeptHead=:DeptHead,ParentDeptId=:ParentDeptId,OwnerAccountId=:OwnerAccountId";
-	
+	// o: the main object: this OperationRight; 
+	protected final static String fieldSelectionForReadOperationRight =
+			"o.Id,o.OperationName,o.Description,o.OwnerAccountId";
+
+	protected final static String fieldSetForUpdateOperationRight = 
+			"OperationName=:OperationName,Description=:Description,OwnerAccountId=:OwnerAccountId";
+
+	// query OperationRight using OwnerAccountId
+	protected final static String strOperationRightQueryWithOwnerAccountId = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId";
+
+	// query OperationRight using Id
+	protected final static String strOperationRightQueryWithId = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
+
+	// query OperationRight using OperationName
+	protected final static String strRoleQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and OperationName=:OperationName";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Department related methods
+	// OperationRight related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static class DepartmentMapper implements RowMapper<Department> {
+	private static class OperationRightMapper implements RowMapper<OperationRight> {
 		
-		public Department mapRow(ResultSet rs, int rowNum) throws SQLException {
-			
-			Department dept = new Department();
-			
-			dept.setId(rs.getInt("Id"));
-			dept.setName(rs.getString("Name"));
-			dept.setDescription(rs.getString("Description"));
-			dept.setDeptHead(rs.getInt("DeptHead"));
-			dept.setParentDeptId(rs.getInt("ParentDeptId"));
-			dept.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			
-			return dept;
+		public OperationRight mapRow(ResultSet rs, int rowNum) throws SQLException {
+			OperationRight opRight = new OperationRight();
+			opRight.setId(rs.getInt("Id"));
+			opRight.setOperationName(rs.getString("OperationName"));
+			opRight.setDescription(rs.getString("Description"));
+			opRight.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return opRight;
 		}
 	}
-	
-	// get all Departments owned by a specific account id
-	@Override
-	public List<Department> findAllSiteDepartments(int ownerAccountId) {
 
+	// get all OperationRight owned by a specific account id
+	@Override
+	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId) {
 		try {
-			String strQuery = "select " + fieldSelectionForReadDepartment + 
-					" from Department as o where OwnerAccountId=:OwnerAccountId " + 
-					" order by o.Id";
-			List<Department> depts = namedParameterJdbcTemplate.query(
-					strQuery,
+			List<OperationRight> opRights = namedParameterJdbcTemplate.query(
+					strOperationRightQueryWithOwnerAccountId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new DepartmentMapper());
-			return depts;
+					new OperationRightMapper());
+			return opRights;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findAllSiteDepartments Exception: " + e.getMessage());
+			System.out.println("JdbcOperationRightDao.findAllSiteOperationRights Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get a specific Department by a given id
+	// get a specific OperationRight by a given id
 	@Override
-	public Department findDepartmentById(int id) {
+	public OperationRight findOperationRightById(int ownerAccountId, int id) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadDepartment);
-			sbQuery.append(" from Department as o");
-			sbQuery.append(" WHERE o.Id = :Id;");
-
-			Department dept = namedParameterJdbcTemplate.queryForObject(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("Id", id),
-					new DepartmentMapper());
-			
-			return dept;
+			OperationRight opRight = namedParameterJdbcTemplate.queryForObject(
+					strOperationRightQueryWithId,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
+					new OperationRightMapper());
+			return opRight;
 		} 
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentById Exception: " + e.getMessage());
+			System.out.println("JdbcOperationRightDao.findOperationRightById Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get a specific Department by a given name
+	// get a specific OperationRight by a given name
 	@Override
-	public Department findDepartmentByName(int ownerAccountId, String name) {
+	public OperationRight findOperationRightByName(int ownerAccountId, String opName) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadDepartment);
-			sbQuery.append(" from Department as o");
-			sbQuery.append(" WHERE o.OwnerAccountId = :OwnerAccountId and o.Name = :Name order by o.Id;");
-
-			Department dept = namedParameterJdbcTemplate.queryForObject(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Name", name),
-					new DepartmentMapper());
+			OperationRight opRight = namedParameterJdbcTemplate.queryForObject(
+					strRoleQueryWithOperationName,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("OperationName", opName),
+					new OperationRightMapper());
 			
-			return dept;
+			return opRight;
 		} 
 		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentByName Exception: " + e.getMessage());
-			return null;
-		}
-	}
-	
-	// get all Departments owned by a parent Department
-	@Override
-	public List<Department> findDepartmentsByParent(int ownerAccountId, int parentDeptId) {
-
-		try {
-			String strQuery = "select " + fieldSelectionForReadDepartment + 
-					" from Department as o where o.OwnerAccountId = :OwnerAccountId and o.ParentDeptId = :ParentDeptId " + 
-					" order by o.Id";
-			List<Department> depts = namedParameterJdbcTemplate.query(
-					strQuery,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ParentDeptId", parentDeptId),
-					new DepartmentMapper());
-			return depts;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcDepartmentDao.findDepartmentsByParent Exception: " + e.getMessage());
+			System.out.println("JdbcOperationRightDao.findOperationRightByName Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
 	/**
-	 * Set SQL Parameters used for creating Department
-	 * @param dept
+	 * Set SQL Parameters used for creating OperationRight
+	 * @param opRight
 	 * @param bNew
 	 * @return
 	 */
-	private MapSqlParameterSource getDepartmentMapSqlParameterSource(Department dept, boolean bNew) {
-
+	private MapSqlParameterSource getOperationRightMapSqlParameterSource(OperationRight opRight, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-
 		if (!bNew)
-			parameters.addValue("Id", dept.getId());	// auto generated when insert a Department, use it as the primary key when update it
-		parameters.addValue("Name", dept.getName());
-		parameters.addValue("Description", dept.getDescription());
-		parameters.addValue("DeptHead", dept.getDeptHead());
-		parameters.addValue("ParentDeptId", dept.getParentDeptId());
-		parameters.addValue("OwnerAccountId", dept.getOwnerAccountId());
+			parameters.addValue("Id", opRight.getId());	// auto generated when insert a OperationRight, use it as the primary key when update it
+		parameters.addValue("OperationName", opRight.getOperationName());
+		parameters.addValue("Description", opRight.getDescription());
+		parameters.addValue("OwnerAccountId", opRight.getOwnerAccountId());
 		return parameters;
 	}
 	
-	// Add a Department. Return the generated id
+	// Add an OperationRight. Return the generated id
 	@Override
-	public int addDepartment(Department dept) 
+	public int addOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception {
-		
-		if (dept == null)
-			throw new Exception("Missing input dept");
-		
-		MapSqlParameterSource parameters = this.getDepartmentMapSqlParameterSource(dept, true);	
+		if (opRight == null)
+			throw new Exception("Missing input opRight");
+
+		MapSqlParameterSource parameters = this.getOperationRightMapSqlParameterSource(opRight, true);	
 		try {
-			// insert Department record
-			int retId = insertDepartment.executeAndReturnKey(parameters).intValue();
-			dept.setId(retId);
+			// insert OperationRight record
+			int retId = insertOperationRight.executeAndReturnKey(parameters).intValue();
+			opRight.setId(retId);
 			return retId;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.addDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcOperationRightDao.addOperationRight Exception: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
-			System.out.println("JdbcDepartmentDao.addDepartment Exception: " + e2.getMessage());
+			System.out.println("JdbcOperationRightDao.addOperationRight Exception: " + e2.getMessage());
 			throw e2;
 		}
 	}
 
-	// Save the changes of an existing Department object. Return the # of record updated
+	// Save a the changes of an existing OperationRight object. Return the # of record updated
 	@Override
-	public int saveDepartment(Department dept) 
+	public int saveOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception {
-		if (dept == null)
-			throw new Exception("Missing input dept");
+		if (opRight == null)
+			throw new Exception("Missing input opRight");
 		try {
 			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update Department set " + fieldSetForUpdateDepartment + " where Id=:Id;",
-					getDepartmentMapSqlParameterSource(dept, false));
+					"update OperationRight set " + fieldSetForUpdateOperationRight + " where Id=:Id;",
+					getOperationRightMapSqlParameterSource(opRight, false));
 			return numRecUpdated;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.saveDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcOperationRightDao.saveOperationRight Exception: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
-			System.out.println("JdbcDepartmentDao.saveDepartment Exception: " + e2.getMessage());
+			System.out.println("JdbcOperationRightDao.saveOperationRight Exception: " + e2.getMessage());
 			throw e2;
 		}
 	}
 
-	// Delete a Department object. Return the # of record deleted
+	// Delete an OperationRight object. Return the # of record deleted
 	@Override
-	public int deleteDepartment(int ownerAccountId, int id)	
+	public int deleteOperationRight(int ownerAccountId, int id)
 			throws Exception {
 		if (ownerAccountId < 0 || id <= 0)
 			return 0;
 		try {
 			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from Department where Id=:Id and OwnerAccountId=:OwnerAccountId", 
+					"delete from OperationRight where Id=:Id and OwnerAccountId=:OwnerAccountId", 
 					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
 			return numRecDeleted;
 		}
