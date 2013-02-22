@@ -99,3 +99,15 @@ Database
 Directory
 JSPFile
 JavaScript
+
+----------------------------------------------------------------
+Access Control List
+----------------------------------------------------------------
+ROLE_LP_SUPERADMIN,     Everything,   AdminAll,     1
+ROLE_LP_SYSADMIN,       Everything,   Write,        1
+ROLE_LP_SYSADMIN,       Everything,   Clone,        1
+ROLE_LP_SYSADMIN,       Everything,   Delete,       1
+ROLE_LP_SITE_ADMIN,     Site,         AdminSiteAll, 1
+ROLE_LP_SITE_ADMIN,     Database,     Clone,        1
+ROLE_LP_SITE_USERADMIN, UserAccounts, Clone,        1
+ROLE_LP_SITE_USERADMIN, UserAccounts, Delete,       1

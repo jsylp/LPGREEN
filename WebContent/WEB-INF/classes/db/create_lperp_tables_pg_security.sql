@@ -628,15 +628,39 @@ INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccount
 	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
 	       1);
 INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
+	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SYSADMIN'),
+	       'Everything',
+	       (SELECT Id FROM OperationRight WHERE OperationName='Clone' AND
+	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
+	       1);
+INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
+	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SYSADMIN'),
+	       'Everything',
+	       (SELECT Id FROM OperationRight WHERE OperationName='Delete' AND
+	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
+	       1);
+INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
 	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SITE_ADMIN'),
 	       'Site',
 	       (SELECT Id FROM OperationRight WHERE OperationName='AdminSiteAll' AND
 	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
 	       1);
 INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
+	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SITE_ADMIN'),
+	       'Database',
+	       (SELECT Id FROM OperationRight WHERE OperationName='Clone' AND
+	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
+	       1);
+INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
 	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SITE_USERADMIN'),
 	       'UserAccounts',
 	       (SELECT Id FROM OperationRight WHERE OperationName='Clone' AND
+	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
+	       1);
+INSERT INTO AccessControlList(RoleId, ObjectName, OperationRightId, OwnerAccountId)
+	VALUES((SELECT Id FROM Role WHERE RoleName='ROLE_LP_SITE_USERADMIN'),
+	       'UserAccounts',
+	       (SELECT Id FROM OperationRight WHERE OperationName='Delete' AND
 	        OwnerAccountId=(SELECT Id FROM Account WHERE Name='LogixPath LLC')),
 	       1);
 

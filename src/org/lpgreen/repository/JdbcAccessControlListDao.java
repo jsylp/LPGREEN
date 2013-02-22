@@ -31,22 +31,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcAccessControlListDao implements AccessControlListDao {
 
-	private LoginUserRolesDao userRoleDao;
+	private LoginUserRolesDao loginUserRolesDao;
 	@Autowired
-	public void setLoginUserRolesDao(LoginUserRolesDao userRoleDao) {
-		this.userRoleDao = userRoleDao;
+	public void setLoginUserRolesDao(LoginUserRolesDao loginUserRolesDao) {
+		this.loginUserRolesDao = loginUserRolesDao;
 	}
 
-	private OperationRightDao opRightDao;
+	private OperationRightDao operationRightDao;
 	@Autowired
-	public void setOperationRightDao(OperationRightDao opRightDao) {
-		this.opRightDao = opRightDao;
+	public void setOperationRightDao(OperationRightDao operationRightDao) {
+		this.operationRightDao = operationRightDao;
 	}
 
-	private RoleAndHierarchyDao roleAndHiera;
+	private RoleAndHierarchyDao roleAndHierarchyDao;
 	@Autowired
-	public void setRoleAndHierarchyDao(RoleAndHierarchyDao roleAndHiera) {
-		this.roleAndHiera = roleAndHiera;
+	public void setRoleAndHierarchyDao(RoleAndHierarchyDao roleAndHierarchyDao) {
+		this.roleAndHierarchyDao = roleAndHierarchyDao;
 	}
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -118,13 +118,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 
 	// get a specific AccessControlList by a given roleId
 	@Override
-	public AccessControlList findAccessControlListByRoleId(int ownerAccountId, int roleId) {
+	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId) {
 		try {
-			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+			List<AccessControlList> acLists = namedParameterJdbcTemplate.query(
 					strAccessControlListQueryWithRoleId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId),
 					new AccessControlListMapper());
-			return acList;
+			return acLists;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListByRoleId Exception: " + e.getMessage());
@@ -133,13 +133,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 	}
 
 	// get a specific AccessControlList by a given opRightId
-	public AccessControlList findAccessControlListByOperationRightId(int ownerAccountId, int opRightId) {
+	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId) {
 		try {
-			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+			List<AccessControlList> acLists = namedParameterJdbcTemplate.query(
 					strAccessControlListQueryWithOperationRightId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("OperationRightId", opRightId),
 					new AccessControlListMapper());
-			return acList;
+			return acLists;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListByOperationRightId Exception: " + e.getMessage());
@@ -149,13 +149,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 
 	// get a specific AccessControlList by a given name
 	@Override
-	public AccessControlList findAccessControlListByName(int ownerAccountId, String name) {
+	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String name) {
 		try {
-			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
+			List<AccessControlList> acLists = namedParameterJdbcTemplate.query(
 					strAccessControlListQueryWithObjectName,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ObjectName", name),
 					new AccessControlListMapper());
-			return acList;
+			return acLists;
 		} 
 		catch (Exception e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListByName Exception: " + e.getMessage());
@@ -173,7 +173,7 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 						addValue("ObjectName", name).addValue("OperationRightId", opRightId),
 					new AccessControlListMapper());
 			return acList;
-		} 
+		}
 		catch (Exception e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListByAll Exception: " + e.getMessage());
 			return null;
@@ -218,38 +218,18 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 		}
 	}
 
-	// Save a the changes of an existing AccessControlList object. Return the # of record updated
-	@Override
-	public int saveAccessControlList(AccessControlList acList)
-			throws DuplicateKeyException, Exception {
-		if (acList == null)
-			throw new Exception("Missing input acList");
-		try {
-			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update AccessControlList set " + fieldSetForUpdateAccessControlList + " where RoleId=:RoleId;",
-					getAccessControlListMapSqlParameterSource(acList));
-			return numRecUpdated;
-		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcAccessControlListDao.saveAccessControlList Exception: " + e1.getMessage());
-			throw e1;
-		}
-		catch (Exception e2) {
-			System.out.println("JdbcAccessControlListDao.saveAccessControlList Exception: " + e2.getMessage());
-			throw e2;
-		}
-	}
-
 	// Delete a AccessControlList object. Return the # of record deleted
 	@Override
-	public int deleteAccessControlList(int ownerAccountId, int roleId)
+	public int deleteAccessControlList(AccessControlList acList)
 			throws Exception {
-		if (ownerAccountId < 0 || roleId <= 0)
+		if (acList.getOwnerAccountId() < 0 || acList.getRoleId() <= 0 || acList.getOperationRightId() <= 0)
 			return 0;
 		try {
 			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from AccessControlList where RoleId=:RoleId and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("RoleId", roleId).addValue("OwnerAccountId", ownerAccountId));
+					"delete from AccessControlList where RoleId=:RoleId and ObjectName=:ObjectName and " +
+							"OperationRightId=:OperationRightId and OwnerAccountId=:OwnerAccountId", 
+					new MapSqlParameterSource().addValue("RoleId", acList.getRoleId()).addValue("ObjectName", acList.getObjectName()).
+							addValue("OperationRightId", acList.getOperationRightId()).addValue("OwnerAccountId", acList.getOwnerAccountId()));
 			return numRecDeleted;
 		}
 		catch (Exception e) {
@@ -262,20 +242,20 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 	public boolean hasPermission(int userId, String objectName, String operation, int ownerAccountId)
 			throws Exception {
 		try {
-			OperationRight opRight = opRightDao.findOperationRightByName(ownerAccountId, operation);
+			OperationRight opRight = operationRightDao.findOperationRightByName(ownerAccountId, operation);
 			if (opRight == null)
 				return false;
-			List<LoginUserRoles> userRoles = userRoleDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
+			List<LoginUserRoles> userRoles = loginUserRolesDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
 			if (userRoles == null || userRoles.size() == 0)
 				return false;
 
 			boolean permit = false;
 			for (LoginUserRoles userRole : userRoles) {
-				Role role = roleAndHiera.findRoleById(ownerAccountId, userRole.getRoleId());
+				Role role = roleAndHierarchyDao.findRoleById(ownerAccountId, userRole.getRoleId());
 				if (role == null)
 					continue;
 
-				List<Role> roles = roleAndHiera.getAllIncludedRoles(role);
+				List<Role> roles = roleAndHierarchyDao.getAllIncludedRoles(role);
 				if (roles == null || roles.size() == 0)
 					continue;
 
@@ -287,6 +267,9 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 						break;
 					}
 				}
+
+				if (permit == true)
+					break;
 			}
 			return permit;
 		}

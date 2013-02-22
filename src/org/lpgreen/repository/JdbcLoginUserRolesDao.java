@@ -43,7 +43,7 @@ public class JdbcLoginUserRolesDao implements LoginUserRolesDao {
 
 	// query LoginUserRoles using OwnerAccountId and LoginUserId
 	protected final static String strLoginUserRolesQueryWithUserId = "select " + fieldSelectionForReadLoginUserRoles +
-			" from LoginUserRoles as o where OwnerAccountId=:OwnerAccountId";
+			" from LoginUserRoles as o where OwnerAccountId=:OwnerAccountId and LoginUserId=:LoginUserId";
 
 	// query LoginUserRoles using LoginUseId and RoleId
 	protected final static String strLoginUserRolesQueryWithUserIdAndRoleId = "select " + fieldSelectionForReadLoginUserRoles +
