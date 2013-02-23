@@ -165,7 +165,7 @@ public interface SecurityManager {
 			throws Exception;
 
 	// get a specific AccessControlList by a given roleId, objName and opRightId
-	public AccessControlList findAccessControlListByAll(int ownerAccountId, int roleId, String objName, int opRightId)
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String objName, int opRightId)
 			throws Exception;
 
 	// Create services

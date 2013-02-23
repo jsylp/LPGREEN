@@ -677,7 +677,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	// get a specific AccessControlList by a given roleId, objName and opRightId
 	@Override
-	public AccessControlList findAccessControlListByAll(int ownerAccountId, int roleId, String objName, int opRightId)
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String objName, int opRightId)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
@@ -691,7 +691,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (opRightId <= 0) {
 			throw new Exception("Invalud input opRightId");
 		}
-		return accessControlListDao.findAccessControlListByAll(ownerAccountId, roleId, objName, opRightId);
+		return accessControlListDao.findAccessControlListByRoleIdObjNameOperationRight(ownerAccountId, roleId, objName, opRightId);
 	}
 
 	// Create services

@@ -34,7 +34,7 @@ public interface AccessControlListDao {
 	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String objName);
 
 	// get a specific AccessControlList by a given roleId, objName and opRightId
-	public AccessControlList findAccessControlListByAll(int ownerAccountId, int roleId, String objName, int opRightId);
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String objName, int opRightId);
 
 	// Add a AccessControlList. Return the generated id
 	public int addAccessControlList(AccessControlList acList) throws DuplicateKeyException, Exception;

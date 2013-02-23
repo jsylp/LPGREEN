@@ -80,7 +80,12 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and ObjectName=:ObjectName";
 
 	// query AccessControlList using RoleId, ObjectName and OperationRightId
-	protected final static String strAccessControlListQueryWithAll = "select " + fieldSelectionForReadAccessControlList +
+	protected final static String strAccessControlListQueryWithAllColumns = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
+			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
+
+	// query number of AccessControlLists using RoleId, ObjectName and OperationRightId
+	protected final static String strAccessControlListQueryForInt = "select count(1) " +
 			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
 			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
 
@@ -165,10 +170,10 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 
 	// get a specific AccessControlList by a given roleId, name and opRightId
 	@Override
-	public AccessControlList findAccessControlListByAll(int ownerAccountId, int roleId, String name, int opRightId) {
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String name, int opRightId) {
 		try {
 			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
-					strAccessControlListQueryWithAll,
+					strAccessControlListQueryWithAllColumns,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId).
 						addValue("ObjectName", name).addValue("OperationRightId", opRightId),
 					new AccessControlListMapper());
@@ -237,6 +242,20 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 		}
 	}
 
+	private int getNumberOfAccessControlLists(int ownerAccountId, int roleId, String name, int opRightId) {
+		try {
+			int numRecs = namedParameterJdbcTemplate.queryForInt(
+					strAccessControlListQueryForInt,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId).
+						addValue("ObjectName", name).addValue("OperationRightId", opRightId));
+			return numRecs;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcAccessControlListDao.getNumberOfAccessControlLists Exception: " + e.getMessage());
+			return -1;
+		}
+	}
+
 	// Get the user's roles and included roles to check for permission
 	// Since there is no LoginUser domain object here, use LoginUserId instead
 	public boolean hasPermission(int userId, String objectName, String operation, int ownerAccountId)
@@ -260,9 +279,8 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 					continue;
 
 				for (Role r : roles) {
-					AccessControlList acList = findAccessControlListByAll(ownerAccountId, r.getId(),
-						objectName,	opRight.getId());
-					if (acList != null) {
+					int numRecs = getNumberOfAccessControlLists(ownerAccountId, r.getId(), objectName, opRight.getId());
+					if (numRecs > 0) {
 						permit = true;
 						break;
 					}

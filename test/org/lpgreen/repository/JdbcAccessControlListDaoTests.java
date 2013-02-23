@@ -74,7 +74,7 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 			}
 
 			System.out.println("    findAccessControlListByAll [OwnerAccountId=1, RoleId=2, ObjectName=Everything], OperationRightId=6");
-			AccessControlList acList = AccessControlListDao.findAccessControlListByAll(1, 2, "Everything", 6);
+			AccessControlList acList = AccessControlListDao.findAccessControlListByRoleIdObjNameOperationRight(1, 2, "Everything", 6);
 			assertNotNull(acList);
 			System.out.println("AccessControlList: roleId=" + acList.getRoleId() + "; objectName=" + acList.getObjectName() +
 						"; opRightId=" + acList.getOperationRightId() + "; ownerAccountId=" + acList.getOwnerAccountId());
@@ -96,7 +96,7 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 		try {
 			int retRec = AccessControlListDao.addAccessControlList(acList);
 			assertTrue(retRec > 0);
-			retAcList = AccessControlListDao.findAccessControlListByAll(1, acList.getRoleId(), acList.getObjectName(), acList.getOperationRightId());
+			retAcList = AccessControlListDao.findAccessControlListByRoleIdObjNameOperationRight(1, acList.getRoleId(), acList.getObjectName(), acList.getOperationRightId());
 			assertNotNull(retAcList);
 			assertEquals(retAcList.getRoleId(), 2);
 			assertEquals(retAcList.getObjectName(), "TestObject");

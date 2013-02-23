@@ -39,7 +39,7 @@ public class JdbcLoginUserRolesDaoTests  extends AbstractTransactionalDataSource
 			System.out.println("    findAllSiteLoginUserRoles [OwnerAccountId=1, LoginUserId=1]");
 			List<LoginUserRoles> userRoles = loginUserRolesDao.findAllSiteLoginUserRoles(1, 1);
 			assertNotNull(userRoles);
-			assertTrue(userRoles.size() >= 3);
+			assertTrue(userRoles.size() >= 1);
 			for (LoginUserRoles r : userRoles) {
 				System.out.println("LoginUserRoles: userId=" + r.getLoginUserId() + "; roleId=" + r.getRoleId());
 			}
