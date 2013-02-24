@@ -19,9 +19,9 @@ import org.springframework.test.AbstractTransactionalDataSourceSpringContextTest
 @SuppressWarnings("deprecation")
 public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSourceSpringContextTests  {
 
-	private RoleAndHierarchyDao roleAndHieraDao;
-	public void setRoleAndHierarchyDao(RoleAndHierarchyDao roleAndHieraDao) {
-		this.roleAndHieraDao = roleAndHieraDao;
+	private RoleAndHierarchyDao roleAndHierarchyDao;
+	public void setRoleAndHierarchyDao(RoleAndHierarchyDao roleAndHierarchyDao) {
+		this.roleAndHierarchyDao = roleAndHierarchyDao;
 	}
 
 	@Override
@@ -36,13 +36,13 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 	public void testGetAllIncludedRoles() {
 		try {
 			// Find the LogixPath (OwnerAccountId=1) superadmin 
-			Role role = roleAndHieraDao.findRoleById(1, 1);
+			Role role = roleAndHierarchyDao.findRoleById(1, 1);
 			assertNotNull(role);
 
 			// Test find all included roles
 			System.out.println("Test --> getAllIncludedRoles");
 			System.out.println("    getAllIncludedRoles [name=ROLE_LP_SUPERADMIN, OwnerAccountId=1]");
-			List<Role> allRoles = roleAndHieraDao.getAllIncludedRoles(role);
+			List<Role> allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 6);
 			for (Role r : allRoles) {
@@ -50,8 +50,8 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_ALLEN_CO_SITE_USERADMIN, OwnerAccountId=2]");
-			role = roleAndHieraDao.findRoleByName(2, "ROLE_ALLEN_CO_SITE_USERADMIN");
-			allRoles = roleAndHieraDao.getAllIncludedRoles(role);
+			role = roleAndHierarchyDao.findRoleByName(2, "ROLE_ALLEN_CO_SITE_USERADMIN");
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 2);
 			for (Role r : allRoles) {
@@ -59,8 +59,8 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_BOBBY_CO_SITE_SUPERVISOR, OwnerAccountId=3]");
-			role = roleAndHieraDao.findRoleByName(3, "ROLE_BOBBY_CO_SITE_SUPERVISOR");
-			allRoles = roleAndHieraDao.getAllIncludedRoles(role);
+			role = roleAndHierarchyDao.findRoleByName(3, "ROLE_BOBBY_CO_SITE_SUPERVISOR");
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 1);
 			for (Role r : allRoles) {
@@ -68,8 +68,8 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_CATHY_CO_SITE_USER, OwnerAccountId=4]");
-			role = roleAndHieraDao.findRoleByName(4, "ROLE_CATHY_CO_SITE_USER");
-			allRoles = roleAndHieraDao.getAllIncludedRoles(role);
+			role = roleAndHierarchyDao.findRoleByName(4, "ROLE_CATHY_CO_SITE_USER");
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 0);
 			for (Role r : allRoles) {
@@ -90,9 +90,9 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 		assertNotNull(role);
 		Role retRole = null;
 		try {
-			int retId = roleAndHieraDao.addRole(role);
+			int retId = roleAndHierarchyDao.addRole(role);
 			assertTrue(retId > 0);
-			retRole = roleAndHieraDao.findRoleById(1, retId);
+			retRole = roleAndHierarchyDao.findRoleById(1, retId);
 			assertNotNull(retRole);
 			assertEquals(retRole.getRoleName(), "ROLE_LP_TEST");
 			assertEquals(retRole.getDescription(), "LogixPath testing role");
@@ -106,9 +106,9 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 		retRole.setRoleName("ROLE_LP_TEST_NP");
 		retRole.setDescription("LogixPath testing role new product");
 		try {
-			int numRecUpdated = roleAndHieraDao.saveRole(retRole);
+			int numRecUpdated = roleAndHierarchyDao.saveRole(retRole);
 			assertEquals(numRecUpdated, 1);
-			Role retRoleUpd = roleAndHieraDao.findRoleById(1, retRole.getId());
+			Role retRoleUpd = roleAndHierarchyDao.findRoleById(1, retRole.getId());
 			assertNotNull(retRoleUpd);
 			assertEquals(retRoleUpd.getRoleName(), "ROLE_LP_TEST_NP");
 			assertEquals(retRoleUpd.getDescription(), "LogixPath testing role new product");
@@ -120,7 +120,7 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 		// Delete Role
 		System.out.println("    Delete ROLE_LP_TEST_NP");
 		try {
-			int numRecDeleted = roleAndHieraDao.deleteRole(1, retRole.getId());
+			int numRecDeleted = roleAndHierarchyDao.deleteRole(1, retRole.getId());
 			assertEquals(numRecDeleted, 1);
 		}
 		catch (Exception e) {
@@ -132,21 +132,21 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 	public void testRoleHierarchy() {
 		try {
 			// Find the LogixPath (OwnerAccountId=1) superadmin 
-			Role role = roleAndHieraDao.findRoleById(1, 1);
-			Role roleInc = roleAndHieraDao.findRoleById(1, 2);
+			Role role = roleAndHierarchyDao.findRoleById(1, 1);
+			Role roleInc = roleAndHierarchyDao.findRoleById(1, 2);
 			assertNotNull(role);
 			assertNotNull(roleInc);
 
 			// Test RoleHierarchy
 			System.out.println("Test --> findRoleHierarchy");
 			System.out.println("    findRoleHierarchy [role=ROLE_LP_SUPERADMIN, includedRole=ROLE_LP_SYSADMIN OwnerAccountId=1]");
-			RoleHierarchy roleHiera = roleAndHieraDao.findRoleHierarchy(role, roleInc);
+			RoleHierarchy roleHiera = roleAndHierarchyDao.findRoleHierarchy(role, roleInc);
 			assertNotNull(roleHiera);
 			assertEquals(roleHiera.getRoleId(), 1);
 			assertEquals(roleHiera.getIncludedRoleId(), 2);
 
 			// Input Parameters -> 1st: OwnerAccoutId; 2nd: RoleId; 3rd: IncludedRoleId 
-			roleHiera = roleAndHieraDao.findRoleHierarchyByRoleIds(1, 1, 2);
+			roleHiera = roleAndHierarchyDao.findRoleHierarchyByRoleIds(1, 1, 2);
 			assertNotNull(roleHiera);
 			assertEquals(roleHiera.getRoleId(), 1);
 			assertEquals(roleHiera.getIncludedRoleId(), 2);
@@ -165,9 +165,9 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 		assertNotNull(roleHiera);
 		RoleHierarchy retRoleHiera = null;
 		try {
-			int retId = roleAndHieraDao.addRoleHierarchy(roleHiera);
+			int retId = roleAndHierarchyDao.addRoleHierarchy(roleHiera);
 			assertTrue(retId > 0);
-			retRoleHiera = roleAndHieraDao.findRoleHierarchyByRoleIds(1, 2, 7);
+			retRoleHiera = roleAndHierarchyDao.findRoleHierarchyByRoleIds(1, 2, 7);
 			assertNotNull(retRoleHiera);
 			assertEquals(retRoleHiera.getRoleId(), 2);
 			assertEquals(retRoleHiera.getIncludedRoleId(), 7);
@@ -179,7 +179,7 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 		// Delete RoleHierarchy
 		System.out.println("    Delete RoleHierarchy");
 		try {
-			int numRecDeleted = roleAndHieraDao.deleteRoleHierarchy(1, retRoleHiera.getRoleId(),
+			int numRecDeleted = roleAndHierarchyDao.deleteRoleHierarchy(1, retRoleHiera.getRoleId(),
 					retRoleHiera.getIncludedRoleId());
 			assertEquals(numRecDeleted, 1);
 		}

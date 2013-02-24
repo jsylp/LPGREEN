@@ -13,13 +13,14 @@ import org.joda.time.DateTime;
  * @version 1.0
  */
 
-public class LoginUserRoles implements Serializable {
+public class LoginUserRole implements Serializable {
 
 	private static final long serialVersionUID = 664406184352863096L;
 	private int             loginUserId;
 	private int             roleId;
 	private int             ownerAccountId;
 	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
+	private String          roleName;           // Implementation helper - retrieved from outer join
 
 	/*
 	LoginUserId             int REFERENCES LoginUser(Id) NOT NULL,
@@ -27,11 +28,11 @@ public class LoginUserRoles implements Serializable {
 	*/
 	
 	// Constructor
-	public LoginUserRoles() {
+	public LoginUserRole() {
 	}
 	
 	// Constructor
-	public LoginUserRoles(int loginUserId, int roleId, int ownerAccountId) {
+	public LoginUserRole(int loginUserId, int roleId, int ownerAccountId) {
 		this.loginUserId = loginUserId;
 		this.roleId = roleId;
 		this.ownerAccountId = ownerAccountId;
@@ -54,6 +55,12 @@ public class LoginUserRoles implements Serializable {
 	}
 	public void setOwnerAccountId(int ownerAccountId) {
 		this.ownerAccountId = ownerAccountId;
+	}
+	public String getRoleName() {
+		return roleName;
+	}
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
 	}
 
 	public DateTime getCreatedDateTime() {

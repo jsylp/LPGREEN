@@ -44,7 +44,7 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 
 	protected final static String fieldSetForUpdateRole = 
 			"RoleName=:RoleName,Description=:Description,OwnerAccountId=:OwnerAccountId";
-	
+
 	// o: the main object: this RoleHierarchy
 	protected final static String fieldSelectionForReadRoleHierarchy =
 			"o.RoleId,o.IncludedRoleId,o.OwnerAccountId";
@@ -52,25 +52,9 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	protected final static String fieldSetForUpdateRoleHierarchy = 
 			"RoleId=:RoleId,IncludedRoleId=:IncludedRoleId,OwnerAccountId=:OwnerAccountId";
 
-	// query Role using Id
-	protected final static String strRoleQueryWithId = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// query Role using RoleName
-	protected final static String strRoleQueryWithRoleName = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId and RoleName=:RoleName";
-
-	// query Role using OwnerAccountId
-	protected final static String strRoleQueryWithOwnerAccountId = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId";
-
 	// query RoleHierarchy using RoleId
 	protected final static String strHieraQueryWithRoleId = "select " + fieldSelectionForReadRoleHierarchy + 
 			" from RoleHierarchy as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId"; 
-
-	// query RoleHierarchy using RoleIdAndIncludedRoleId
-	protected final static String strHieraQueryWithRoleIdAndIncludedRoleId = "select " + fieldSelectionForReadRoleHierarchy + 
-			" from RoleHierarchy as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and IncludedRoleId=:IncludedRoleId"; 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// Role Mapper
@@ -87,21 +71,10 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 			return role;
 		}
 	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// RoleHierarchy Mapper
-	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static class RoleHierarchyMapper implements RowMapper<RoleHierarchy> {
-
-		public RoleHierarchy mapRow(ResultSet rs, int rowNum) throws SQLException {
-			RoleHierarchy roleHierarchy = new RoleHierarchy();
-			roleHierarchy.setRoleId(rs.getInt("RoleId"));
-			roleHierarchy.setIncludedRoleId(rs.getInt("IncludedRoleId"));
-			roleHierarchy.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			return roleHierarchy;
-		}
-	}
+	// query Role using Id
+	protected final static String strRoleQueryWithId = "select " + fieldSelectionForReadRole +
+			" from Role as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
 
 	// get hierarchical included Roles by a given role
 	private List<Role> getAllIncludedRoles(Role role, List<Role> rolesIncluded)
@@ -154,6 +127,10 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
+	// query Role using OwnerAccountId
+	protected final static String strRoleQueryWithOwnerAccountId = "select " + fieldSelectionForReadRole +
+			" from Role as o where OwnerAccountId=:OwnerAccountId";
+
 	// get all Roles owned by a specific account id
 	@Override
 	public List<Role> findAllOwnerAccountRoles(int ownerAccountId) {
@@ -186,6 +163,10 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
+	// query Role using RoleName
+	protected final static String strRoleQueryWithRoleName = "select " + fieldSelectionForReadRole +
+			" from Role as o where OwnerAccountId=:OwnerAccountId and RoleName=:RoleName";
+
 	// get a specific Role by a given name
 	@Override
 	public Role findRoleByName(int ownerAccountId, String roleName) {
@@ -210,11 +191,18 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	 */
 	private MapSqlParameterSource getRoleMapSqlParameterSource(Role role, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		if (!bNew)
-			parameters.addValue("Id", role.getId());	// auto generated when insert a Role, use it as the primary key when update it
+		if (!bNew) {
+			if (role.getId() > 0)
+				parameters.addValue("Id", role.getId());	// auto generated when insert a Role, use it as the primary key when update it
+			else
+				parameters.addValue("Id", null);
+		}
 		parameters.addValue("RoleName", role.getRoleName());
 		parameters.addValue("Description", role.getDescription());
-		parameters.addValue("OwnerAccountId", role.getOwnerAccountId());
+		if (role.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", role.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
 		return parameters;
 	}
 
@@ -281,6 +269,25 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// RoleHierarchy Mapper
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	private static class RoleHierarchyMapper implements RowMapper<RoleHierarchy> {
+
+		public RoleHierarchy mapRow(ResultSet rs, int rowNum) throws SQLException {
+			RoleHierarchy roleHierarchy = new RoleHierarchy();
+			roleHierarchy.setRoleId(rs.getInt("RoleId"));
+			roleHierarchy.setIncludedRoleId(rs.getInt("IncludedRoleId"));
+			roleHierarchy.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return roleHierarchy;
+		}
+	}
+
+	// query RoleHierarchy using RoleIdAndIncludedRoleId
+	protected final static String strHieraQueryWithRoleIdAndIncludedRoleId = "select " + fieldSelectionForReadRoleHierarchy + 
+			" from RoleHierarchy as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and IncludedRoleId=:IncludedRoleId"; 
+
 	// get a specific RoleHierarchy by a given Role and included Role
 	@Override
 	public RoleHierarchy findRoleHierarchy(Role role, Role roleInc) 
@@ -329,9 +336,18 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	 */
 	private MapSqlParameterSource getRoleHierarchyMapSqlParameterSource(RoleHierarchy roleHiera) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		parameters.addValue("RoleId", roleHiera.getRoleId());
-		parameters.addValue("IncludedRoleId", roleHiera.getIncludedRoleId());
-		parameters.addValue("OwnerAccountId", roleHiera.getOwnerAccountId());
+		if (roleHiera.getRoleId() > 0)
+			parameters.addValue("RoleId", roleHiera.getRoleId());
+		else
+			parameters.addValue("RoleId", null);
+		if (roleHiera.getIncludedRoleId() > 0)
+			parameters.addValue("IncludedRoleId", roleHiera.getIncludedRoleId());
+		else
+			parameters.addValue("IncludedRoleId", null);
+		if (roleHiera.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", roleHiera.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
 		return parameters;
 	}
 

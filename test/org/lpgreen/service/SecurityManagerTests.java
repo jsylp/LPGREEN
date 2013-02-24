@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.lpgreen.domain.Role;
 import org.lpgreen.domain.RoleHierarchy;
-import org.lpgreen.domain.LoginUserRoles;
+import org.lpgreen.domain.LoginUserRole;
 import org.lpgreen.domain.OperationRight;
 import org.lpgreen.domain.AccessControlList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,17 +124,17 @@ public class SecurityManagerTests extends AbstractTransactionalDataSourceSpringC
 		System.out.println("     <-- Done.");
 	}
 
-	public void testAddUpdateLoginUserRoles() {
-		System.out.println("Test --> testAddUpdateLoginUserRoles");
+	public void testAddUpdateLoginUserRole() {
+		System.out.println("Test --> testAddUpdateLoginUserRole");
 
 		// LoginUserId=1 - root, RoleId=2 - ROLE_LP_SYSADMIN 
-		LoginUserRoles userRole = new LoginUserRoles(1, 2, currentUserOwnerAccountId);
+		LoginUserRole userRole = new LoginUserRole(1, 2, currentUserOwnerAccountId);
 
-		// Create the LoginUserRoles
-		// Note: LoginUserRoles is relationship, the create method returns the
+		// Create the LoginUserRole
+		// Note: LoginUserRole is relationship, the create method returns the
 		// number of records added, which should be 1.
 		try {
-			int numRecsAdded = securityManager.createLoginUserRoles(
+			int numRecsAdded = securityManager.createLoginUserRole(
 					currentUserId, userRole);
 			assertTrue(numRecsAdded > 0);
 		}
@@ -142,9 +142,9 @@ public class SecurityManagerTests extends AbstractTransactionalDataSourceSpringC
 			fail(e.getMessage());
 		}
 
-		LoginUserRoles userRoleAdded = null;
+		LoginUserRole userRoleAdded = null;
 		try {
-			userRoleAdded = securityManager.findLoginUserRolesByUserIdAndRoleId(
+			userRoleAdded = securityManager.findLoginUserRoleByUserIdAndRoleId(
 					currentUserOwnerAccountId, 1, 2);
 			assertNotNull(userRoleAdded);
 			assertEquals(userRoleAdded.getLoginUserId(), 1);
@@ -154,9 +154,9 @@ public class SecurityManagerTests extends AbstractTransactionalDataSourceSpringC
 			fail(e.getMessage());
 		}
 
-		// Delete the LoginUserRoles
+		// Delete the LoginUserRole
 		try {
-			int numRecsDeleted = securityManager.deleteLoginUserRoles(currentUserId,
+			int numRecsDeleted = securityManager.deleteLoginUserRole(currentUserId,
 					currentUserOwnerAccountId, userRoleAdded.getLoginUserId(), userRoleAdded.getRoleId());
 			assertTrue(numRecsDeleted > 0);
 		}

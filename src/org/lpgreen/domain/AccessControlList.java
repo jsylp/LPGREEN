@@ -21,7 +21,9 @@ public class AccessControlList implements Serializable {
 	private int             operationRightId;
 	private int             ownerAccountId;
 	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
-	
+	private String          roleName;           // Implementation helper - retrieved from outer join
+	private String          operationName;      // Implementation helper - retrieved from outer join
+
 	/*
 	RoleId                  int REFERENCES Role(Id) NOT NULL,
 	ObjectName              varchar(255) NOT NULL,
@@ -65,7 +67,19 @@ public class AccessControlList implements Serializable {
 	public void setOwnerAccountId(int ownerAccountId) {
 		this.ownerAccountId = ownerAccountId;
 	}
-	
+	public String getRoleName() {
+		return roleName;
+	}
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
+	}
+	public String getOperationName() {
+		return operationName;
+	}
+	public void setOperationName(String operationName) {
+		this.operationName = operationName;
+	}
+
 	public DateTime getCreatedDateTime() {
 		return createdDateTime;
 	}

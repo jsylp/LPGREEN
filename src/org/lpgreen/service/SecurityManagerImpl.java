@@ -8,11 +8,11 @@ import java.util.UUID;
 import org.joda.time.DateTime;
 import org.lpgreen.domain.Role;
 import org.lpgreen.domain.RoleHierarchy;
-import org.lpgreen.domain.LoginUserRoles;
+import org.lpgreen.domain.LoginUserRole;
 import org.lpgreen.domain.OperationRight;
 import org.lpgreen.domain.AccessControlList;
 import org.lpgreen.repository.RoleAndHierarchyDao;
-import org.lpgreen.repository.LoginUserRolesDao;
+import org.lpgreen.repository.LoginUserRoleDao;
 import org.lpgreen.repository.OperationRightDao;
 import org.lpgreen.repository.AccessControlListDao;
 import org.lpgreen.util.InvalidDataValueException;
@@ -42,10 +42,10 @@ public class SecurityManagerImpl implements SecurityManager {
 		this.roleAndHierarchyDao = roleAndHierarchyDao;
 	}
 
-	private LoginUserRolesDao loginUserRolesDao;
+	private LoginUserRoleDao loginUserRoleDao;
 	@Autowired
-	public void setLoginUserRolesDao(LoginUserRolesDao loginUserRolesDao) {
-		this.loginUserRolesDao = loginUserRolesDao;
+	public void setLoginUserRoleDao(LoginUserRoleDao loginUserRoleDao) {
+		this.loginUserRoleDao = loginUserRoleDao;
 	}
 
 	private OperationRightDao operationRightDao;
@@ -331,12 +331,12 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	////////////////////////////////////////////
-	// LoginUserRoles related management methods
+	// LoginUserRole related management methods
 	////////////////////////////////////////////
 
 	// get all LoginUserRoles owned by a specific account id
 	@Override
-	public List<LoginUserRoles> findAllSiteLoginUserRoles(int ownerAccountId, int userId)
+	public List<LoginUserRole> findAllSiteLoginUserRoles(int ownerAccountId, int userId)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Missing input ownerAccountId");
@@ -344,15 +344,15 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (userId <= 0) {
 			throw new Exception("Missing input loginUserId");
 		}
-		List<LoginUserRoles> userRoles = loginUserRolesDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
+		List<LoginUserRole> userRoles = loginUserRoleDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
 		if (userRoles != null && userRoles.size() == 0)
 			userRoles = null;
 		return userRoles;
 	}
 
-	// get a specific LoginUserRoles by given loginUserId and roleId
+	// get a specific LoginUserRole by given loginUserId and roleId
 	@Override
-	public LoginUserRoles findLoginUserRolesByUserIdAndRoleId(int ownerAccountId, int userId, int roleId)
+	public LoginUserRole findLoginUserRoleByUserIdAndRoleId(int ownerAccountId, int userId, int roleId)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Missing input ownerAccountId");
@@ -363,12 +363,12 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (roleId <= 0) {
 			throw new Exception("Missing input roleId");
 		}
-		return loginUserRolesDao.findLoginUserRolesByUserIdAndRoleId(ownerAccountId, userId, roleId);
+		return loginUserRoleDao.findLoginUserRoleByUserIdAndRoleId(ownerAccountId, userId, roleId);
 	}
 
 	// Create services
 
-	private void validateLoginUserRolesData(LoginUserRoles userRole)
+	private void validateLoginUserRoleData(LoginUserRole userRole)
 			throws MissingRequiredDataException, InvalidDataValueException,
 					DuplicateKeyException, Exception {
 		if (userRole.getLoginUserId() <= 0 || userRole.getRoleId() <= 0)
@@ -376,7 +376,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	@Override
-	public int createLoginUserRoles(UUID userId, LoginUserRoles userRole) 
+	public int createLoginUserRole(UUID userId, LoginUserRole userRole) 
 			throws MissingRequiredDataException, InvalidDataValueException,
 					DuplicateKeyException, Exception {
 		//if (userId == null)
@@ -385,28 +385,28 @@ public class SecurityManagerImpl implements SecurityManager {
 			throw new Exception("Missing input userRole");
 		}
 
-		this.validateLoginUserRolesData(userRole);
+		this.validateLoginUserRoleData(userRole);
 
 		// Good to go
 		//DateTime currentDateTime = DateTime.now();		
 
-		// Create the LoginUserRoles
+		// Create the LoginUserRole
 		//reqCategoryAreaData.setCreatedDate(currentDateTime);
 		//reqCategoryAreaData.setCreatedById(userId);
 		//reqCategoryAreaData.setLastModifiedDate(currentDateTime);
 		//reqCategoryAreaData.setLastModifiedById(userId);
 		//reqCategoryAreaData.setOwnerId(userId);
 
-		// Persist the LoginUserRoles object
+		// Persist the LoginUserRole object
 		try {
-			int numRecAdded = loginUserRolesDao.addLoginUserRoles(userRole);
+			int numRecAdded = loginUserRoleDao.addLoginUserRole(userRole);
 			if (numRecAdded == 0) {
-				throw new Exception("Fail to add LoginUserRoles");
+				throw new Exception("Fail to add LoginUserRole");
 			}
 			return numRecAdded;
 		}
 		catch (Exception e) {
-			//logger.info("SecurityManagerImpl.createLoginUserRoles: fail to create LoginUserRoles. Exception: " + e.getMessage());
+			//logger.info("SecurityManagerImpl.createLoginUserRole: fail to create LoginUserRole. Exception: " + e.getMessage());
 			throw e;
 		}
 	}
@@ -414,7 +414,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	// Delete services
 
 	@Override
-	public int deleteLoginUserRoles(UUID userId, int ownerAccountId, int loginUserId, int roleId)
+	public int deleteLoginUserRole(UUID userId, int ownerAccountId, int loginUserId, int roleId)
 			throws MissingRequiredDataException, Exception {
 		//if (userId == null)
 		//	throw new MissingRequiredDataException("Missing userId");
@@ -428,9 +428,9 @@ public class SecurityManagerImpl implements SecurityManager {
 			throw new MissingRequiredDataException("Missing input roleId");
 		}
 
-		int numRecordDeleted = loginUserRolesDao.deleteLoginUserRoles(ownerAccountId, loginUserId, roleId);
+		int numRecordDeleted = loginUserRoleDao.deleteLoginUserRole(ownerAccountId, loginUserId, roleId);
 		if (numRecordDeleted == 0) {
-			throw new Exception("Fail to delete LoginUserRoles: (" + loginUserId + ", " + roleId + ")");
+			throw new Exception("Fail to delete LoginUserRole: (" + loginUserId + ", " + roleId + ")");
 		}
 		return numRecordDeleted;
 	}
@@ -438,13 +438,13 @@ public class SecurityManagerImpl implements SecurityManager {
 	// Export/import to/from CSV file
 
 	@Override
-	public void exportLoginUserRolesToCSV(List<LoginUserRoles> userRoles, OutputStream os)
+	public void exportLoginUserRoleToCSV(List<LoginUserRole> userRoles, OutputStream os)
 			throws Exception {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public List<LoginUserRoles> importLoginUserRolesFromCSV(UUID userId,
+	public List<LoginUserRole> importLoginUserRolesFromCSV(UUID userId,
 			int ownerAccountId, InputStream is, boolean bOverrideDup)
 			throws Exception {
 		// TODO Auto-generated method stub

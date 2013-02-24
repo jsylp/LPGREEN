@@ -51,20 +51,20 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
-	<bean id="loginUserRolesDao" class="org.lpgreen.repository.JdbcLoginUserRolesDao">
+	<bean id="loginUserRoleDao" class="org.lpgreen.repository.JdbcLoginUserRoleDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 	<bean id="accessControlListDao" class="org.lpgreen.repository.JdbcAccessControlListDao">
 		<property name="dataSource" ref="dataSource"/>
 		<property name="roleAndHierarchyDao" ref="roleAndHierarchyDao"/>
-		<property name="loginUserRolesDao" ref="loginUserRolesDao"/>
+		<property name="loginUserRoleDao" ref="loginUserRoleDao"/>
 		<property name="operationRightDao" ref="operationRightDao"/>
 	</bean>
 
 	<bean id="securityManager" class="org.lpgreen.service.SecurityManagerImpl" >
 		<property name="roleAndHierarchyDao" ref="roleAndHierarchyDao"/>
-		<property name="loginUserRolesDao" ref="loginUserRolesDao"/>
+		<property name="loginUserRoleDao" ref="loginUserRoleDao"/>
 		<property name="operationRightDao" ref="operationRightDao"/>
 		<property name="accessControlListDao" ref="accessControlListDao"/>
 	</bean>

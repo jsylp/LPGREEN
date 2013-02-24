@@ -42,8 +42,9 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 4);
 			for (AccessControlList acl : acLists) {
-				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; objectName=" + acl.getObjectName() +
-						"; opRightId=" + acl.getOperationRightId() + "; ownerAccountId=" + acl.getOwnerAccountId());
+				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; roleName=" + acl.getRoleName() +
+						"; objectName=" + acl.getObjectName() + "; opRightId=" + acl.getOperationRightId() +
+						"; operationName=" + acl.getOperationName() + "; ownerAccountId=" + acl.getOwnerAccountId());
 			}
 
 			System.out.println("    findAllSiteAccessControlLists [OwnerAccountId=1, RoleId=2]");
@@ -51,8 +52,9 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 3);
 			for (AccessControlList acl : acLists) {
-				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; objectName=" + acl.getObjectName() +
-						"; opRightId=" + acl.getOperationRightId() + "; ownerAccountId=" + acl.getOwnerAccountId());
+				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; roleName=" + acl.getRoleName() +
+						"; objectName=" + acl.getObjectName() + "; opRightId=" + acl.getOperationRightId() +
+						"; operationName=" + acl.getOperationName() + "; ownerAccountId=" + acl.getOwnerAccountId());
 			}
 
 			System.out.println("    findAccessControlListsByOperationRightId [OwnerAccountId=1, OperationRight=6]");
@@ -60,8 +62,9 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 3);
 			for (AccessControlList acl : acLists) {
-				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; objectName=" + acl.getObjectName() +
-						"; opRightId=" + acl.getOperationRightId() + "; ownerAccountId=" + acl.getOwnerAccountId());
+				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; roleName=" + acl.getRoleName() +
+						"; objectName=" + acl.getObjectName() + "; opRightId=" + acl.getOperationRightId() +
+						"; operationName=" + acl.getOperationName() + "; ownerAccountId=" + acl.getOwnerAccountId());
 			}
 
 			System.out.println("    findAccessControlListsByObjectName [OwnerAccountId=1, ObjectName=Everything]");
@@ -69,15 +72,17 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 3);
 			for (AccessControlList acl : acLists) {
-				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; objectName=" + acl.getObjectName() +
-						"; opRightId=" + acl.getOperationRightId() + "; ownerAccountId=" + acl.getOwnerAccountId());
+				System.out.println("AccessControlList: roleId=" + acl.getRoleId() + "; roleName=" + acl.getRoleName() +
+						"; objectName=" + acl.getObjectName() + "; opRightId=" + acl.getOperationRightId() +
+						"; operationName=" + acl.getOperationName() + "; ownerAccountId=" + acl.getOwnerAccountId());
 			}
 
 			System.out.println("    findAccessControlListByAll [OwnerAccountId=1, RoleId=2, ObjectName=Everything], OperationRightId=6");
 			AccessControlList acList = AccessControlListDao.findAccessControlListByRoleIdObjNameOperationRight(1, 2, "Everything", 6);
 			assertNotNull(acList);
-			System.out.println("AccessControlList: roleId=" + acList.getRoleId() + "; objectName=" + acList.getObjectName() +
-						"; opRightId=" + acList.getOperationRightId() + "; ownerAccountId=" + acList.getOwnerAccountId());
+			System.out.println("AccessControlList: roleId=" + acList.getRoleId() + "; roleName=" + acList.getRoleName() +
+						"; objectName=" + acList.getObjectName() + "; opRightId=" + acList.getOperationRightId() +
+						"; operationName=" + acList.getOperationName() + "; ownerAccountId=" + acList.getOwnerAccountId());
 
 			System.out.println("     <-- Done.");
 		}

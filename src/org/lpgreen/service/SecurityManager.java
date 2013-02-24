@@ -10,7 +10,7 @@ import org.lpgreen.util.MissingRequiredDataException;
 import org.lpgreen.domain.Role;
 import org.lpgreen.domain.RoleHierarchy;
 import org.lpgreen.domain.OperationRight;
-import org.lpgreen.domain.LoginUserRoles;
+import org.lpgreen.domain.LoginUserRole;
 import org.lpgreen.domain.AccessControlList;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -85,29 +85,29 @@ public interface SecurityManager {
 			throws Exception;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// LoginUserRoles management
+	// LoginUserRole management
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get all LoginUserRoles owned by a specific account id
-	public List<LoginUserRoles> findAllSiteLoginUserRoles(int ownerAccountId, int userId)
+	public List<LoginUserRole> findAllSiteLoginUserRoles(int ownerAccountId, int userId)
 			throws Exception;
 
-	// get a specific LoginUserRoles by given loginUserId and roleId
-	public LoginUserRoles findLoginUserRolesByUserIdAndRoleId(int ownerAccountId, int userId, int roleId)
+	// get a specific LoginUserRole by given loginUserId and roleId
+	public LoginUserRole findLoginUserRoleByUserIdAndRoleId(int ownerAccountId, int userId, int roleId)
 			throws Exception;
 
 	// Create services
-	public int createLoginUserRoles(UUID userId, LoginUserRoles userRole) 
+	public int createLoginUserRole(UUID userId, LoginUserRole userRole) 
 			throws MissingRequiredDataException, InvalidDataValueException, DuplicateKeyException, Exception;
 
 	// Delete services
-	public int deleteLoginUserRoles(UUID userId, int ownerAccountId, int loginUserId, int roleId)
+	public int deleteLoginUserRole(UUID userId, int ownerAccountId, int loginUserId, int roleId)
 			throws MissingRequiredDataException, Exception;
 
 	// Export/import to/from CSV file
-	public void exportLoginUserRolesToCSV(List<LoginUserRoles> userRoles, OutputStream os)
+	public void exportLoginUserRoleToCSV(List<LoginUserRole> userRoles, OutputStream os)
 			throws Exception;
-	public List<LoginUserRoles> importLoginUserRolesFromCSV(UUID userId, int ownerAccountId, InputStream is, boolean bOverrideDup)
+	public List<LoginUserRole> importLoginUserRolesFromCSV(UUID userId, int ownerAccountId, InputStream is, boolean bOverrideDup)
 			throws Exception;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////

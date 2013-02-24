@@ -41,18 +41,6 @@ public class JdbcOperationRightDao implements OperationRightDao {
 	protected final static String fieldSetForUpdateOperationRight = 
 			"OperationName=:OperationName,Description=:Description,OwnerAccountId=:OwnerAccountId";
 
-	// query OperationRight using OwnerAccountId
-	protected final static String strOperationRightQueryWithOwnerAccountId = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId";
-
-	// query OperationRight using Id
-	protected final static String strOperationRightQueryWithId = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// query OperationRight using OperationName
-	protected final static String strRoleQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and OperationName=:OperationName";
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// OperationRight related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +56,10 @@ public class JdbcOperationRightDao implements OperationRightDao {
 			return opRight;
 		}
 	}
+
+	// query OperationRight using OwnerAccountId
+	protected final static String strOperationRightQueryWithOwnerAccountId = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId";
 
 	// get all OperationRight owned by a specific account id
 	@Override
@@ -85,6 +77,10 @@ public class JdbcOperationRightDao implements OperationRightDao {
 		}
 	}
 
+	// query OperationRight using Id
+	protected final static String strOperationRightQueryWithId = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
+
 	// get a specific OperationRight by a given id
 	@Override
 	public OperationRight findOperationRightById(int ownerAccountId, int id) {
@@ -100,6 +96,10 @@ public class JdbcOperationRightDao implements OperationRightDao {
 			return null;
 		}
 	}
+
+	// query OperationRight using OperationName
+	protected final static String strRoleQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
+			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and OperationName=:OperationName";
 
 	// get a specific OperationRight by a given name
 	@Override
@@ -126,14 +126,21 @@ public class JdbcOperationRightDao implements OperationRightDao {
 	 */
 	private MapSqlParameterSource getOperationRightMapSqlParameterSource(OperationRight opRight, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		if (!bNew)
-			parameters.addValue("Id", opRight.getId());	// auto generated when insert a OperationRight, use it as the primary key when update it
+		if (!bNew) {
+			if (opRight.getId() > 0)
+				parameters.addValue("Id", opRight.getId());	// auto generated when insert a OperationRight, use it as the primary key when update it
+			else
+				parameters.addValue("Id", null);
+		}
 		parameters.addValue("OperationName", opRight.getOperationName());
 		parameters.addValue("Description", opRight.getDescription());
-		parameters.addValue("OwnerAccountId", opRight.getOwnerAccountId());
+		if (opRight.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", opRight.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
 		return parameters;
 	}
-	
+
 	// Add an OperationRight. Return the generated id
 	@Override
 	public int addOperationRight(OperationRight opRight) 

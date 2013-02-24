@@ -7,7 +7,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.lpgreen.domain.AccessControlList;
-import org.lpgreen.domain.LoginUserRoles;
+import org.lpgreen.domain.LoginUserRole;
 import org.lpgreen.domain.OperationRight;
 import org.lpgreen.domain.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +31,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcAccessControlListDao implements AccessControlListDao {
 
-	private LoginUserRolesDao loginUserRolesDao;
+	private LoginUserRoleDao loginUserRoleDao;
 	@Autowired
-	public void setLoginUserRolesDao(LoginUserRolesDao loginUserRolesDao) {
-		this.loginUserRolesDao = loginUserRolesDao;
+	public void setLoginUserRoleDao(LoginUserRoleDao loginUserRoleDao) {
+		this.loginUserRoleDao = loginUserRoleDao;
 	}
 
 	private OperationRightDao operationRightDao;
@@ -58,36 +58,10 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 
 	// o: the main object: this AccessControlList; 
 	protected final static String fieldSelectionForReadAccessControlList =
-			"o.RoleId,o.ObjectName,o.OperationRightId,o.OwnerAccountId";
+			"o.RoleId,o.ObjectName,o.OperationRightId,o.OwnerAccountId,r.RoleName,p.OperationName";
 
 	protected final static String fieldSetForUpdateAccessControlList =
 			"RoleId=:RoleId,ObjectName=:ObjectName,OperationRightId=:OperationRightId,OwnerAccountId=:OwnerAccountId";
-
-	// query AccessControlList using OwnerAccountId
-	protected final static String strAccessControlListQueryWithOwnerAccountId = "select " + fieldSelectionForReadAccessControlList +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId";
-
-	// query AccessControlList using RoleId
-	protected final static String strAccessControlListQueryWithRoleId = "select " + fieldSelectionForReadAccessControlList +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId";
-
-	// query AccessControlList using OperationRightId
-	protected final static String strAccessControlListQueryWithOperationRightId = "select " + fieldSelectionForReadAccessControlList +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and OperationRightId=:OperationRightId";
-
-	// query AccessControlList using ObjectName
-	protected final static String strAccessControlListQueryWithObjectName = "select " + fieldSelectionForReadAccessControlList +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and ObjectName=:ObjectName";
-
-	// query AccessControlList using RoleId, ObjectName and OperationRightId
-	protected final static String strAccessControlListQueryWithAllColumns = "select " + fieldSelectionForReadAccessControlList +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
-			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
-
-	// query number of AccessControlLists using RoleId, ObjectName and OperationRightId
-	protected final static String strAccessControlListQueryForInt = "select count(1) " +
-			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
-			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// AccessControlList related methods
@@ -101,9 +75,18 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			acList.setObjectName(rs.getString("ObjectName"));
 			acList.setOperationRightId(rs.getInt("OperationRightId"));
 			acList.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			acList.setRoleName(rs.getString("RoleName"));
+			acList.setOperationName(rs.getString("OperationName"));
 			return acList;
 		}
 	}
+
+	// query AccessControlList using OwnerAccountId
+	protected final static String strAccessControlListQueryWithOwnerAccountId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o" +
+			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
+			" LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id" +
+			" where o.OwnerAccountId=:OwnerAccountId";
 
 	// get all AccessControlLists owned by a specific account id
 	@Override
@@ -121,6 +104,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 		}
 	}
 
+	// query AccessControlList using RoleId
+	protected final static String strAccessControlListQueryWithRoleId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o" +
+			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
+			" LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id" +
+			" where o.OwnerAccountId=:OwnerAccountId and RoleId=:RoleId";
+
 	// get a specific AccessControlList by a given roleId
 	@Override
 	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId) {
@@ -137,6 +127,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 		}
 	}
 
+	// query AccessControlList using OperationRightId
+	protected final static String strAccessControlListQueryWithOperationRightId = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o" +
+			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
+			" LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id" +
+			" where o.OwnerAccountId=:OwnerAccountId and OperationRightId=:OperationRightId";
+
 	// get a specific AccessControlList by a given opRightId
 	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId) {
 		try {
@@ -151,6 +148,13 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			return null;
 		}
 	}
+
+	// query AccessControlList using ObjectName
+	protected final static String strAccessControlListQueryWithObjectName = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o" +
+			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
+			" LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id" +
+			" where o.OwnerAccountId=:OwnerAccountId and ObjectName=:ObjectName";
 
 	// get a specific AccessControlList by a given name
 	@Override
@@ -167,6 +171,14 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			return null;
 		}
 	}
+
+	// query AccessControlList using RoleId, ObjectName and OperationRightId
+	protected final static String strAccessControlListQueryWithAllColumns = "select " + fieldSelectionForReadAccessControlList +
+			" from AccessControlList as o" +
+			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
+			" LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id" +
+			" where o.OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
+			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
 
 	// get a specific AccessControlList by a given roleId, name and opRightId
 	@Override
@@ -193,10 +205,19 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 	 */
 	private MapSqlParameterSource getAccessControlListMapSqlParameterSource(AccessControlList acList) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		parameters.addValue("RoleId", acList.getRoleId());
+		if (acList.getRoleId() > 0)
+			parameters.addValue("RoleId", acList.getRoleId());
+		else
+			parameters.addValue("RoleId", null);
 		parameters.addValue("ObjectName", acList.getObjectName());
-		parameters.addValue("OperationRightId", acList.getOperationRightId());
-		parameters.addValue("OwnerAccountId", acList.getOwnerAccountId());
+		if (acList.getOperationRightId() > 0)
+			parameters.addValue("OperationRightId", acList.getOperationRightId());
+		else
+			parameters.addValue("OperationRightId", null);
+		if (acList.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", acList.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
 		return parameters;
 	}
 
@@ -242,6 +263,11 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 		}
 	}
 
+	// query number of AccessControlLists using RoleId, ObjectName and OperationRightId
+	protected final static String strAccessControlListQueryForInt = "select count(1) " +
+			" from AccessControlList as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and" +
+			" ObjectName=:ObjectName and OperationRightId=:OperationRightId";
+
 	private int getNumberOfAccessControlLists(int ownerAccountId, int roleId, String name, int opRightId) {
 		try {
 			int numRecs = namedParameterJdbcTemplate.queryForInt(
@@ -264,12 +290,12 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			OperationRight opRight = operationRightDao.findOperationRightByName(ownerAccountId, operation);
 			if (opRight == null)
 				return false;
-			List<LoginUserRoles> userRoles = loginUserRolesDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
+			List<LoginUserRole> userRoles = loginUserRoleDao.findAllSiteLoginUserRoles(ownerAccountId, userId);
 			if (userRoles == null || userRoles.size() == 0)
 				return false;
 
 			boolean permit = false;
-			for (LoginUserRoles userRole : userRoles) {
+			for (LoginUserRole userRole : userRoles) {
 				Role role = roleAndHierarchyDao.findRoleById(ownerAccountId, userRole.getRoleId());
 				if (role == null)
 					continue;
