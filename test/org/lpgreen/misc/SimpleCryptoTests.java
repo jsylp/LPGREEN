@@ -144,4 +144,55 @@ public class SimpleCryptoTests extends AbstractTransactionalDataSourceSpringCont
 		}
 	}
 
+	public void testSimpleCrypto2() {
+		System.out.println("Test --> testSimpleCrypto2");
+		try {
+    		String key = "some seed 0231";
+			String clearText1, clearText2, clearText3, clearText4;
+			String encryptText1, encryptText2, encryptText3, encryptText4;
+			String decryptText1, decryptText2, decryptText3, decryptText4;
+
+			clearText1 = "Encryption Test 1 - Customer John Smith";
+			clearText2 = "Encryption Test 2 - John Smith's Credit Card: 4321987634125556";
+			clearText3 = "Encryption Test 3 - John Smith's bank account: 121-546-3655502";
+			clearText4 = "Encryption Test 4 - random  t e  x   t 122 @#1 *^&1";
+			System.out.println("    Encrypt to hex string");
+			encryptText1 = encrypt(key, clearText1);
+			encryptText2 = encrypt(key, clearText2);
+			encryptText3 = encrypt(key, clearText3);
+			encryptText4 = encrypt(key, clearText4);
+			decryptText1 = decrypt(key, encryptText1);
+			decryptText2 = decrypt(key, encryptText2);
+			decryptText3 = decrypt(key, encryptText3);
+			decryptText4 = decrypt(key, encryptText4);
+			System.out.println("    Clear1  : " + clearText1);
+			System.out.println("    Encrypt1: " + encryptText1);
+			System.out.println("    Decrypt1: " + decryptText1);
+			assertEquals(clearText1, decryptText1);
+			System.out.println("    PASS");
+			System.out.println("    Clear2  : " + clearText2);
+			System.out.println("    Encrypt2: " + encryptText2);
+			System.out.println("    Decrypt2: " + decryptText2);
+			assertEquals(clearText2, decryptText2);
+			System.out.println("    PASS");
+			System.out.println("    PASS");
+			System.out.println("    Clear3  : " + clearText3);
+			System.out.println("    Encrypt3: " + encryptText3);
+			System.out.println("    Decrypt3: " + decryptText3);
+			assertEquals(clearText3, decryptText3);
+			System.out.println("    PASS");
+			System.out.println("    Clear4  : " + clearText4);
+			System.out.println("    Encrypt4: " + encryptText4);
+			System.out.println("    Decrypt4: " + decryptText4);
+			assertEquals(clearText4, decryptText4);
+			System.out.println("    PASS");
+
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("Exception");
+			fail(e.getMessage());
+		}
+	}
+
 }
