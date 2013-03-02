@@ -18,5 +18,8 @@
 	<P>
 	<a href="lpac/department/listall">List all departments</a><br>
 	</P>
+	<P>
+	<a href="testencryption.jsp">Test encryption</a><br>
+	</P>
 </body>
 </html>
