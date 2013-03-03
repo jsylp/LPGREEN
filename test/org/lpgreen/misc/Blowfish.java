@@ -63,7 +63,7 @@ public class Blowfish {
     public byte[] encryptToBytes(String clearText) throws Exception {
     	try {
 			cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-			return cipher.doFinal(clearText.getBytes());
+			return cipher.doFinal(clearText.getBytes("UTF8"));
     	}
     	catch (Exception e) {
 			System.out.println("Blowfish encryptToBytes exception: " + e.getMessage());
@@ -80,7 +80,7 @@ public class Blowfish {
     public String decryptFromBytes(byte[] encryptBytes) throws Exception {
     	try {
 			cipher.init(Cipher.DECRYPT_MODE, keySpec);
-			return new String(cipher.doFinal(encryptBytes));
+			return new String(cipher.doFinal(encryptBytes), "UTF8");
     	}
 		catch (Exception e) {
 			System.out.println("Blowfish decryptFromBytes exception: " + e.getMessage());
@@ -97,7 +97,7 @@ public class Blowfish {
     public String encrypt(String clearText) throws Exception {
     	try {
 			cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-			return Hex.encodeHexString(cipher.doFinal(clearText.getBytes()));
+			return Hex.encodeHexString(cipher.doFinal(clearText.getBytes("UTF8")));
     	}
     	catch (Exception e) {
 			System.out.println("Blowfish encrypt exception: " + e.getMessage());
@@ -114,7 +114,7 @@ public class Blowfish {
     public String decrypt(String encryptText) throws Exception {
     	try {
 			cipher.init(Cipher.DECRYPT_MODE, keySpec);
-			return new String(cipher.doFinal(DatatypeConverter.parseHexBinary(encryptText)));
+			return new String(cipher.doFinal(DatatypeConverter.parseHexBinary(encryptText)), "UTF8");
     	}
 		catch (Exception e) {
 			System.out.println("Blowfish decrypt exception: " + e.getMessage());

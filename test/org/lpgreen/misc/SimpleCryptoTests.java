@@ -22,7 +22,7 @@ public class SimpleCryptoTests extends AbstractTransactionalDataSourceSpringCont
 
 	public static String encrypt(String seed, String cleartext) throws Exception {
 		byte[] rawKey = getRawKey(seed.getBytes());
-		byte[] result = encrypt(rawKey, cleartext.getBytes());
+		byte[] result = encrypt(rawKey, cleartext.getBytes("UTF8"));
 		return toHex(result);
 	}
 
@@ -30,7 +30,7 @@ public class SimpleCryptoTests extends AbstractTransactionalDataSourceSpringCont
 		byte[] rawKey = getRawKey(seed.getBytes());
 		byte[] enc = toByte(encrypted);
 		byte[] result = decrypt(rawKey, enc);
-		return new String(result);
+		return new String(result, "UTF8");
 	}
 
 	private static byte[] getRawKey(byte[] seed) throws Exception {
