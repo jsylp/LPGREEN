@@ -98,7 +98,7 @@ public class JdbcOperationRightDao implements OperationRightDao {
 	}
 
 	// query OperationRight using OperationName
-	protected final static String strRoleQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
+	protected final static String strOperationRightQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
 			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and OperationName=:OperationName";
 
 	// get a specific OperationRight by a given name
@@ -106,7 +106,7 @@ public class JdbcOperationRightDao implements OperationRightDao {
 	public OperationRight findOperationRightByName(int ownerAccountId, String opName) {
 		try {
 			OperationRight opRight = namedParameterJdbcTemplate.queryForObject(
-					strRoleQueryWithOperationName,
+					strOperationRightQueryWithOperationName,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("OperationName", opName),
 					new OperationRightMapper());
 			
