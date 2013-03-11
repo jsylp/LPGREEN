@@ -2,7 +2,10 @@ package org.lpgreen.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Repository;
 public class JdbcProjectDao implements ProjectDao {
 
 	private final static String timeZone = "America/Los_Angeles";
+	private final static double epsilon = 1.0e-6;
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	private SimpleJdbcInsert insertProject;
@@ -55,6 +59,37 @@ public class JdbcProjectDao implements ProjectDao {
 			"Description=:Description,Budget=:Budget,CurrencyCode=:CurrencyCode," +
 			"StartDate=:StartDate,EndDate=:EndDate,ParentProjectId=:ParentProjectId," +
 			"Notes=:Notes,OwnerAccountId=:OwnerAccountId";
+
+	private String getCurrentPhaseQueryPart(Set<String> currentPhases) {
+		if (currentPhases != null && currentPhases.size() > 0) {
+			StringBuffer sbCurrentPhases = new StringBuffer();
+			sbCurrentPhases.append(" AND LOWER(o.CurrentPhase) IN (");
+			boolean bFirst = true;
+			Iterator<String> it = currentPhases.iterator();
+			while (it.hasNext()) {
+				String currentPhase = it.next();
+				if (currentPhase.isEmpty() || currentPhase.toLowerCase().equals("all")) {
+					sbCurrentPhases.setLength(0);
+					break;
+				}
+				else {
+					if (!bFirst)
+						sbCurrentPhases.append(", ");
+					else
+						bFirst = false;
+					sbCurrentPhases.append("'" + currentPhase.toLowerCase() + "'");
+				}
+			}
+			if (sbCurrentPhases.length() > 0) {
+				sbCurrentPhases.append(") ");
+				return sbCurrentPhases.toString();
+			}
+			else
+				return "";
+		}
+		else
+			return "";
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// Project related methods
@@ -80,7 +115,7 @@ public class JdbcProjectDao implements ProjectDao {
 			project.setManagingDeptId(rs.getInt("ManagingDeptId"));
 			project.setObjectives(rs.getString("Objectives"));
 			project.setDescription(rs.getString("Description"));
-			project.setBudget(rs.getBigDecimal("Budget"));
+			project.setBudget(rs.getDouble("Budget"));
 			project.setCurrencyCode(rs.getString("CurrencyCode"));
 			if (rs.getTimestamp("StartDate") != null) {
 				project.setStartDate(new DateTime(rs.getTimestamp("StartDate")));
@@ -101,10 +136,13 @@ public class JdbcProjectDao implements ProjectDao {
 
 	// get all Project owned by a specific account id
 	@Override
-	public List<Project> findProjectsByOwerAccountId(int ownerAccountId) {
+	public List<Project> findProjectsByOwerAccountId(int ownerAccountId, Set<String> currentPhases) {
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithOwnerAccountId);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
 			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithOwnerAccountId,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
 					new ProjectMapper());
 			return projects;
@@ -181,10 +219,14 @@ public class JdbcProjectDao implements ProjectDao {
 
 	// get all Projects owned by a given project manager1 id
 	@Override
-	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id) {
+	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
+			Set<String> currentPhases) {
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithProjManager1Id);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
 			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithProjManager1Id,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager1Id", projectMgr1Id),
 					new ProjectMapper());
 			return projects;
@@ -201,10 +243,14 @@ public class JdbcProjectDao implements ProjectDao {
 
 	// get all Projects owned by a given project manager2 id
 	@Override
-	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id) {
+	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
+			Set<String> currentPhases) {
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithProjManager2Id);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
 			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithProjManager2Id,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager2Id", projectMgr2Id),
 					new ProjectMapper());
 			return projects;
@@ -221,10 +267,14 @@ public class JdbcProjectDao implements ProjectDao {
 
 	// get all Projects owned by a given customer account
 	@Override
-	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount) {
+	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
+			Set<String> currentPhases) {
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithCustomerAccount);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
 			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithCustomerAccount,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerAccount", customerAccount),
 					new ProjectMapper());
 			return projects;
@@ -235,16 +285,68 @@ public class JdbcProjectDao implements ProjectDao {
 		}
 	}
 
+	// query Project using CustomerContact
+	protected final static String strProjectQueryWithCustomerContact = "select " + fieldSelectionForReadProject +
+			" from Project as o where OwnerAccountId=:OwnerAccountId and CustomerContact=:CustomerContact";
+
+	// get all Projects owned by a given customer contact
+	@Override
+	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
+			Set<String> currentPhases) {
+		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithCustomerContact);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
+			List<Project> projects = namedParameterJdbcTemplate.query(
+					sbQuery.toString(),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerContact", customerContact),
+					new ProjectMapper());
+			return projects;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByCustomerContact Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// query Project using Sponsor
+	protected final static String strProjectQueryWithSponsor = "select " + fieldSelectionForReadProject +
+			" from Project as o where OwnerAccountId=:OwnerAccountId and Sponsor=:Sponsor";
+
+	// get all Projects owned by a given sponsor
+	@Override
+	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
+			Set<String> currentPhases) {
+		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithSponsor);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
+			List<Project> projects = namedParameterJdbcTemplate.query(
+					sbQuery.toString(),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Sponsor", sponsor),
+					new ProjectMapper());
+			return projects;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsBySponsor Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
 	// query Project using ManagingDeptId
 	protected final static String strProjectQueryWithManagingDeptId = "select " + fieldSelectionForReadProject +
 			" from Project as o where OwnerAccountId=:OwnerAccountId and ManagingDeptId=:ManagingDeptId";
 
 	// get all Projects owned by a given managing department id
 	@Override
-	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId) {
+	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
+			Set<String> currentPhases) {
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append(strProjectQueryWithManagingDeptId);
+			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
 			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithManagingDeptId,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ManagingDeptId", managingDeptId),
 					new ProjectMapper());
 			return projects;
@@ -255,10 +357,14 @@ public class JdbcProjectDao implements ProjectDao {
 		}
 	}
 
-	// get all Projects by date range
+	// get all Projects by start date range
 	@Override
-	public List<Project> findProjectsByDateRange(int ownerAccountId, DateTime startDate, DateTime endDate) {
+	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
+			throws Exception {
 		try {
+			if (fromDate == null && toDate == null) {
+				throw new Exception("Neither fromDate nor toDate is specified");
+			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(fieldSelectionForReadProject);
@@ -266,15 +372,15 @@ public class JdbcProjectDao implements ProjectDao {
 
 			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
 			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
-			if (startDate != null) {
-				sbQuery.append(" and to_char(o.StartDate, 'YYYY-MM-DD') >= :StartDate");
-				String strStartDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(startDate);
-				sqlParameters.addValue("StartDate", strStartDate);
+			if (fromDate != null) {
+				sbQuery.append(" and to_char(o.StartDate, 'YYYY-MM-DD') >= :FromDate");
+				String strFromDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(fromDate);
+				sqlParameters.addValue("FromDate", strFromDate);
 			}
-			if (endDate != null) {
-				sbQuery.append(" and to_char(o.EndDate, 'YYYY-MM-DD') <= :EndDate");
-				String strEndDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(endDate);
-				sqlParameters.addValue("EndDate", strEndDate);
+			if (toDate != null) {
+				sbQuery.append(" and to_char(o.StartDate, 'YYYY-MM-DD') <= :ToDate");
+				String strToDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(toDate);
+				sqlParameters.addValue("ToDate", strToDate);
 			}
 			List<Project> projects = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -283,7 +389,64 @@ public class JdbcProjectDao implements ProjectDao {
 			return projects;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByDateRange Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects by end date range
+	@Override
+	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
+			throws Exception {
+		try {
+			if (fromDate == null && toDate == null) {
+				throw new Exception("Neither fromDate nor toDate is specified");
+			}
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(fieldSelectionForReadProject);
+			sbQuery.append(" from Project as o where OwnerAccountId=:OwnerAccountId");
+
+			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
+			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
+			if (fromDate != null) {
+				sbQuery.append(" and to_char(o.EndDate, 'YYYY-MM-DD') >= :FromDate");
+				String strFromDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(fromDate);
+				sqlParameters.addValue("FromDate", strFromDate);
+			}
+			if (toDate != null) {
+				sbQuery.append(" and to_char(o.EndDate, 'YYYY-MM-DD') <= :ToDate");
+				String strToDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(toDate);
+				sqlParameters.addValue("ToDate", strToDate);
+			}
+			List<Project> projects = namedParameterJdbcTemplate.query(
+					sbQuery.toString(),
+					sqlParameters,
+					new ProjectMapper());
+			return projects;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// query Project using ParentProjectId
+	protected final static String strProjectQueryWithParentProjectId = "select " + fieldSelectionForReadProject +
+			" from Project as o where OwnerAccountId=:OwnerAccountId and ParentProjectId=:ParentProjectId";
+
+	// get all Projects by a given parent project id
+	@Override
+	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
+		try {
+			List<Project> projects = namedParameterJdbcTemplate.query(
+					strProjectQueryWithParentProjectId,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ParentProjectId", parentProjectId),
+					new ProjectMapper());
+			return projects;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByParentProjectId Exception: " + e.getMessage());
 			return null;
 		}
 	}
@@ -323,10 +486,8 @@ public class JdbcProjectDao implements ProjectDao {
 		else {
 			parameters.addValue("CustomerAccount", null);
 		}
-		// ToDo: how to add UUID
-		// CustomerContact
-		// Sponsor
-
+		parameters.addValue("CustomerContact", project.getCustomerContact());
+		parameters.addValue("Sponsor", project.getSponsor());
 		if (project.getManagingDeptId() > 0) {
 			parameters.addValue("ManagingDeptId", project.getManagingDeptId());
 		}
@@ -335,15 +496,19 @@ public class JdbcProjectDao implements ProjectDao {
 		}
 		parameters.addValue("Objectives", project.getObjectives());
 		parameters.addValue("Description", project.getDescription());
-		// Is Decimal special? 
 		parameters.addValue("Budget", project.getBudget());
 		parameters.addValue("CurrencyCode", project.getCurrencyCode());
-		// ToDo: how to do DateTime
 		if (project.getStartDate() != null) {
-		
+			parameters.addValue("StartDate", project.getStartDate().toDate(), Types.TIMESTAMP);
+		}
+		else {
+			parameters.addValue("StartDate", null);
 		}
 		if (project.getEndDate() != null) {
-			
+			parameters.addValue("EndDate", project.getEndDate().toDate(), Types.TIMESTAMP);
+		}
+		else {
+			parameters.addValue("EndDate", null);
 		}
 		if (project.getParentProjectId() > 0) {
 			parameters.addValue("ParentProjectId", project.getParentProjectId());
@@ -352,7 +517,7 @@ public class JdbcProjectDao implements ProjectDao {
 			parameters.addValue("ParentProjectId", null);
 		}
 		parameters.addValue("Notes", project.getNotes());
-		// ToDo OnwerId UUID
+		parameters.addValue("OwnerId", project.getOwnerId());
 		if (project.getOwnerAccountId() > 0)
 			parameters.addValue("OwnerAccountId", project.getOwnerAccountId());
 		else

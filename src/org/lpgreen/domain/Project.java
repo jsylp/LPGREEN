@@ -32,7 +32,7 @@ public class Project implements Serializable {
 	private int         managingDeptId;
 	private String      objectives;
 	private String      description;
-	private BigDecimal  budget;
+	private double      budget;
 	private String      currencyCode;       // currency code: http://www.xe.com/iso4217.php
 	private DateTime    startDate;
 	private DateTime    endDate;
@@ -58,7 +58,7 @@ public class Project implements Serializable {
 			int projectManager1Id, int projectManager2Id, 
 			int customerAccount, UUID customerContact, 
 			UUID sponsor, int managingDeptId, String objectives,
-			String description, BigDecimal budget, String currencyCode,
+			String description, double budget, String currencyCode,
 			DateTime startDate, DateTime endDate,
 			int parentProjectId, String notes)
 	{		
@@ -88,7 +88,7 @@ public class Project implements Serializable {
 			int projectManager1Id, int projectManager2Id, 
 			int customerAccount, UUID customerContact, 
 			UUID sponsor, int managingDeptId, String objectives,
-			String description, BigDecimal budget, String currencyCode,
+			String description, double budget, String currencyCode,
 			DateTime startDate, DateTime endDate,
 			int parentProjectId, String notes) {
 		//update(lastModifiedDate, lastModifiedById, ownerId);
@@ -216,10 +216,10 @@ public class Project implements Serializable {
 		this.description = description;
 	}
 
-	public BigDecimal getBudget() {
+	public double getBudget() {
 		return budget;
 	}
-	public void setBudget(BigDecimal budget) {
+	public void setBudget(double budget) {
 		this.budget = budget;
 	}
 

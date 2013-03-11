@@ -69,4 +69,8 @@
 		<property name="accessControlListDao" ref="accessControlListDao"/>
 	</bean>
 
+	<bean id="projectDao" class="org.lpgreen.repository.JdbcProjectDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
 </beans>
