@@ -63,6 +63,7 @@ public class Project implements Serializable {
 			int parentProjectId, String notes)
 	{		
 		//super(createdDate, createdById, lastModifiedDate, lastModifiedById, ownerId, ownerAccountId);
+		this.ownerAccountId = ownerAccountId;
 		this.projectCode = projectCode;
 		this.name = name;
 		this.currentPhase = currentPhase;

@@ -59,8 +59,8 @@ public class JdbcDepartmentDaoTests  extends AbstractTransactionalDataSourceSpri
 		catch (Exception e) {
 			fail(e.getMessage());
 		}
-		
-		// Update RequestCategoryArea
+
+		// Update Department
 		retDept.setName("LPGREEN2");
 		retDept.setDescription("Develop LPGREEN App2");
 		retDept.setDeptHead(2);

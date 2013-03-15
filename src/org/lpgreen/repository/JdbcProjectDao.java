@@ -3,16 +3,17 @@ package org.lpgreen.repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.sql.DataSource;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 import org.lpgreen.domain.Project;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,14 +35,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcProjectDao implements ProjectDao {
 
-	private final static String timeZone = "America/Los_Angeles";
-	private final static double epsilon = 1.0e-6;
-
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	private SimpleJdbcInsert insertProject;
 	public void setDataSource(DataSource dataSource) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertProject = new SimpleJdbcInsert(dataSource).withTableName("Project").usingGeneratedKeyColumns("Id");
+		insertProject = new SimpleJdbcInsert(dataSource).withTableName("Project").usingGeneratedKeyColumns("id");
 	}
 
 	// o: the main object: this Project 
@@ -117,11 +115,14 @@ public class JdbcProjectDao implements ProjectDao {
 			project.setDescription(rs.getString("Description"));
 			project.setBudget(rs.getDouble("Budget"));
 			project.setCurrencyCode(rs.getString("CurrencyCode"));
+			// StartDate and EndDate
+			java.util.Calendar cal = Calendar.getInstance(); 
+			cal.setTimeZone(TimeZone.getTimeZone("UTC")); 
 			if (rs.getTimestamp("StartDate") != null) {
-				project.setStartDate(new DateTime(rs.getTimestamp("StartDate")));
+				project.setStartDate(new DateTime(rs.getTimestamp("StartDate", cal), DateTimeZone.UTC));
 			}
 			if (rs.getTimestamp("EndDate") != null) {
-				project.setEndDate(new DateTime(rs.getTimestamp("EndDate")));
+				project.setEndDate(new DateTime(rs.getTimestamp("EndDate", cal), DateTimeZone.UTC));
 			}
 			project.setParentProjectId(rs.getInt("ParentProjectId"));
 			project.setNotes(rs.getString("Notes"));
@@ -373,14 +374,12 @@ public class JdbcProjectDao implements ProjectDao {
 			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
 			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
 			if (fromDate != null) {
-				sbQuery.append(" and to_char(o.StartDate, 'YYYY-MM-DD') >= :FromDate");
-				String strFromDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(fromDate);
-				sqlParameters.addValue("FromDate", strFromDate);
+				sbQuery.append(" and StartDate >= :FromDate");
+				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
 			}
 			if (toDate != null) {
-				sbQuery.append(" and to_char(o.StartDate, 'YYYY-MM-DD') <= :ToDate");
-				String strToDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(toDate);
-				sqlParameters.addValue("ToDate", strToDate);
+				sbQuery.append(" and StartDate <= :ToDate");
+				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
 			}
 			List<Project> projects = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -410,14 +409,12 @@ public class JdbcProjectDao implements ProjectDao {
 			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
 			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
 			if (fromDate != null) {
-				sbQuery.append(" and to_char(o.EndDate, 'YYYY-MM-DD') >= :FromDate");
-				String strFromDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(fromDate);
-				sqlParameters.addValue("FromDate", strFromDate);
+				sbQuery.append(" and EndDate >= :FromDate");
+				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
 			}
 			if (toDate != null) {
-				sbQuery.append(" and to_char(o.EndDate, 'YYYY-MM-DD') <= :ToDate");
-				String strToDate = DateTimeFormat.forPattern("YYYY-MM-dd").withZone(DateTimeZone.forID(timeZone)).print(toDate);
-				sqlParameters.addValue("ToDate", strToDate);
+				sbQuery.append(" and EndDate <= :ToDate");
+				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
 			}
 			List<Project> projects = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -499,13 +496,13 @@ public class JdbcProjectDao implements ProjectDao {
 		parameters.addValue("Budget", project.getBudget());
 		parameters.addValue("CurrencyCode", project.getCurrencyCode());
 		if (project.getStartDate() != null) {
-			parameters.addValue("StartDate", project.getStartDate().toDate(), Types.TIMESTAMP);
+			parameters.addValue("StartDate", project.getStartDate().toCalendar(null), Types.TIMESTAMP);
 		}
 		else {
 			parameters.addValue("StartDate", null);
 		}
 		if (project.getEndDate() != null) {
-			parameters.addValue("EndDate", project.getEndDate().toDate(), Types.TIMESTAMP);
+			parameters.addValue("EndDate", project.getEndDate().toCalendar(null), Types.TIMESTAMP);
 		}
 		else {
 			parameters.addValue("EndDate", null);
@@ -558,7 +555,7 @@ public class JdbcProjectDao implements ProjectDao {
 			throw new Exception("Missing input project");
 		try {
 			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update OperationRight set " + fieldSetForUpdateProject + " where Id=:Id;",
+					"update Project set " + fieldSetForUpdateProject + " where Id=:Id;",
 					getProjectMapSqlParameterSource(project, false));
 			return numRecUpdated;
 		}

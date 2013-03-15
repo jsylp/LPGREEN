@@ -38,7 +38,7 @@
 	<bean id="departmentDao" class="org.lpgreen.repository.JdbcDepartmentDao">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
-	
+
 	<bean id="departmentManager" class="org.lpgreen.service.DepartmentManagerImpl" >
 		<property name="departmentDao" ref="departmentDao" />
 	</bean>
@@ -67,6 +67,14 @@
 		<property name="loginUserRoleDao" ref="loginUserRoleDao"/>
 		<property name="operationRightDao" ref="operationRightDao"/>
 		<property name="accessControlListDao" ref="accessControlListDao"/>
+	</bean>
+
+	<bean id="projectDao" class="org.lpgreen.repository.JdbcProjectDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="projectManager" class="org.lpgreen.service.ProjectManagerImpl" >
+		<property name="projectDao" ref="projectDao" />
 	</bean>
 
 </beans>
