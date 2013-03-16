@@ -75,7 +75,7 @@ public interface ProjectManager {
 
 	// get all Projects by budget range
 	public List<Project> findProjectsByBudgetRange(int ownerAccountId,
-			double fromAmount, double toAmount)
+			double fromAmount, double toAmount, String currencyCode)
 			throws Exception;
 
 	// get all Projects by start date range

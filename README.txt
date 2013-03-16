@@ -149,7 +149,7 @@ Customer    : Cathy Company
 Contact     : Carl Gamma
 Sponsor     : Allen Alpha
 ManagingDept: Higher Education Support
-Budget      : 250000000.00 EUR
+Budget      : 250000000.00 EUR           // 250000000.00*1.3235=330875000.00 USD
 StartDate   : 2011-06-15 09:08:08-7
 EndDate     : 2016-01-05 10:08:08-8
 OwnerAccount: 2
@@ -162,7 +162,7 @@ Customer    : Bobby Company
 Contact     : Bart Beta
 Sponsor     : Allen Alpha
 ManagingDept: Higher Education Logistics
-Budget      : 10000000.00 CNY
+Budget      : 10000000.00 CNY            // 10000000.00*0.1583=1583000 USD
 StartDate   : 2012-10-03 07:08:08-8
 EndDate     : 2013-11-15 08:08:08-8
 OwnerAccount: 2
@@ -175,7 +175,7 @@ Customer    : Bobby Company
 Contact     : Beth Beta
 Sponsor     : Alex Alpha
 ManagingDept: Higher Education Logistics
-Budget      : 624000000.00 CNY
+Budget      : 624000000.00 CNY           // 624000000.00*0.1583=98779200 USD
 StartDate   : 2013-05-20 07:08:08-7
 EndDate     : 2015-05-01 12:08:08-7
 OwnerAccount: 2
@@ -188,7 +188,7 @@ Customer    : Bobby Company
 Contact     : Bill Beta
 Sponsor     : Adam Alpha
 ManagingDept: Higher Education
-Budget      : 120000000.00 CNY
+Budget      : 120000000.00 CNY           // 120000000.00*0.1583=18996000 USD
 StartDate   : 2013-02-22 12:08:08-8
 EndDate     : 2013-10-15 12:08:08-7
 OwnerAccount: 2
