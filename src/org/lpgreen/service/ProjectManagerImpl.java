@@ -2,6 +2,7 @@ package org.lpgreen.service;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -11,11 +12,12 @@ import org.lpgreen.domain.Project;
 import org.lpgreen.repository.ProjectDao;
 import org.lpgreen.util.InvalidDataValueException;
 import org.lpgreen.util.MissingRequiredDataException;
+import org.lpgreen.util.UnitsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 
 /**
- * ProjectManagerImpl is the implementation of the interface ProjectManager for all Department related objects. 
+ * ProjectManagerImpl is the implementation of the interface ProjectManager for all Project related objects. 
  * It provides Request CRUD services.
  * CRUD: Create, Read, Update, Delete
  * 
@@ -37,7 +39,7 @@ public class ProjectManagerImpl implements ProjectManager {
 	}
 	
 	////////////////////////////////////////////
-	// Department related methods
+	// Project related methods
 	////////////////////////////////////////////
 	
 	// get all Projects owned by a specific account id
@@ -211,7 +213,8 @@ public class ProjectManagerImpl implements ProjectManager {
 
 	// get all Projects by budget range
 	@Override
-	public List<Project> findProjectsByBudgetRange(int ownerAccountId, double fromAmount, double toAmount)
+	public List<Project> findProjectsByBudgetRange(int ownerAccountId,
+			double fromAmount, double toAmount, String currencyCode)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
@@ -219,12 +222,31 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (fromAmount <= 0.0 || toAmount <= 0.0) {
 			throw new Exception("fromAmount and toAmount must be positive");
 		}
+		if (currencyCode == null) {
+			throw new Exception("currencyCode is not specified");
+		}
 		if (fromAmount > toAmount) {
 			double tmp = fromAmount;
 			fromAmount = toAmount;
 			toAmount   = tmp;
 		}
-		return null;
+		try {
+			UnitsUtil unitsUtil = new UnitsUtil();
+			List<Project> retProjects = new ArrayList<Project>();
+			List<Project> projects = projectDao.findProjectsByOwerAccountId(ownerAccountId, null);
+			for (Project project : projects) {
+				double convBudget = unitsUtil.convertCurrencyUnits(project.getCurrencyCode(),
+						currencyCode, project.getBudget());
+				if (convBudget >= fromAmount && convBudget <= toAmount) {
+					retProjects.add(project);
+				}
+			}
+			return retProjects;
+		}
+		catch (Exception e) {
+			System.out.println("ProjectManagerImpl.findProjectsByBudgetRange Exception: " + e.getMessage());
+			return null;
+		}
 	}
 
 	// get all Projects by start date range

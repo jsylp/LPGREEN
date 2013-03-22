@@ -18,7 +18,7 @@ import org.joda.time.DateTime;
 
 public class Project implements Serializable {
 
-	private static final long serialVersionUID = -3081390794547822711L; // ToDo: need to regenerate!!
+	private static final long serialVersionUID = -4399220502314763280L;
 
 	private int         id;                 // database generated id
 	private String		projectCode;
