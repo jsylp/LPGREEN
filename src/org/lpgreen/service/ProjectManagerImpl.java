@@ -50,7 +50,7 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (currentPhases == null || currentPhases.isEmpty()) {
 			throw new Exception("Invalud input currentPhases");
 		}
-		List<Project> projects = projectDao.findProjectsByOwerAccountId(ownerAccountId, currentPhases);
+		List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId, currentPhases);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;

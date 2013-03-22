@@ -9,7 +9,7 @@ import org.lpgreen.domain.Project;
 import org.springframework.dao.DuplicateKeyException;
 
 /**
- * ProjecttDao is the interface for Project related entity's persistence layer
+ * ProjectDao is the interface for Project related entity's persistence layer
  * 
  * Creation date: Mar. 06, 2013
  * Last modify date: Mar. 06, 2013
@@ -25,7 +25,7 @@ public interface ProjectDao {
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get all Project owned by a specific account id and currentPhases
-	public List<Project> findProjectsByOwerAccountId(int ownerAccountId, Set<String> currentPhases);
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases);
 
 	// get a specific Project by a given id
 	public Project findProjectById(int ownerAccountId, int id);

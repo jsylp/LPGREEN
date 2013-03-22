@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.lpgreen.domain.Project;
+import org.lpgreen.domain.Payment;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -23,221 +23,233 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
- * JdbcProjectDao is the JDBC implementation of the ProjectDao for Project related entity's persistence layer
+ * JdbcPaymentDao is the JDBC implementation of the PaymentDao for Payment related entity's persistence layer
  * 
- * Creation date: Mar. 06, 2013
- * Last modify date: Mar. 06, 2013
+ * Creation date: Mar. 20, 2013
+ * Last modify date: Mar. 20, 2013
  * 
  * @author  Jiaxun Stephen Yu
  * @version 1.0
  */
 
 @Repository
-public class JdbcProjectDao implements ProjectDao {
+public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertProject;
+	private SimpleJdbcInsert insertPayment;
 	public void setDataSource(DataSource dataSource) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertProject = new SimpleJdbcInsert(dataSource).withTableName("Project").usingGeneratedKeyColumns("id");
+		insertPayment = new SimpleJdbcInsert(dataSource).withTableName("Payment").usingGeneratedKeyColumns("id");
 	}
 
-	// o: the main object: this Project 
-	protected final static String fieldSelectionForReadProject =
-			"o.Id,o.ProjectCode,o.Name,o.CurrentPhase,o.ProjectManager1Id,o.ProjectManager2Id," +
-			"o.CustomerAccount,o.CustomerContact,o.Sponsor,o.ManagingDeptId,o.Objectives," +
-			"o.Description,o.Budget,o.CurrencyCode,o.StartDate,o.EndDate,o.ParentProjectId," +
-			"o.Notes,o.OwnerId,o.OwnerAccountId";
+	protected NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
+		return namedParameterJdbcTemplate;
+	}
 
-	protected final static String fieldSetForUpdateProject = 
-			"ProjectCode=:ProjectCode,Name=:Name,CurrentPhase=:CurrentPhase," +
-			"ProjectManager1Id=:ProjectManager1Id,ProjectManager2Id=:ProjectManager1Id," +
-			"CustomerAccount=:CustomerAccount,CustomerContact=:CustomerContact," +
-			"Sponsor=:Sponsor,ManagingDeptId=:ManagingDeptId,Objectives=:Objectives," +
-			"Description=:Description,Budget=:Budget,CurrencyCode=:CurrencyCode," +
-			"StartDate=:StartDate,EndDate=:EndDate,ParentProjectId=:ParentProjectId," +
-			"Notes=:Notes,OwnerAccountId=:OwnerAccountId";
+	// o: the main object: this Payment 
+	protected final static String fieldSelectionForReadPayment =
+			"o.Id,o.IsReceivedPayment,o.PaymentType,o.PaymentCategory,o.Description," +
+			"o.CurrencyCode,o.TotalAmount,o.PaymentMethodType,o.PayerPaymentMethodId," +
+			"o.PayeePaymentReceiveMethodId,o.CheckNumber,o.PaymentDateTime," +
+			"o.PayerAccountId,o.PayerAccountName,o.PayerContactId,o.PayerContactName,o.PayerBillingAddressId," +
+			"o.PayeeAccountId,o.PayeeAccountName,o.PayeeContactId,o.PayeeContactName,o.PayeeBillingAddressId," +
+			"o.DepartmentId,o.CostCenterNumber,o.PrimaryPaymentReceiverEmpId,o.SecondaryPaymentReceiverEmpId," +
+			"o.PrimaryPaymentPayerEmpId,o.SecondaryPaymentPayerEmpId,o.Notes,o.OwnerId,o.OwnerAccountId";
 
-	private String getCurrentPhaseQueryPart(Set<String> currentPhases) {
-		if (currentPhases != null && currentPhases.size() > 0) {
-			StringBuffer sbCurrentPhases = new StringBuffer();
-			sbCurrentPhases.append(" AND LOWER(o.CurrentPhase) IN (");
-			boolean bFirst = true;
-			Iterator<String> it = currentPhases.iterator();
-			while (it.hasNext()) {
-				String currentPhase = it.next();
-				if (currentPhase.isEmpty() || currentPhase.toLowerCase().equals("all")) {
-					sbCurrentPhases.setLength(0);
-					break;
-				}
-				else {
-					if (!bFirst)
-						sbCurrentPhases.append(", ");
-					else
-						bFirst = false;
-					sbCurrentPhases.append("'" + currentPhase.toLowerCase() + "'");
-				}
-			}
-			if (sbCurrentPhases.length() > 0) {
-				sbCurrentPhases.append(") ");
-				return sbCurrentPhases.toString();
-			}
-			else
-				return "";
-		}
-		else
-			return "";
+	// Override to return field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadPayment;
+	}
+
+	protected final static String fieldSetForUpdatePayment = 
+			"IsReceivedPayment=:IsReceivedPayment,PaymentType=:PaymentType,PaymentCategory=:PaymentCategory," +
+			"Description=:Description,CurrencyCode=:CurrencyCode,TotalAmount=:TotalAmount," +
+			"PaymentMethodType=:PaymentMethodType,PayerPaymentMethodId=:PayerPaymentMethodId," +
+			"PayeePaymentReceiveMethodId=:PayeePaymentReceiveMethodId,CheckNumber=:CheckNumber," +
+			"PaymentDateTime=:PaymentDateTime,PayerAccountId=:PayerAccountId,PayerAccountName=:PayerAccountName," +
+			"PayerContactId=:PayerContactId,PayerContactName=:PayerContactName,PayerBillingAddressId=:PayerBillingAddressId," +
+			"PayeeAccountId=:PayeeAccountId,PayeeAccountName=:PayeeAccountName,PayeeContactId=:PayeeContactId," +
+			"PayeeContactName=:PayeeContactName,PayeeBillingAddressId=:PayeeBillingAddressId,DepartmentId=:DepartmentId," +
+			"CostCenterNumber=:CostCenterNumber,PrimaryPaymentReceiverEmpId=:PrimaryPaymentReceiverEmpId," +
+			"SecondaryPaymentReceiverEmpId=:SecondaryPaymentReceiverEmpId,PrimaryPaymentPayerEmpId=:PrimaryPaymentPayerEmpId," +
+			"SecondaryPaymentPayerEmpId=:SecondaryPaymentPayerEmpId,Notes=:Notes,OwnerAccountId=:OwnerAccountId";
+
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdatePayment;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Project related methods
+	// Payment related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static class ProjectMapper implements RowMapper<Project> {
-		
-		public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
-			Project project = new Project();
-			project.setId(rs.getInt("Id"));
-			project.setProjectCode(rs.getString("ProjectCode"));
-			project.setName(rs.getString("Name"));
-			project.setCurrentPhase(rs.getString("CurrentPhase"));
-			project.setProjectManager1Id(rs.getInt("ProjectManager1Id"));
-			project.setProjectManager2Id(rs.getInt("ProjectManager2Id"));
-			project.setCustomerAccount(rs.getInt("CustomerAccount"));
-			if (rs.getString("CustomerContact") != null) {
-				project.setCustomerContact(UUID.fromString(rs.getString("CustomerContact")));
-			}
-			if (rs.getString("Sponsor") != null) {
-				project.setSponsor(UUID.fromString(rs.getString("Sponsor")));
-			}
-			project.setManagingDeptId(rs.getInt("ManagingDeptId"));
-			project.setObjectives(rs.getString("Objectives"));
-			project.setDescription(rs.getString("Description"));
-			project.setBudget(rs.getDouble("Budget"));
-			project.setCurrencyCode(rs.getString("CurrencyCode"));
-			// StartDate and EndDate
+	private static class PaymentMapper implements RowMapper<Payment> {
+
+		public Payment mapRow(ResultSet rs, int rowNum) throws SQLException {
 			java.util.Calendar cal = Calendar.getInstance(); 
+			Payment payment = new Payment();
+			payment.setId(rs.getLong("Id"));
+			payment.setIsReceivedPayment(rs.getDouble("IsReceivedPayment") > 0.0 ? true : false);
+			payment.setPaymentType(rs.getString("PaymentType"));
+			payment.setPaymentCategory(rs.getString("PaymentCategory"));
+			payment.setDescription(rs.getString("Description"));
+			payment.setCurrencyCode(rs.getString("CurrencyCode"));
+			payment.setTotalAmount(rs.getDouble("TotalAmount"));
+			payment.setPaymentMethodType(rs.getString("PaymentMethodType"));
+			payment.setPayerPaymentMethodId(rs.getInt("PayerPaymentMethodId"));
+			payment.setPayeePaymentReceiveMethodId(rs.getInt("PayeePaymentReceiveMethodId"));
+			payment.setCheckNumber(rs.getString("CheckNumber"));
 			cal.setTimeZone(TimeZone.getTimeZone("UTC")); 
-			if (rs.getTimestamp("StartDate") != null) {
-				project.setStartDate(new DateTime(rs.getTimestamp("StartDate", cal), DateTimeZone.UTC));
+			if (rs.getTimestamp("PaymentDateTime") != null) {
+				payment.setPaymentDateTime(new DateTime(rs.getTimestamp("PaymentDateTime", cal), DateTimeZone.UTC));
 			}
-			if (rs.getTimestamp("EndDate") != null) {
-				project.setEndDate(new DateTime(rs.getTimestamp("EndDate", cal), DateTimeZone.UTC));
+			payment.setPayerAccountId(rs.getInt("PayerAccountId"));
+			payment.setPayerAccountName(rs.getString("PayerAccountName"));
+			if (rs.getString("PayerContactId") != null) {
+				payment.setPayerContactId(UUID.fromString(rs.getString("PayerContactId")));
 			}
-			project.setParentProjectId(rs.getInt("ParentProjectId"));
-			project.setNotes(rs.getString("Notes"));
-			project.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			return project;
+			payment.setPayerContactName(rs.getString("PayerContactName"));
+			if (rs.getString("PayerBillingAddressId") != null) {
+				payment.setPayerBillingAddressId(UUID.fromString(rs.getString("PayerBillingAddressId")));
+			}
+			payment.setPayeeAccountId(rs.getInt("PayeeAccountId"));
+			payment.setPayeeAccountName(rs.getString("PayeeAccountName"));
+			if (rs.getString("PayeeContactId") != null) {
+				payment.setPayeeContactId(UUID.fromString(rs.getString("PayeeContactId")));
+			}
+			payment.setPayeeContactName(rs.getString("PayeeContactName"));
+			if (rs.getString("PayeeBillingAddressId") != null) {
+				payment.setPayeeBillingAddressId(UUID.fromString(rs.getString("PayeeBillingAddressId")));
+			}
+			payment.setDepartmentId(rs.getInt("DepartmentId"));
+			payment.setCostCenterNumber(rs.getString("CostCenterNumber"));
+			payment.setPrimaryPaymentReceiverEmpId(rs.getInt("PrimaryPaymentReceiverEmpId"));
+			payment.setSecondaryPaymentReceiverEmpId(rs.getInt("SecondaryPaymentReceiverEmpId"));
+			payment.setPrimaryPaymentPayerEmpId(rs.getInt("PrimaryPaymentPayerEmpId"));
+			payment.setSecondaryPaymentPayerEmpId(rs.getInt("SecondaryPaymentPayerEmpId"));
+			payment.setNotes(rs.getString("Notes"));
+			payment.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return payment;
 		}
 	}
 
-	// query Project using OwnerAccountId
-	protected final static String strProjectQueryWithOwnerAccountId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId";
+	protected RowMapper getRowMapper() {
+		return new PaymentMapper();
+	}
 
-	// get all Project owned by a specific account id
+	protected String getSqlTable() {
+		return "Payment";
+	}
+
+	// query Payment using OwnerAccountId
+	protected final static String strPaymentQueryWithOwnerAccountId = "select " + fieldSelectionForReadPayment +
+			" from Payment as o where OwnerAccountId=:OwnerAccountId";
+
+	// get all Payments owned by a specific account id
 	@Override
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases) {
+	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithOwnerAccountId);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
+			List<Payment> payments = namedParameterJdbcTemplate.query(
+					strPaymentQueryWithOwnerAccountId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new ProjectMapper());
-			return projects;
+					new PaymentMapper());
+			return payments;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByOwerAccountId Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByOwerAccountId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using Id
-	protected final static String strProjectQueryWithId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// get a specific Project by a given id
+	// get all Payments owned by a specific account id
 	@Override
-	public Project findProjectById(int ownerAccountId, int id) {
+	public List<Payment> findPaymentsByOwnerAccountId2(int ownerAccountId) {
+		return findRowsByOwnerAccountId(ownerAccountId);
+	}
+
+	// query Payment using Id
+	protected final static String strPaymentQueryWithId = "select " + fieldSelectionForReadPayment +
+			" from Payment as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
+
+	// get a specific Payment by a given id
+	@Override
+	public Payment findPaymentById(int ownerAccountId, int id) {
 		try {
-			Project project = namedParameterJdbcTemplate.queryForObject(
-					strProjectQueryWithId,
+			Payment payment = namedParameterJdbcTemplate.queryForObject(
+					strPaymentQueryWithId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
-					new ProjectMapper());
-			return project;
+					new PaymentMapper());
+			return payment;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectById Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentById Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using ProjectCode
-	protected final static String strProjectQueryWithProjectCode = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectCode=:ProjectCode";
+	// query Payment using IsReceivedPayment
+	protected final static String strPaymentQueryWithIsReceivedPayment = "select " + fieldSelectionForReadPayment +
+			" from Payment as o where OwnerAccountId=:OwnerAccountId and IsReceivedPayment=:IsReceivedPayment";
 
-	// get a specific Project by a given ProjectCode
+	// get all Payments by IsReceived
 	@Override
-	public Project findProjectByProjectCode(int ownerAccountId, String projectCode) {
+	public List<Payment> findPaymentsByIsReceivedPayment(int ownerAccountId, boolean isReceivedPayment) {
 		try {
-			Project project = namedParameterJdbcTemplate.queryForObject(
-					strProjectQueryWithProjectCode,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectCode", projectCode),
-					new ProjectMapper());
-			return project;
+			List<Payment> payments = namedParameterJdbcTemplate.query(
+					strPaymentQueryWithIsReceivedPayment,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
+							addValue("IsReceivedPayment", isReceivedPayment ? 1.0 : 0.0),
+					new PaymentMapper());
+			return payments;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectByProjectCode Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByIsReceivedPayment Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using Name
-	protected final static String strProjectQueryWithName = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Name=:Name";
+	// query Payment using PaymentType
+	protected final static String strPaymentQueryWithPaymentType = "select " + fieldSelectionForReadPayment +
+			" from Payment as o where OwnerAccountId=:OwnerAccountId and PaymentType=:PaymentType";
 
-	// get all Projects owned by a given name
+	// get all Payments by PaymentType
 	@Override
-	public List<Project> findProjectsByName(int ownerAccountId, String name) {
+	public List<Payment> findPaymentsByPaymentType(int ownerAccountId, String paymentType) {
 		try {
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithName,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Name", name),
-					new ProjectMapper());
-			return projects;
+			List<Payment> payments = namedParameterJdbcTemplate.query(
+					strPaymentQueryWithPaymentType,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
+							addValue("PaymentType", paymentType),
+					new PaymentMapper());
+			return payments;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByName Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentType Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using ProjectManager1Id
-	protected final static String strProjectQueryWithProjManager1Id = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectManager1Id=:ProjectManager1Id";
+	// query Payment using PaymentCategory
+	protected final static String strPaymentQueryWithPaymentCategory = "select " + fieldSelectionForReadPayment +
+			" from Payment as o where OwnerAccountId=:OwnerAccountId and PaymentCategory=:PaymentCategory";
 
-	// get all Projects owned by a given project manager1 id
+	// get all Payments by PaymentCategory
 	@Override
-	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByPaymentCategory(int ownerAccountId, String paymentCategory) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithProjManager1Id);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager1Id", projectMgr1Id),
-					new ProjectMapper());
-			return projects;
+			List<Payment> payments = namedParameterJdbcTemplate.query(
+					strPaymentQueryWithPaymentCategory,
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
+							addValue("PaymentCategory", paymentCategory),
+					new PaymentMapper());
+			return payments;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentCategory Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
+	/*
 	// query Project using ProjectManager2Id
 	protected final static String strProjectQueryWithProjManager2Id = "select " + fieldSelectionForReadProject +
 			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectManager2Id=:ProjectManager2Id";
@@ -447,6 +459,7 @@ public class JdbcProjectDao implements ProjectDao {
 			return null;
 		}
 	}
+	*/
 
 	/**
 	 * Set SQL Parameters used for creating Project
@@ -454,6 +467,7 @@ public class JdbcProjectDao implements ProjectDao {
 	 * @param bNew
 	 * @return
 	 */
+	/*
 	private MapSqlParameterSource getProjectMapSqlParameterSource(Project project, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		if (!bNew) {
@@ -533,7 +547,7 @@ public class JdbcProjectDao implements ProjectDao {
 		MapSqlParameterSource parameters = this.getProjectMapSqlParameterSource(project, true);	
 		try {
 			// insert Project record
-			int retId = insertProject.executeAndReturnKey(parameters).intValue();
+			int retId = insertPayment.executeAndReturnKey(parameters).intValue();
 			project.setId(retId);
 			return retId;
 		}
@@ -585,5 +599,6 @@ public class JdbcProjectDao implements ProjectDao {
 			throw new Exception(e.getMessage());
 		}
 	}
+	*/
 
 }
