@@ -77,4 +77,8 @@
 		<property name="projectDao" ref="projectDao" />
 	</bean>
 
+	<bean id="paymentDao" class="org.lpgreen.repository.JdbcPaymentDao">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
 </beans>

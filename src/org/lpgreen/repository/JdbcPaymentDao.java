@@ -12,9 +12,11 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import org.lpgreen.domain.Payment;
+import org.lpgreen.util.MustOverrideException;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.lpgreen.domain.Payment;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -33,17 +35,17 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
+public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertPayment;
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertPayment = new SimpleJdbcInsert(dataSource).withTableName("Payment").usingGeneratedKeyColumns("id");
-	}
-
-	protected NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
-		return namedParameterJdbcTemplate;
+	public void setDataSource(DataSource dataSource)
+			throws MustOverrideException {
+		try {
+			super.setDataSource(dataSource);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.setDataSource Exception: " + e.getMessage());
+			throw e;
+		}
 	}
 
 	// o: the main object: this Payment 
@@ -56,11 +58,7 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 			"o.DepartmentId,o.CostCenterNumber,o.PrimaryPaymentReceiverEmpId,o.SecondaryPaymentReceiverEmpId," +
 			"o.PrimaryPaymentPayerEmpId,o.SecondaryPaymentPayerEmpId,o.Notes,o.OwnerId,o.OwnerAccountId";
 
-	// Override to return field selection for read
-	protected String getFieldSelectionForRead() {
-		return fieldSelectionForReadPayment;
-	}
-
+	// field selection for update
 	protected final static String fieldSetForUpdatePayment = 
 			"IsReceivedPayment=:IsReceivedPayment,PaymentType=:PaymentType,PaymentCategory=:PaymentCategory," +
 			"Description=:Description,CurrencyCode=:CurrencyCode,TotalAmount=:TotalAmount," +
@@ -74,14 +72,7 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 			"SecondaryPaymentReceiverEmpId=:SecondaryPaymentReceiverEmpId,PrimaryPaymentPayerEmpId=:PrimaryPaymentPayerEmpId," +
 			"SecondaryPaymentPayerEmpId=:SecondaryPaymentPayerEmpId,Notes=:Notes,OwnerAccountId=:OwnerAccountId";
 
-	protected String getFieldSelectionForUpdate() {
-		return fieldSetForUpdatePayment;
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Payment related methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-
+	// RowMapper class
 	private static class PaymentMapper implements RowMapper<Payment> {
 
 		public Payment mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -132,27 +123,134 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	protected RowMapper getRowMapper() {
-		return new PaymentMapper();
-	}
-
+	// Override to return the SQL table name
 	protected String getSqlTable() {
 		return "Payment";
 	}
 
-	// query Payment using OwnerAccountId
-	protected final static String strPaymentQueryWithOwnerAccountId = "select " + fieldSelectionForReadPayment +
-			" from Payment as o where OwnerAccountId=:OwnerAccountId";
+	// Override to return the field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadPayment;
+	}
 
-	// get all Payments owned by a specific account id
+	// Override to return the filed selection for update
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdatePayment;
+	}
+
+	// Override to return the RowMapper
+	protected RowMapper<Payment> getRowMapper() {
+		return new PaymentMapper();
+	}
+
+	// Override to return MapSqlParameterSource for creating Payment
+	protected MapSqlParameterSource getDomainObjectMapSqlParameterSource(Payment payment, boolean bNew) {
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		if (!bNew) {
+			if (payment.getId() > 0)
+				parameters.addValue("Id", payment.getId());	// auto generated when insert a Payment, use it as the primary key when update it
+			else
+				parameters.addValue("Id", null);
+		}
+		parameters.addValue("IsReceivedPayment", payment.getIsReceivedPayment() ? 1.0 : 0.0);
+		parameters.addValue("PaymentType", payment.getPaymentType());
+		parameters.addValue("PaymentCategory", payment.getPaymentCategory());
+		parameters.addValue("Description", payment.getDescription());
+		parameters.addValue("CurrencyCode", payment.getCurrencyCode());
+		parameters.addValue("TotalAmount", payment.getTotalAmount());
+		parameters.addValue("PaymentMethodType", payment.getPaymentMethodType());
+		if (payment.getPayerPaymentMethodId() > 0) {
+			parameters.addValue("PayerPaymentMethodId", payment.getPayerPaymentMethodId());
+		}
+		else {
+			parameters.addValue("PayerPaymentMethodId", null);
+		}
+		if (payment.getPayeePaymentReceiveMethodId() > 0) {
+			parameters.addValue("PayeePaymentReceiveMethodId", payment.getPayeePaymentReceiveMethodId());
+		}
+		else {
+			parameters.addValue("PayeePaymentReceiveMethodId", null);
+		}
+		parameters.addValue("CheckNumber", payment.getCheckNumber());
+		if (payment.getPaymentDateTime() != null) {
+			parameters.addValue("PaymentDateTime", payment.getPaymentDateTime().toCalendar(null), Types.TIMESTAMP);
+		}
+		else {
+			parameters.addValue("PaymentDateTime", null);
+		}
+		if (payment.getPayerAccountId() > 0) {
+			parameters.addValue("PayerAccountId", payment.getPayerAccountId());
+		}
+		else {
+			parameters.addValue("PayerAccountId", null);
+		}
+		parameters.addValue("PayerAccountName", payment.getPayerAccountName());
+		parameters.addValue("PayerContactId", payment.getPayerContactId());
+		parameters.addValue("PayerContactName", payment.getPayerContactName());
+		parameters.addValue("PayerBillingAddressId", payment.getPayerBillingAddressId());
+		if (payment.getPayeeAccountId() > 0) {
+			parameters.addValue("PayeeAccountId", payment.getPayeeAccountId());
+		}
+		else {
+			parameters.addValue("PayeeAccountId", null);
+		}
+		parameters.addValue("PayeeAccountName", payment.getPayeeAccountName());
+		parameters.addValue("PayeeContactId", payment.getPayeeContactId());
+		parameters.addValue("PayeeContactName", payment.getPayeeContactName());
+		parameters.addValue("PayeeBillingAddressId", payment.getPayeeBillingAddressId());
+		if (payment.getDepartmentId() > 0) {
+			parameters.addValue("DepartmentId", payment.getDepartmentId());
+		}
+		else {
+			parameters.addValue("DepartmentId", null);
+		}
+		parameters.addValue("CostCenterNumber", payment.getCostCenterNumber());
+		if (payment.getPrimaryPaymentReceiverEmpId() > 0) {
+			parameters.addValue("PrimaryPaymentReceiverEmpId", payment.getPrimaryPaymentReceiverEmpId());
+		}
+		else {
+			parameters.addValue("PrimaryPaymentReceiverEmpId", null);
+		}
+		if (payment.getSecondaryPaymentReceiverEmpId() > 0) {
+			parameters.addValue("SecondaryPaymentReceiverEmpId", payment.getSecondaryPaymentReceiverEmpId());
+		}
+		else {
+			parameters.addValue("SecondaryPaymentReceiverEmpId", null);
+		}
+		if (payment.getPrimaryPaymentPayerEmpId() > 0) {
+			parameters.addValue("PrimaryPaymentPayerEmpId", payment.getPrimaryPaymentPayerEmpId());
+		}
+		else {
+			parameters.addValue("PrimaryPaymentPayerEmpId", null);
+		}
+		if (payment.getSecondaryPaymentPayerEmpId() > 0) {
+			parameters.addValue("SecondaryPaymentPayerEmpId", payment.getSecondaryPaymentPayerEmpId());
+		}
+		else {
+			parameters.addValue("SecondaryPaymentPayerEmpId", null);
+		}
+		parameters.addValue("Notes", payment.getNotes());
+		parameters.addValue("OwnerId", payment.getOwnerId());
+		if (payment.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", payment.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
+		return parameters;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// Payment related methods
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// get all Payments owned by a specific owner account id
 	@Override
 	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId) {
 		try {
-			List<Payment> payments = namedParameterJdbcTemplate.query(
-					strPaymentQueryWithOwnerAccountId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new PaymentMapper());
-			return payments;
+			return findDomainObjectsByOwnerAccountId(ownerAccountId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByOwerAccountId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByOwerAccountId Exception: " + e.getMessage());
@@ -160,25 +258,15 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	// get all Payments owned by a specific account id
-	@Override
-	public List<Payment> findPaymentsByOwnerAccountId2(int ownerAccountId) {
-		return findRowsByOwnerAccountId(ownerAccountId);
-	}
-
-	// query Payment using Id
-	protected final static String strPaymentQueryWithId = "select " + fieldSelectionForReadPayment +
-			" from Payment as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// get a specific Payment by a given id
+	// get a specific Payment by a given database id
 	@Override
 	public Payment findPaymentById(int ownerAccountId, int id) {
 		try {
-			Payment payment = namedParameterJdbcTemplate.queryForObject(
-					strPaymentQueryWithId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
-					new PaymentMapper());
-			return payment;
+			return findDomainObjectById(id);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentById MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcPaymentDao.findPaymentById Exception: " + e.getMessage());
@@ -186,20 +274,15 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	// query Payment using IsReceivedPayment
-	protected final static String strPaymentQueryWithIsReceivedPayment = "select " + fieldSelectionForReadPayment +
-			" from Payment as o where OwnerAccountId=:OwnerAccountId and IsReceivedPayment=:IsReceivedPayment";
-
-	// get all Payments by IsReceived
+	// get all Payments by IsReceivedPayment
 	@Override
 	public List<Payment> findPaymentsByIsReceivedPayment(int ownerAccountId, boolean isReceivedPayment) {
 		try {
-			List<Payment> payments = namedParameterJdbcTemplate.query(
-					strPaymentQueryWithIsReceivedPayment,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-							addValue("IsReceivedPayment", isReceivedPayment ? 1.0 : 0.0),
-					new PaymentMapper());
-			return payments;
+			return findDomainObjectsByBoolVal(ownerAccountId, "IsReceivedPayment", isReceivedPayment);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByIsReceivedPayment MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByIsReceivedPayment Exception: " + e.getMessage());
@@ -207,20 +290,15 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	// query Payment using PaymentType
-	protected final static String strPaymentQueryWithPaymentType = "select " + fieldSelectionForReadPayment +
-			" from Payment as o where OwnerAccountId=:OwnerAccountId and PaymentType=:PaymentType";
-
 	// get all Payments by PaymentType
 	@Override
 	public List<Payment> findPaymentsByPaymentType(int ownerAccountId, String paymentType) {
 		try {
-			List<Payment> payments = namedParameterJdbcTemplate.query(
-					strPaymentQueryWithPaymentType,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-							addValue("PaymentType", paymentType),
-					new PaymentMapper());
-			return payments;
+			return findDomainObjectsByStringVal(ownerAccountId, "PaymentType", paymentType);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentType MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPaymentType Exception: " + e.getMessage());
@@ -228,20 +306,15 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	// query Payment using PaymentCategory
-	protected final static String strPaymentQueryWithPaymentCategory = "select " + fieldSelectionForReadPayment +
-			" from Payment as o where OwnerAccountId=:OwnerAccountId and PaymentCategory=:PaymentCategory";
-
 	// get all Payments by PaymentCategory
 	@Override
 	public List<Payment> findPaymentsByPaymentCategory(int ownerAccountId, String paymentCategory) {
 		try {
-			List<Payment> payments = namedParameterJdbcTemplate.query(
-					strPaymentQueryWithPaymentCategory,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-							addValue("PaymentCategory", paymentCategory),
-					new PaymentMapper());
-			return payments;
+			return findDomainObjectsByStringVal(ownerAccountId, "PaymentCategory", paymentCategory);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentCategory MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPaymentCategory Exception: " + e.getMessage());
@@ -249,356 +322,447 @@ public class JdbcPaymentDao extends JdbcGeneric<Payment> implements PaymentDao {
 		}
 	}
 
-	/*
-	// query Project using ProjectManager2Id
-	protected final static String strProjectQueryWithProjManager2Id = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectManager2Id=:ProjectManager2Id";
-
-	// get all Projects owned by a given project manager2 id
+	// get all Payments by Description
 	@Override
-	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByDescription(int ownerAccountId, String description) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithProjManager2Id);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager2Id", projectMgr2Id),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByStringVal(ownerAccountId, "Description", description);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByDescription MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByDescription Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using CustomerAccount
-	protected final static String strProjectQueryWithCustomerAccount = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and CustomerAccount=:CustomerAccount";
-
-	// get all Projects owned by a given customer account
+	// get all Payments by CurrencyCode
 	@Override
-	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByCurrencyCode(int ownerAccountId, String currencyCode) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithCustomerAccount);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerAccount", customerAccount),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByStringVal(ownerAccountId, "CurrencyCode", currencyCode);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByCurrencyCode MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByCurrencyCode Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using CustomerContact
-	protected final static String strProjectQueryWithCustomerContact = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and CustomerContact=:CustomerContact";
-
-	// get all Projects owned by a given customer contact
+	// get all Payments by PaymentMethodType
 	@Override
-	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByPaymentMethodType(int ownerAccountId, String paymentMethodType) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithCustomerContact);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerContact", customerContact),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByStringVal(ownerAccountId, "PaymentMethodType", paymentMethodType);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentMethodType MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerContact Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentMethodType Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using Sponsor
-	protected final static String strProjectQueryWithSponsor = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Sponsor=:Sponsor";
-
-	// get all Projects owned by a given sponsor
+	// get all Payments by PayerPaymentMethodId
 	@Override
-	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByPayerPaymentMethodId(int ownerAccountId, int payerPaymentMethodId) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithSponsor);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Sponsor", sponsor),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByIntVal(ownerAccountId, "PayerPaymentMethodId", payerPaymentMethodId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerPaymentMethodId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsBySponsor Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerPaymentMethodId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using ManagingDeptId
-	protected final static String strProjectQueryWithManagingDeptId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ManagingDeptId=:ManagingDeptId";
-
-	// get all Projects owned by a given managing department id
+	// get all Payments by PayeePaymentReceiveMethodId
 	@Override
-	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			Set<String> currentPhases) {
+	public List<Payment> findPaymentsByPayeePaymentReceiveMethodId(int ownerAccountId, int payeePaymentReceiveMethodId) {
 		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithManagingDeptId);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ManagingDeptId", managingDeptId),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByIntVal(ownerAccountId, "PayeePaymentReceiveMethodId", payeePaymentReceiveMethodId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeePaymentReceiveMethodId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeePaymentReceiveMethodId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get all Projects by start date range
+	// get all Payments by CheckNumber range
 	@Override
-	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception {
+	public List<Payment> findPaymentsByCheckNumberRange(int ownerAccountId,
+			String startCheckNumber, String endCheckNumber) {
 		try {
-			if (fromDate == null && toDate == null) {
-				throw new Exception("Neither fromDate nor toDate is specified");
-			}
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadProject);
-			sbQuery.append(" from Project as o where OwnerAccountId=:OwnerAccountId");
-
-			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
-			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
-			if (fromDate != null) {
-				sbQuery.append(" and StartDate >= :FromDate");
-				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			if (toDate != null) {
-				sbQuery.append(" and StartDate <= :ToDate");
-				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					sqlParameters,
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByStringValRange(ownerAccountId, "CheckNumber", startCheckNumber, endCheckNumber);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByCheckNumberRange MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByCheckNumberRange Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get all Projects by end date range
+	// get all Payments by PaymentDateTime range
 	@Override
-	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception {
+	public List<Payment> findPaymentsByPaymentDateTimeRange(int ownerAccountId,
+			DateTime startDateTime, DateTime endDateTime) {
 		try {
-			if (fromDate == null && toDate == null) {
-				throw new Exception("Neither fromDate nor toDate is specified");
-			}
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadProject);
-			sbQuery.append(" from Project as o where OwnerAccountId=:OwnerAccountId");
-
-			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
-			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
-			if (fromDate != null) {
-				sbQuery.append(" and EndDate >= :FromDate");
-				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			if (toDate != null) {
-				sbQuery.append(" and EndDate <= :ToDate");
-				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					sqlParameters,
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByDateTimeRange(ownerAccountId, "PaymentDateTime", startDateTime, endDateTime);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentDateTimeRange MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPaymentDateTimeRange Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Project using ParentProjectId
-	protected final static String strProjectQueryWithParentProjectId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ParentProjectId=:ParentProjectId";
-
-	// get all Projects by a given parent project id
+	// get all Payments by PayerAccountId
 	@Override
-	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
+	public List<Payment> findPaymentsByPayerAccountId(int ownerAccountId, int payerAccountId) {
 		try {
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithParentProjectId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ParentProjectId", parentProjectId),
-					new ProjectMapper());
-			return projects;
+			return findDomainObjectsByIntVal(ownerAccountId, "PayerAccountId", payerAccountId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerAccountId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByParentProjectId Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerAccountId Exception: " + e.getMessage());
 			return null;
 		}
 	}
-	*/
 
-	/**
-	 * Set SQL Parameters used for creating Project
-	 * @param project
-	 * @param bNew
-	 * @return
-	 */
-	/*
-	private MapSqlParameterSource getProjectMapSqlParameterSource(Project project, boolean bNew) {
-		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		if (!bNew) {
-			if (project.getId() > 0)
-				parameters.addValue("Id", project.getId());	// auto generated when insert a Project, use it as the primary key when update it
-			else
-				parameters.addValue("Id", null);
+	// get all Payments by PayerAccountName
+	@Override
+	public List<Payment> findPaymentsByPayerAccountName(int ownerAccountId, String payerAccountName) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "PayerAccountName", payerAccountName);
 		}
-		parameters.addValue("ProjectCode", project.getProjectCode());
-		parameters.addValue("Name", project.getName());
-		parameters.addValue("CurrentPhase", project.getCurrentPhase());
-		if (project.getProjectManager1Id() > 0) {
-			parameters.addValue("ProjectManager1Id", project.getProjectManager1Id());
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerAccountName MustOverrideException: " + e.getMessage());
+			return null;
 		}
-		else {
-			parameters.addValue("ProjectManager1Id", null);
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerAccountName Exception: " + e.getMessage());
+			return null;
 		}
-		if (project.getProjectManager2Id() > 0) {
-			parameters.addValue("ProjectManager2Id", project.getProjectManager2Id());
-		}
-		else {
-			parameters.addValue("ProjectManager2Id", null);
-		}
-		if (project.getCustomerAccount() > 0) {
-			parameters.addValue("CustomerAccount", project.getCustomerAccount());
-		}
-		else {
-			parameters.addValue("CustomerAccount", null);
-		}
-		parameters.addValue("CustomerContact", project.getCustomerContact());
-		parameters.addValue("Sponsor", project.getSponsor());
-		if (project.getManagingDeptId() > 0) {
-			parameters.addValue("ManagingDeptId", project.getManagingDeptId());
-		}
-		else {
-			parameters.addValue("ManagingDeptId", null);
-		}
-		parameters.addValue("Objectives", project.getObjectives());
-		parameters.addValue("Description", project.getDescription());
-		parameters.addValue("Budget", project.getBudget());
-		parameters.addValue("CurrencyCode", project.getCurrencyCode());
-		if (project.getStartDate() != null) {
-			parameters.addValue("StartDate", project.getStartDate().toCalendar(null), Types.TIMESTAMP);
-		}
-		else {
-			parameters.addValue("StartDate", null);
-		}
-		if (project.getEndDate() != null) {
-			parameters.addValue("EndDate", project.getEndDate().toCalendar(null), Types.TIMESTAMP);
-		}
-		else {
-			parameters.addValue("EndDate", null);
-		}
-		if (project.getParentProjectId() > 0) {
-			parameters.addValue("ParentProjectId", project.getParentProjectId());
-		}
-		else {
-			parameters.addValue("ParentProjectId", null);
-		}
-		parameters.addValue("Notes", project.getNotes());
-		parameters.addValue("OwnerId", project.getOwnerId());
-		if (project.getOwnerAccountId() > 0)
-			parameters.addValue("OwnerAccountId", project.getOwnerAccountId());
-		else
-			parameters.addValue("OwnerAccountId", null);
-		return parameters;
 	}
 
-	// Add a Project. Return the generated id
-	// Add an OperationRight. Return the generated id
+	// get all Payments by PayerContactId
 	@Override
-	public int addProject(Project project) 
+	public List<Payment> findPaymentsByPayerContactId(int ownerAccountId, UUID payerContactId) {
+		try {
+			return findDomainObjectsByUUIDVal(ownerAccountId, "PayerContactId", payerContactId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerContactId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerContactId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayerContactName
+	@Override
+	public List<Payment> findPaymentsByPayerContactName(int ownerAccountId, String payerContactName) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "PayerContactName", payerContactName);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerContactName MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerContactName Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayerBillingAddressId
+	@Override
+	public List<Payment> findPaymentsByPayerBillingAddressId(int ownerAccountId, UUID payerBillingAddressId) {
+		try {
+			return findDomainObjectsByUUIDVal(ownerAccountId, "PayerBillingAddressId", payerBillingAddressId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerBillingAddressId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayerBillingAddressId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayeeAccountId
+	@Override
+	public List<Payment> findPaymentsByPayeeAccountId(int ownerAccountId, int payeeAccountId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "PayeeAccountId", payeeAccountId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeAccountId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeAccountId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayeeAccountName
+	@Override
+	public List<Payment> findPaymentsByPayeeAccountName(int ownerAccountId, String payeeAccountName) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "PayeeAccountName", payeeAccountName);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeAccountName MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeAccountName Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayeeContactId
+	@Override
+	public List<Payment> findPaymentsByPayeeContactId(int ownerAccountId, UUID payeeContactId) {
+		try {
+			return findDomainObjectsByUUIDVal(ownerAccountId, "PayeeContactId", payeeContactId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeContactId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeContactId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayeeContactName
+	@Override
+	public List<Payment> findPaymentsByPayeeContactName(int ownerAccountId, String payeeContactName) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "PayeeContactName", payeeContactName);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeContactName MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeContactName Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PayeeBillingAddressId
+	@Override
+	public List<Payment> findPaymentsByPayeeBillingAddressId(int ownerAccountId, UUID payeeBillingAddressId) {
+		try {
+			return findDomainObjectsByUUIDVal(ownerAccountId, "PayeeBillingAddressId", payeeBillingAddressId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeBillingAddressId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPayeeBillingAddressId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by DepartmentId
+	@Override
+	public List<Payment> findPaymentsByDepartmentId(int ownerAccountId, int departmentId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "DepartmentId", departmentId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByDepartmentId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByDepartmentId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by CostCenterNumber
+	@Override
+	public List<Payment> findPaymentsByCostCenterNumber(int ownerAccountId, String costCenterNumber) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "CostCenterNumber", costCenterNumber);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByCostCenterNumber MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByCostCenterNumber Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PrimaryPaymentReceiverEmpId
+	@Override
+	public List<Payment> findPaymentsByPrimaryPaymentReceiverEmpId(int ownerAccountId, int primaryPaymentReceiverEmpId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "PrimaryPaymentReceiverEmpId", primaryPaymentReceiverEmpId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPrimaryPaymentReceiverEmpId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPrimaryPaymentReceiverEmpId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by SecondaryPaymentReceiverEmpId
+	@Override
+	public List<Payment> findPaymentsBySecondaryPaymentReceiverEmpId(int ownerAccountId, int secondaryPaymentReceiverEmpId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "SecondaryPaymentReceiverEmpId", secondaryPaymentReceiverEmpId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsBySecondaryPaymentReceiverEmpId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsBySecondaryPaymentReceiverEmpId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by PrimaryPaymentPayerEmpId
+	@Override
+	public List<Payment> findPaymentsByPrimaryPaymentPayerEmpId(int ownerAccountId, int primaryPaymentPayerEmpId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "PrimaryPaymentPayerEmpId", primaryPaymentPayerEmpId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPrimaryPaymentPayerEmpId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByPrimaryPaymentPayerEmpId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by SecondaryPaymentPayerEmpId
+	@Override
+	public List<Payment> findPaymentsBySecondaryPaymentPayerEmpId(int ownerAccountId, int secondaryPaymentPayerEmpId) {
+		try {
+			return findDomainObjectsByIntVal(ownerAccountId, "SecondaryPaymentPayerEmpId", secondaryPaymentPayerEmpId);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsBySecondaryPaymentPayerEmpId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsBySecondaryPaymentPayerEmpId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Payments by Notes
+	@Override
+	public List<Payment> findPaymentsByNotes(int ownerAccountId, String notes) {
+		try {
+			return findDomainObjectsByStringVal(ownerAccountId, "Notes", notes);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByNotes MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.findPaymentsByNotes Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// Add a Payment. Return the generated database id
+	@Override
+	public int addPayment(Payment payment)
 			throws DuplicateKeyException, Exception {
-		if (project == null)
-			throw new Exception("Missing input project");
-
-		MapSqlParameterSource parameters = this.getProjectMapSqlParameterSource(project, true);	
 		try {
 			// insert Project record
-			int retId = insertPayment.executeAndReturnKey(parameters).intValue();
-			project.setId(retId);
+			int retId = addDomainObject(payment);
+			payment.setId(retId);
 			return retId;
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcProjectDao.addProject Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.addPayment MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcProjectDao.addProject Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcPaymentDao.addPayment Exception: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.addPayment Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
-	// Save a the changes of an existing Project object. Return the # of record updated
+	// Save changes of an existing Payment object. Return the # of records updated
 	@Override
-	public int saveProject(Project project) 
+	public int savePayment(Payment payment) 
 			throws DuplicateKeyException, Exception {
-		if (project == null)
-			throw new Exception("Missing input project");
 		try {
-			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update Project set " + fieldSetForUpdateProject + " where Id=:Id;",
-					getProjectMapSqlParameterSource(project, false));
-			return numRecUpdated;
+			return saveDomainObject(payment);
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcProjectDao.saveProject Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcPaymentDao.savePayment MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcProjectDao.saveProject Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcPaymentDao.savePayment Exception: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDao.savePayment Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
-	// Delete a Project object. Return the # of record deleted
+	// Delete a Payment object. Return the # of records deleted
 	@Override
-	public int deleteProject(int ownerAccountId, int id)
+	public int deletePayment(int ownerAccountId, int id)
 			throws Exception {
-		if (ownerAccountId < 0 || id <= 0)
-			return 0;
 		try {
-			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from Project where Id=:Id and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
-			return numRecDeleted;
+			return deleteDomainObject(ownerAccountId, id);
 		}
 		catch (Exception e) {
 			throw new Exception(e.getMessage());
 		}
 	}
-	*/
 
 }

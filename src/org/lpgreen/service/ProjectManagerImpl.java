@@ -233,7 +233,7 @@ public class ProjectManagerImpl implements ProjectManager {
 		try {
 			UnitsUtil unitsUtil = new UnitsUtil();
 			List<Project> retProjects = new ArrayList<Project>();
-			List<Project> projects = projectDao.findProjectsByOwerAccountId(ownerAccountId, null);
+			List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId, null);
 			for (Project project : projects) {
 				double convBudget = unitsUtil.convertCurrencyUnits(project.getCurrencyCode(),
 						currencyCode, project.getBudget());

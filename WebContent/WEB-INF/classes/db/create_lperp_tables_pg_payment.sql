@@ -47,50 +47,50 @@ CREATE TABLE Payment (
 ------------------------------------------------------------------------------
 -- Load Payment
 ------------------------------------------------------------------------------
-INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description,
-		CurrencyCode, TotalAmount, PaymentMethodType, CheckNumber, PaymentDateTime,
+INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description, CurrencyCode, TotalAmount,
+		PaymentMethodType, PayerPaymentMethodId, PayeePaymentReceiveMethodId, CheckNumber, PaymentDateTime,
 		PayerAccountId, PayerAccountName, PayerContactId, PayerContactName, PayerBillingAddressId,
 		PayeeAccountId, PayeeAccountName, PayeeContactId, PayeeContactName, PayeeBillingAddressId,
 		DepartmentId, CostCenterNumber, PrimaryPaymentReceiverEmpId, SecondaryPaymentReceiverEmpId,
 		PrimaryPaymentPayerEmpId, SecondaryPaymentPayerEmpId, Notes, OwnerAccountId)
-	VALUES('1', 'Corporate', 'Purchase', 'Computer',
-	       'USD', '1500.00', 'Check', '101', '2013-01-05 08:08:08',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', '', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D23', '', '07771AE4-236A-49d3-A49F-B1F9E1934D23',
+	VALUES('1', 'Corporate', 'Purchase', 'Computer', 'USD', '1500.00',
+	       'Check', '1', '11', '101', '2013-01-05 08:08:08',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', 'Allen', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D23', 'Adam', '07771AE4-236A-49d3-A49F-B1F9E1934D23',
 	       '5', '056-112-001', '7', '6', '4', '4', 'Computer Purchase', '1');
 
-INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description,
-		CurrencyCode, TotalAmount, PaymentMethodType, CheckNumber, PaymentDateTime,
+INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description, CurrencyCode, TotalAmount,
+		PaymentMethodType, PayerPaymentMethodId, PayeePaymentReceiveMethodId, CheckNumber, PaymentDateTime,
 		PayerAccountId, PayerAccountName, PayerContactId, PayerContactName, PayerBillingAddressId,
 		PayeeAccountId, PayeeAccountName, PayeeContactId, PayeeContactName, PayeeBillingAddressId,
 		DepartmentId, CostCenterNumber, PrimaryPaymentReceiverEmpId, SecondaryPaymentReceiverEmpId,
 		PrimaryPaymentPayerEmpId, SecondaryPaymentPayerEmpId, Notes, OwnerAccountId)
-	VALUES('0', 'Reimburse', 'Travel', 'Hotel',
-	       'USD', '150.00', 'Check', '102', '2013-01-12 03:08:08',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', '', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D22', '', '07771AE4-236A-49d3-A49F-B1F9E1934D22',
+	VALUES('0', 'Reimburse', 'Travel', 'Hotel', 'USD', '150.0',
+	       'Check', '2', '12', '102', '2013-01-12 03:08:08',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', 'Allen', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D22', 'Alex', '07771AE4-236A-49d3-A49F-B1F9E1934D22',
 	       '6', '056-112-105', '6', '5', '4', '3', 'Offsite training', '1');
 
-INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description,
-		CurrencyCode, TotalAmount, PaymentMethodType, CheckNumber, PaymentDateTime,
+INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description, CurrencyCode, TotalAmount,
+		PaymentMethodType, PayerPaymentMethodId, PayeePaymentReceiveMethodId, CheckNumber, PaymentDateTime,
 		PayerAccountId, PayerAccountName, PayerContactId, PayerContactName, PayerBillingAddressId,
 		PayeeAccountId, PayeeAccountName, PayeeContactId, PayeeContactName, PayeeBillingAddressId,
 		DepartmentId, CostCenterNumber, PrimaryPaymentReceiverEmpId, SecondaryPaymentReceiverEmpId,
 		PrimaryPaymentPayerEmpId, SecondaryPaymentPayerEmpId, Notes, OwnerAccountId)
-	VALUES('1', 'Corporate', 'Sales', 'Conference',
-	       'USD', '587.00', 'Card', '2300-1100-2312-8888', '2013-02-13 10:08:08',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', '', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
-	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D21', '', '07771AE4-236A-49d3-A49F-B1F9E1934D21',
+	VALUES('1', 'Corporate', 'Sales', 'Conference', 'USD', '587.00',
+	       'Card', '2', '15', '2300-1100-2312-8888', '2013-02-13 10:08:08',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D20', 'Alex', '07771AE4-236A-49d3-A49F-B1F9E1934D20',
+	       '2', 'Allen Company', '07771AE4-236A-49d3-A49E-B1F9E1934D21', 'Alan', '07771AE4-236A-49d3-A49F-B1F9E1934D21',
 	       '7', '056-111-011', '5', '5', '3', '3', 'Marketing sales', '1');
 
-INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description,
-		CurrencyCode, TotalAmount, PaymentMethodType, CheckNumber, PaymentDateTime,
+INSERT INTO Payment(IsReceivedPayment, PaymentType, PaymentCategory, Description, CurrencyCode, TotalAmount,
+		PaymentMethodType, PayerPaymentMethodId, PayeePaymentReceiveMethodId, CheckNumber, PaymentDateTime,
 		PayerAccountId, PayerAccountName, PayerContactId, PayerContactName, PayerBillingAddressId,
 		PayeeAccountId, PayeeAccountName, PayeeContactId, PayeeContactName, PayeeBillingAddressId,
 		DepartmentId, CostCenterNumber, PrimaryPaymentReceiverEmpId, SecondaryPaymentReceiverEmpId,
 		PrimaryPaymentPayerEmpId, SecondaryPaymentPayerEmpId, Notes, OwnerAccountId)
-	VALUES('1', 'Personal', 'Tuition', 'Online class',
-	       'USD', '350.00', 'Card', '2300-1100-2312-8887', '2013-03-13 11:08:08',
-	       '3', 'Bobby Company', '07771AE4-236A-49d3-A49E-B1F9E1934D30', '', '07771AE4-236A-49d3-A49F-B1F9E1934D30',
-	       '3', 'Bobby Company', '07771AE4-236A-49d3-A49E-B1F9E1934D31', '', '07771AE4-236A-49d3-A49F-B1F9E1934D31',
+	VALUES('1', 'Personal', 'Tuition', 'Online class', 'USD', '350.00',
+	       'Card', '3', '16', '2300-1100-2312-8887', '2013-03-13 11:08:08',
+	       '3', 'Bobby Company', '07771AE4-236A-49d3-A49E-B1F9E1934D30', 'Bobby', '07771AE4-236A-49d3-A49F-B1F9E1934D30',
+	       '3', 'Bobby Company', '07771AE4-236A-49d3-A49E-B1F9E1934D31', 'Bill', '07771AE4-236A-49d3-A49F-B1F9E1934D31',
 	       '8', '712-565-321', '11', '11', '8', '8', 'Semester grade B+', '1');

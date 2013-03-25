@@ -60,28 +60,6 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		}
 	}
 
-	public void testFindAllSitePayments2() {
-		try {
-			// Test to find the LogixPath (OwnerAccountId=1) all Payments 
-			System.out.println("Test --> testFindAllSitePayments2");
-			System.out.println("    testFindAllSitePayments2 [OwnerAccountId=1]");
-			List<Payment> payments = paymentDao.findPaymentsByOwnerAccountId2(1);
-			assertNotNull(payments);
-			assertTrue(payments.size() == 4);
-			for (Payment payment : payments) {
-				System.out.println("Payment: id=" + payment.getId() +
-					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
-					"; paymentType=" + payment.getPaymentType() +
-					"; paymentCategory=" + payment.getPaymentCategory() +
-					"; description=" + payment.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcPaymentDaoTests.testFindAllSitePayments Exception: " + e.getMessage());
-		}
-	}
-
 	public void testFindPaymentById() {
 		try {
 			// Test to find Payment by Payment Id
@@ -165,197 +143,279 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindPaymentsByPaymentCategory Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPaymentCategory Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByDescription() {
+		try {
+			// Test to find the Payments by Description
+			System.out.println("Test --> testFindPaymentsByDescription");
+			System.out.println("    testFindPaymentsByDescription [OwnerAccountId=1, Description=Online class]");
+			List<Payment> payments = paymentDao.findPaymentsByDescription(1, "Online class");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByDescription Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByCurrencyCode() {
+		try {
+			// Test to find the Payments by CurrencyCode
+			System.out.println("Test --> testFindPaymentsByCurrencyCode");
+			System.out.println("    testFindPaymentsByCurrencyCode [OwnerAccountId=1, CurrencyCode=USD]");
+			List<Payment> payments = paymentDao.findPaymentsByCurrencyCode(1, "USD");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 4);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByCurrencyCode Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPaymentMethodType() {
+		try {
+			// Test to find the Payments by PaymentMethodType
+			System.out.println("Test --> testFindPaymentsByPaymentMethodType");
+			System.out.println("    testFindPaymentsByPaymentMethodType [OwnerAccountId=1, PaymentMethodType=Check]");
+			List<Payment> payments = paymentDao.findPaymentsByPaymentMethodType(1, "Check");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPaymentMethodType Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerPaymentMethodId() {
+		try {
+			// Test to find the Payments by PayerPaymentMethodId
+			System.out.println("Test --> testFindPaymentsByPayerPaymentMethodId");
+			System.out.println("    testFindPaymentsByPayerPaymentMethodId [OwnerAccountId=1, PayerPaymentMethodId=2]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerPaymentMethodId(1, 2);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerPaymentMethodId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayeePaymentReceiveMethodId() {
+		try {
+			// Test to find the Payments by PayeePaymentReceiveMethodId
+			System.out.println("Test --> testFindPaymentsByPayeePaymentReceiveMethodId");
+			System.out.println("    testFindPaymentsByPayeePaymentReceiveMethodId [OwnerAccountId=1, PayeePaymentReceiveMethodId=16]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeePaymentReceiveMethodId(1, 16);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeePaymentReceiveMethodId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByCheckNumberRange() {
+		try {
+			// Test to find the Payments by CheckNumberRange
+			System.out.println("Test --> testFindPaymentsByCheckNumberRange");
+			System.out.println("    testFindPaymentsByCheckNumberRange [OwnerAccountId=1, startCheckNumber=100, endCheckNumber=105]");
+			List<Payment> payments = paymentDao.findPaymentsByCheckNumberRange(1, "100", "105");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByCheckNumberRange Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPaymentDateTimeRange() {
+		try {
+			// Test to find the Payments by PaymentDateTimeRange
+			System.out.println("Test --> testFindPaymentsByPaymentDateTimeRange");
+			System.out.println("    testFindPaymentsByPaymentDateTimeRange [OwnerAccountId=1, range=[startDateTime, endDateTime]]");
+			DateTime startDateTime = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-01-10 06:08:08");
+			DateTime endDateTime = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-02-15 06:08:08");
+			List<Payment> payments = paymentDao.findPaymentsByPaymentDateTimeRange(1, startDateTime, endDateTime);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDaoTests.testFindPaymentsByPaymentDateTimeRange Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerAccountId() {
+		try {
+			// Test to find the Payments by PayerAccountId
+			System.out.println("Test --> testFindPaymentsByPayerAccountId");
+			System.out.println("    testFindPaymentsByPayerAccountId [OwnerAccountId=1, PayerAccountId=2]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerAccountId(1, 2);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 3);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerAccountId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerAccountName() {
+		try {
+			// Test to find the Payments by PayerAccountName
+			System.out.println("Test --> testFindPaymentsByPayerAccountName");
+			System.out.println("    testFindPaymentsByPayerAccountName [OwnerAccountId=1, PayerAccountName=Bobby Company]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerAccountName(1, "Bobby Company");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerAccountName Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerContactId() {
+		try {
+			// Test to find the projects by PayerContactId
+			System.out.println("Test --> testFindPaymentsByPayerContactId");
+			System.out.println("    testFindPaymentsByPayerContactId [OwnerAccountId=2, PayerContactId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerContactId(1,
+					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"));
+			assertNotNull(payments);
+			assertTrue(payments.size() == 3);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerContactId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerContactName() {
+		try {
+			// Test to find the Payments by PayerContactName
+			System.out.println("Test --> testFindPaymentsByPayerContactName");
+			System.out.println("    testFindPaymentsByPayerContactName [OwnerAccountId=1, PayerContactName=Allen]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerContactName(1, "Allen");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerContactName Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayerBillingAddressId() {
+		try {
+			// Test to find the projects by PayerBillingAddressId
+			System.out.println("Test --> testFindPaymentsByPayerBillingAddressId");
+			System.out.println("    testFindPaymentsByPayerBillingAddressId [OwnerAccountId=2, PayerBillingAddressId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
+			List<Payment> payments = paymentDao.findPaymentsByPayerBillingAddressId(1,
+					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"));
+			assertNotNull(payments);
+			assertTrue(payments.size() == 3);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayerBillingAddressId Exception: " + e.getMessage());
 		}
 	}
 
 	/*
-	public void testFindProjectsByProjectManager2Id() {
-		try {
-			// Test to find the projects by manager2 id
-			System.out.println("Test --> testFindProjectsByProjectManager2Id");
-			System.out.println("    testFindProjectsByProjectManager2Id [OwnerAccountId=2, Manager2Id=5]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> projects = projectDao.findProjectsByProjectManager2Id(2, 5, currentPhases);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 3);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByProjectManager2Id Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByCustomerAccount() {
-		try {
-			// Test to find the projects by customer account
-			System.out.println("Test --> testFindProjectsByCustomerAccount");
-			System.out.println("    testFindProjectsByCustomerAccount [OwnerAccountId=2, CustomerAccount=3]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> projects = projectDao.findProjectsByCustomerAccount(2, 3, currentPhases);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByCustomerAccount Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByCustomerContact() {
-		try {
-			// Test to find the projects by customer contact
-			System.out.println("Test --> testFindProjectsByCustomerContact");
-			System.out.println("    testFindProjectsByCustomerContact [OwnerAccountId=2, CustomerContact=07771AE4-236A-49d3-A49E-B1F9E1934D31]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> projects = projectDao.findProjectsByCustomerContact(2,
-					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D31"), currentPhases);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 1);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByCustomerContact Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsBySponsor() {
-		try {
-			// Test to find the projects by sponsor
-			System.out.println("Test --> testFindProjectsBySponsor");
-			System.out.println("    testFindProjectsBySponsor [OwnerAccountId=2, Sponsor=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> projects = projectDao.findProjectsBySponsor(2,
-					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"), currentPhases);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsBySponsor Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByManagingDeptId() {
-		try {
-			// Test to find the projects by managing dept id
-			System.out.println("Test --> testFindProjectsByManagingDeptId");
-			System.out.println("    testFindProjectsByManagingDeptId [OwnerAccountId=2, ManagingDeptId=5]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> projects = projectDao.findProjectsByManagingDeptId(2, 5, currentPhases);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByManagingDeptId Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByStartDateRange() {
-		try {
-			// Test to find the projects by managing dept id
-			System.out.println("Test --> testFindProjectsByStartDateRange");
-			System.out.println("    testFindProjectsByStartDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
-			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2011-06-02 06:08:08");
-			DateTime endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2012-12-30 06:08:08");
-			List<Project> projects = projectDao.findProjectsByStartDateRange(2, startDate, endDate);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 3);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-04-01 06:08:08");
-			endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-06-30 06:08:08");
-			projects = projectDao.findProjectsByStartDateRange(2, startDate, endDate);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 1);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByStartDateRange Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByEndDateRange() {
-		try {
-			// Test to find the projects by managing dept id
-			System.out.println("Test --> testFindProjectsByEndDateRange");
-			System.out.println("    testFindProjectsByEndDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
-			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2015-02-01 06:08:08");
-			DateTime endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2016-12-30 06:08:08");
-			List<Project> projects = projectDao.findProjectsByEndDateRange(2, startDate, endDate);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-02-16 06:08:08");
-			endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-11-16 06:08:08");
-			projects = projectDao.findProjectsByEndDateRange(2, startDate, endDate);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByEndDateRange Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByParentProjectId() {
-		try {
-			// Test to find the projects by managing dept id
-			System.out.println("Test --> testFindProjectsByParentProjectId");
-			System.out.println("    testFindProjectsByParentProjectId [OwnerAccountId=2, ManagingDeptId=5]");
-			List<Project> projects = projectDao.findProjectsByParentProjectId(2, 4);
-			assertNotNull(projects);
-			assertTrue(projects.size() == 2);
-			for (Project project : projects) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByParentProjectId Exception: " + e.getMessage());
-		}
-	}
-
 	public void testAddUpdateDeleteProject() {
 		// Create Project
 		// Note: createdDate, createdById, lastModifiedDate and lastModifiedById

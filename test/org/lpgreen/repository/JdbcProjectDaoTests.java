@@ -241,7 +241,7 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 
 	public void testFindProjectsByStartDateRange() {
 		try {
-			// Test to find the projects by managing dept id
+			// Test to find the projects by StartDateRange
 			System.out.println("Test --> testFindProjectsByStartDateRange");
 			System.out.println("    testFindProjectsByStartDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
 			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2011-06-02 06:08:08");
@@ -271,7 +271,7 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 
 	public void testFindProjectsByEndDateRange() {
 		try {
-			// Test to find the projects by managing dept id
+			// Test to find the projects by EndDateRange
 			System.out.println("Test --> testFindProjectsByEndDateRange");
 			System.out.println("    testFindProjectsByEndDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
 			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2015-02-01 06:08:08");
@@ -301,9 +301,9 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 
 	public void testFindProjectsByParentProjectId() {
 		try {
-			// Test to find the projects by managing dept id
+			// Test to find the projects by ParentProjectId
 			System.out.println("Test --> testFindProjectsByParentProjectId");
-			System.out.println("    testFindProjectsByParentProjectId [OwnerAccountId=2, ManagingDeptId=5]");
+			System.out.println("    testFindProjectsByParentProjectId [OwnerAccountId=2, ParentProjectId=5]");
 			List<Project> projects = projectDao.findProjectsByParentProjectId(2, 4);
 			assertNotNull(projects);
 			assertTrue(projects.size() == 2);
