@@ -28,7 +28,7 @@ public interface PaymentDao {
 	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId);
 
 	// get a specific Payment by a given database id
-	public Payment findPaymentById(int ownerAccountId, int id);
+	public Payment findPaymentById(long id);
 
 	// get all Payments by IsReceivedPayment
 	public List<Payment> findPaymentsByIsReceivedPayment(int ownerAccountId, boolean isReceivedPayment);
@@ -118,6 +118,6 @@ public interface PaymentDao {
 	public int savePayment(Payment payment)	throws DuplicateKeyException, Exception;
 
 	// Delete a Payment object. Return the # of records deleted
-	public int deletePayment(int ownerAccountId, int id) throws Exception;
+	public int deletePayment(int ownerAccountId, long id) throws Exception;
 
 }

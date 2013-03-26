@@ -131,6 +131,36 @@ public class LPJdbcGeneric<T> {
 		}
 	}
 
+	// Get a specific domain object by a given database id. Because
+	// this is a common operation, this method assumes the database column
+	// used in the queried is "Id".
+	public T findDomainObjectById(long id)
+			throws MustOverrideException {
+		try {
+			String strReadFields = getFieldSelectionForRead();
+			String strSqlTable  = getSqlTable();
+			RowMapper<T> mapper = getRowMapper();
+			if (strReadFields == null || strSqlTable == null || mapper == null) {
+				throw new MustOverrideException("Missing derived class override get functions");
+			}
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(strReadFields);
+			sbQuery.append(" from ");
+			sbQuery.append(strSqlTable);
+			sbQuery.append(" as o where Id=:Id");
+			T domanObj = namedParameterJdbcTemplate.queryForObject(
+					sbQuery.toString(),
+					new MapSqlParameterSource().addValue("Id", id),
+					mapper);
+			return domanObj;
+		}
+		catch (Exception e) {
+			System.out.println("LPJdbcGeneric.findDomainObjectById Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
 	// Get all domain objects owned by a specific owner account id. Because
 	// this is a common operation, this method assumes the database column
 	// used in the queried is "OwnerAccountId".
@@ -194,7 +224,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a boolean value column (database - decimal(1.0)).
-	public List<T> findDomainObjectsByBoolVal(int ownerAccountId, String colName, boolean boolVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, boolean boolVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -229,7 +259,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by an integer value column.
-	public List<T> findDomainObjectsByIntVal(int ownerAccountId, String colName, int intVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, int intVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -263,7 +293,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a long integer value column.
-	public List<T> findDomainObjectsByLongVal(int ownerAccountId, String colName, long longVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, long longVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -297,7 +327,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a string value column.
-	public List<T> findDomainObjectsByStringVal(int ownerAccountId, String colName, String strVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, String strVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -330,8 +360,8 @@ public class LPJdbcGeneric<T> {
 		}
 	}
 
-	// Get domain objects by a uuid value column.
-	public List<T> findDomainObjectsByUUIDVal(int ownerAccountId, String colName, UUID uuidVal)
+	// Get domain objects by a UUID value column.
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, UUID uuidVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -365,7 +395,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by an integer value column in a [start, end] range.
-	public List<T> findDomainObjectsByIntValRange(int ownerAccountId, String colName,
+	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
 			int intStartVal, int intEndVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
@@ -407,7 +437,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a long value column in a [start, end] range.
-	public List<T> findDomainObjectsByLongValRange(int ownerAccountId, String colName,
+	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
 			long longStartVal, long longEndVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
@@ -449,7 +479,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a string value column in a [start, end] range.
-	public List<T> findDomainObjectsByStringValRange(int ownerAccountId, String colName,
+	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
 			String strStartVal, String strEndVal)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
@@ -613,6 +643,31 @@ public class LPJdbcGeneric<T> {
 
 	// Delete a domain object from the database. Return the # of records deleted
 	public int deleteDomainObject(int ownerAccountId, int id)
+		throws MustOverrideException, Exception {
+		if (ownerAccountId < 0 || id <= 0)
+			return 0;
+		try {
+			String strSqlTable = getSqlTable();
+			if (strSqlTable == null) {
+				throw new MustOverrideException("Missing derived class override getSqlTable");
+			}
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("delete from ");
+			sbQuery.append(strSqlTable);
+			sbQuery.append(" where Id=:Id and OwnerAccountId=:OwnerAccountId;");
+			int numRecDeleted = namedParameterJdbcTemplate.update(
+					sbQuery.toString(), 
+					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
+			return numRecDeleted;
+		}
+		catch (Exception e) {
+			System.out.println("LPJdbcGeneric.deleteDomainObject Exception: " + e.getMessage());
+			throw e;
+		}
+	}
+
+	// Delete a domain object from the database. Return the # of records deleted
+	public int deleteDomainObject(int ownerAccountId, long id)
 		throws MustOverrideException, Exception {
 		if (ownerAccountId < 0 || id <= 0)
 			return 0;

@@ -1,8 +1,6 @@
 package org.lpgreen.repository;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.lpgreen.util.StringUtil;
@@ -64,8 +62,8 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			// Test to find Payment by Payment Id
 			System.out.println("Test --> testFindPaymentById");
-			System.out.println("    testFindPaymentById [OwnerAccountId=1, Id=2]");
-			Payment payment = paymentDao.findPaymentById(1, 2);
+			System.out.println("    testFindPaymentById [Id=2]");
+			Payment payment = paymentDao.findPaymentById(2);
 			assertNotNull(payment);
 			System.out.println("Payment: id=" + payment.getId() +
 					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
@@ -351,7 +349,7 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			// Test to find the projects by PayerContactId
 			System.out.println("Test --> testFindPaymentsByPayerContactId");
-			System.out.println("    testFindPaymentsByPayerContactId [OwnerAccountId=2, PayerContactId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
+			System.out.println("    testFindPaymentsByPayerContactId [OwnerAccountId=1, PayerContactId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
 			List<Payment> payments = paymentDao.findPaymentsByPayerContactId(1,
 					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"));
 			assertNotNull(payments);
@@ -396,9 +394,9 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			// Test to find the projects by PayerBillingAddressId
 			System.out.println("Test --> testFindPaymentsByPayerBillingAddressId");
-			System.out.println("    testFindPaymentsByPayerBillingAddressId [OwnerAccountId=2, PayerBillingAddressId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
+			System.out.println("    testFindPaymentsByPayerBillingAddressId [OwnerAccountId=1, PayerBillingAddressId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
 			List<Payment> payments = paymentDao.findPaymentsByPayerBillingAddressId(1,
-					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"));
+					UUID.fromString("07771AE4-236A-49d3-A49F-B1F9E1934D20"));
 			assertNotNull(payments);
 			assertTrue(payments.size() == 3);
 			for (Payment payment : payments) {
@@ -415,58 +413,327 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		}
 	}
 
-	/*
-	public void testAddUpdateDeleteProject() {
-		// Create Project
+	public void testFindPaymentsByPayeeAccountId() {
+		try {
+			// Test to find the Payments by PayeeAccountId
+			System.out.println("Test --> testFindPaymentsByPayeeAccountId");
+			System.out.println("    testFindPaymentsByPayeeAccountId [OwnerAccountId=1, PayeeAccountId=2]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeeAccountId(1, 2);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 3);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeeAccountId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayeeAccountName() {
+		try {
+			// Test to find the Payments by PayeeAccountName
+			System.out.println("Test --> testFindPaymentsByPayeeAccountName");
+			System.out.println("    testFindPaymentsByPayeeAccountName [OwnerAccountId=1, PayeeAccountName=Bobby Company]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeeAccountName(1, "Bobby Company");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeeAccountName Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayeeContactId() {
+		try {
+			// Test to find the projects by PayeeContactId
+			System.out.println("Test --> testFindPaymentsByPayeeContactId");
+			System.out.println("    testFindPaymentsByPayeeContactId [OwnerAccountId=1, PayeeContactId=07771AE4-236A-49d3-A49E-B1F9E1934D31]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeeContactId(1,
+					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D31"));
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeeContactId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayeeContactName() {
+		try {
+			// Test to find the Payments by PayeeContactName
+			System.out.println("Test --> testFindPaymentsByPayeeContactName");
+			System.out.println("    testFindPaymentsByPayeeContactName [OwnerAccountId=1, PayeeContactName=Allen]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeeContactName(1, "Alex");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeeContactName Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPayeeBillingAddressId() {
+		try {
+			// Test to find the projects by PayeeBillingAddressId
+			System.out.println("Test --> testFindPaymentsByPayeeBillingAddressId");
+			System.out.println("    testFindPaymentsByPayeeBillingAddressId [OwnerAccountId=1, PayeeBillingAddressId=07771AE4-236A-49d3-A49F-B1F9E1934D22]");
+			List<Payment> payments = paymentDao.findPaymentsByPayeeBillingAddressId(1,
+					UUID.fromString("07771AE4-236A-49d3-A49F-B1F9E1934D22"));
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPayeeBillingAddressId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByDepartmentId() {
+		try {
+			// Test to find the projects by DepartmentId
+			System.out.println("Test --> testFindPaymentsByDepartmentId");
+			System.out.println("    testFindPaymentsByDepartmentId [OwnerAccountId=1, DepartmentId=7]");
+			List<Payment> payments = paymentDao.findPaymentsByDepartmentId(1, 7);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByDepartmentId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByCostCenterNumber() {
+		try {
+			// Test to find the projects by CostCenterNumber
+			System.out.println("Test --> testFindPaymentsByCostCenterNumber");
+			System.out.println("    testFindPaymentsByCostCenterNumber [OwnerAccountId=1, CostCenterNumber=056-112-105]");
+			List<Payment> payments = paymentDao.findPaymentsByCostCenterNumber(1, "056-112-105");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByCostCenterNumber Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPrimaryPaymentReceiverEmpId() {
+		try {
+			// Test to find the projects by PrimaryPaymentReceiverEmpId
+			System.out.println("Test --> testFindPaymentsByPrimaryPaymentReceiverEmpId");
+			System.out.println("    testFindPaymentsByPrimaryPaymentReceiverEmpId [OwnerAccountId=1, PrimaryPaymentReceiverEmpId=11]");
+			List<Payment> payments = paymentDao.findPaymentsByPrimaryPaymentReceiverEmpId(1, 11);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPrimaryPaymentReceiverEmpId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsBySecondaryPaymentReceiverEmpId() {
+		try {
+			// Test to find the projects by SecondaryPaymentReceiverEmpId
+			System.out.println("Test --> testFindPaymentsBySecondaryPaymentReceiverEmpId");
+			System.out.println("    testFindPaymentsBySecondaryPaymentReceiverEmpId [OwnerAccountId=1, SecondaryPaymentReceiverEmpId=11]");
+			List<Payment> payments = paymentDao.findPaymentsBySecondaryPaymentReceiverEmpId(1, 5);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsBySecondaryPaymentReceiverEmpId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByPrimaryPaymentPayerEmpId() {
+		try {
+			// Test to find the projects by PrimaryPaymentPayerEmpId
+			System.out.println("Test --> testFindPaymentsByPrimaryPaymentPayerEmpId");
+			System.out.println("    testFindPaymentsByPrimaryPaymentPayerEmpId [OwnerAccountId=1, PrimaryPaymentPayerEmpId=4]");
+			List<Payment> payments = paymentDao.findPaymentsByPrimaryPaymentPayerEmpId(1, 4);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByPrimaryPaymentPayerEmpId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsBySecondaryPaymentPayerEmpId() {
+		try {
+			// Test to find the projects by SecondaryPaymentPayerEmpId
+			System.out.println("Test --> testFindPaymentsBySecondaryPaymentPayerEmpId");
+			System.out.println("    testFindPaymentsBySecondaryPaymentPayerEmpId [OwnerAccountId=1, SecondaryPaymentPayerEmpId=4]");
+			List<Payment> payments = paymentDao.findPaymentsBySecondaryPaymentPayerEmpId(1, 3);
+			assertNotNull(payments);
+			assertTrue(payments.size() == 2);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsBySecondaryPaymentPayerEmpId Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindPaymentsByNotes() {
+		try {
+			// Test to find the projects by Notes
+			System.out.println("Test --> testFindPaymentsByNotes");
+			System.out.println("    testFindPaymentsByNotes [OwnerAccountId=1, Notes=Semester grade B+]");
+			List<Payment> payments = paymentDao.findPaymentsByNotes(1, "Semester grade B+");
+			assertNotNull(payments);
+			assertTrue(payments.size() == 1);
+			for (Payment payment : payments) {
+				System.out.println("Payment: id=" + payment.getId() +
+					"; isReceivedPayment=" + payment.getIsReceivedPayment() +
+					"; paymentType=" + payment.getPaymentType() +
+					"; paymentCategory=" + payment.getPaymentCategory() +
+					"; description=" + payment.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcPaymentDaoTests.testFindPaymentsByNotes Exception: " + e.getMessage());
+		}
+	}
+
+	public void testAddUpdateDeletePayment() {
+		// Create Payment
 		// Note: createdDate, createdById, lastModifiedDate and lastModifiedById
 		// are not used when inserting values to the database. These are the
 		// first four parameters to the constructor.
 		UUID ownerId = UUID.randomUUID();
-		UUID customerContact = UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20");
-		UUID sponsor = UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D10");
-		DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-01-15 06:08:08");
-		DateTime endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2015-12-15 06:08:08");
-		Project project = new Project(null, null, null, null,
-				ownerId, 1, "XingZhuang", "New Factory", "Study", 1, 2,
-				2, customerContact, sponsor, 1, "Build more cars",
-				"Factory can build 1200 cars/month", 120000000, "USD",
-				startDate, endDate, 1, "Good project");
-		assertNotNull(project);
+		UUID payerContactId = UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D40");
+		UUID payerBillingAddressId = UUID.randomUUID();
+		UUID payeeContactId = UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D41");
+		UUID payeeBillingAddressId = UUID.randomUUID();
+		DateTime paymentDateTime = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-01-15 06:08:08");
+		Payment payment = new Payment(null, null, null, null,
+				ownerId, 1, true, "Reimburse", "Meals", "Team lunch", "USD", 121.0,
+				"Check", 1, 2, "156", paymentDateTime,
+				2, "New Company", payerContactId, "Cathy", payerBillingAddressId,
+				5, "New Company", payeeContactId, "Carl", payeeBillingAddressId,
+				6, "101-326-512", 6, 5, 4, 3, "Finsihed milestone 2");
+		assertNotNull(payment);
 
-		System.out.println("Test --> add, update and delete Project");
-		System.out.println("    Add Project [OwnerAccountId=" + project.getOwnerAccountId() + "]");
-		Project retProject = null;
+		System.out.println("Test --> add, update and delete Payment");
+		System.out.println("    Add Payment [OwnerAccountId=" + payment.getOwnerAccountId() + "]");
+		Payment retPayment = null;
 		try {
-			int retId = projectDao.addProject(project);
+			int retId = paymentDao.addPayment(payment);
 			assertTrue(retId > 0);
-			retProject = projectDao.findProjectById(1, retId);
-			assertNotNull(retProject);
-			assertEquals(retProject.getName(), "New Factory");
-			assertEquals(retProject.getDescription(), "Factory can build 1200 cars/month");
+			retPayment = paymentDao.findPaymentById(retId);
+			assertNotNull(retPayment);
+			assertEquals(retPayment.getPaymentType(), "Reimburse");
+			assertEquals(retPayment.getPaymentCategory(), "Meals");
+			assertEquals(retPayment.getDescription(), "Team lunch");
 		}
 		catch (Exception e) {
 			fail(e.getMessage());
 		}
 
-		// Update Project
-		System.out.println("    Update Project");
-		retProject.setDescription("The new test project");
+		// Update Payment
+		System.out.println("    Update Payment");
+		retPayment.setDescription("The new test payment");
 		try {
-			int numRecUpdated = projectDao.saveProject(retProject);
+			int numRecUpdated = paymentDao.savePayment(retPayment);
 			assertEquals(numRecUpdated, 1);
-			Project retProjectUpd = projectDao.findProjectById(1, retProject.getId());
-			assertNotNull(retProjectUpd);
-			assertEquals(retProjectUpd.getName(), "New Factory");
-			assertEquals(retProjectUpd.getDescription(), "The new test project");
+			Payment retPaymentUpd = paymentDao.findPaymentById(retPayment.getId());
+			assertNotNull(retPaymentUpd);
+			assertEquals(retPaymentUpd.getPaymentType(), "Reimburse");
+			assertEquals(retPaymentUpd.getPaymentCategory(), "Meals");
+			assertEquals(retPaymentUpd.getDescription(), "The new test payment");
 		}
 		catch (Exception e) {
 			fail(e.getMessage());
 		}
 
 		// Delete Project
-		System.out.println("    Delete Project");
+		System.out.println("    Delete Payment");
 		try {
-			int numRecDeleted = projectDao.deleteProject(1, retProject.getId());
+			int numRecDeleted = paymentDao.deletePayment(1, retPayment.getId());
 			assertEquals(numRecDeleted, 1);
 		}
 		catch (Exception e) {
@@ -474,5 +741,4 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		}
 		System.out.println("     <-- Done.");
 	}
-	*/
 }
