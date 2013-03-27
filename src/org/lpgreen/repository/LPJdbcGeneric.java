@@ -118,7 +118,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(strReadFields);
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where Id=:Id");
+			sbQuery.append(" as o where Id=:Id;");
 			T domanObj = namedParameterJdbcTemplate.queryForObject(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("Id", id),
@@ -148,7 +148,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(strReadFields);
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where Id=:Id");
+			sbQuery.append(" as o where Id=:Id;");
 			T domanObj = namedParameterJdbcTemplate.queryForObject(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("Id", id),
@@ -157,36 +157,6 @@ public class LPJdbcGeneric<T> {
 		}
 		catch (Exception e) {
 			System.out.println("LPJdbcGeneric.findDomainObjectById Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// Get all domain objects owned by a specific owner account id. Because
-	// this is a common operation, this method assumes the database column
-	// used in the queried is "OwnerAccountId".
-	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId)
-			throws MustOverrideException {
-		try {
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(strReadFields);
-			sbQuery.append(" from ");
-			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where OwnerAccountId=:OwnerAccountId");
-			List<T> domainObjs = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					mapper);
-			return domainObjs;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByOwnerAccountId Exception: " + e.getMessage());
 			return null;
 		}
 	}
@@ -211,6 +181,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(strSqlTable);
 			sbQuery.append(" as o where OwnerAccountId=:OwnerAccountId");
 			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
@@ -224,7 +195,8 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a boolean value column (database - decimal(1.0)).
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, boolean boolVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
+			String colName, boolean boolVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -245,6 +217,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
@@ -259,7 +233,8 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by an integer value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, int intVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
+			String colName, int intVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -280,6 +255,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, intVal),
@@ -293,7 +270,8 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a long integer value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, long longVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
+			String colName, long longVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -314,6 +292,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, longVal),
@@ -327,7 +307,8 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a string value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, String strVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
+			String colName, String strVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -348,6 +329,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, strVal),
@@ -361,7 +344,8 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get domain objects by a UUID value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String colName, UUID uuidVal)
+	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
+			String colName, UUID uuidVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -382,6 +366,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, uuidVal),
@@ -396,7 +382,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by an integer value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			int intStartVal, int intEndVal)
+			int intStartVal, int intEndVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -422,7 +408,9 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" >= :StartVal and ");
 			sbQuery.append(colName);
-			sbQuery.append(" <= :EndVal;");
+			sbQuery.append(" <= :EndVal");
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
@@ -438,7 +426,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a long value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			long longStartVal, long longEndVal)
+			long longStartVal, long longEndVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -464,7 +452,9 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" >= :StartVal and ");
 			sbQuery.append(colName);
-			sbQuery.append(" <= :EndVal;");
+			sbQuery.append(" <= :EndVal");
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
@@ -480,7 +470,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			String strStartVal, String strEndVal)
+			String strStartVal, String strEndVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -516,6 +506,7 @@ public class LPJdbcGeneric<T> {
 				sbQuery.append(" <= :EndVal");
 				sqlParameters.addValue("EndVal", strEndVal);
 			}
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -531,7 +522,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a DateTime value column in a [start, end] range.
 	public List<T> findDomainObjectsByDateTimeRange(int ownerAccountId, String colName,
-			DateTime dtStartVal, DateTime dtEndVal)
+			DateTime dtStartVal, DateTime dtEndVal, Set<String> currentPhases)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -567,6 +558,7 @@ public class LPJdbcGeneric<T> {
 				sbQuery.append(" <= :EndDate");
 				sqlParameters.addValue("EndDate", dtEndVal.toCalendar(null), Types.TIMESTAMP);
 			}
+			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),

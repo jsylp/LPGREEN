@@ -81,4 +81,8 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
+	<bean id="paymentManager" class="org.lpgreen.service.PaymentManagerImpl" >
+		<property name="paymentDao" ref="paymentDao" />
+	</bean>
+
 </beans>

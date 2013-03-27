@@ -25,7 +25,7 @@ public interface PaymentDao {
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get all Payments owned by a specific owner account id
-	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId);
+	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases);
 
 	// get a specific Payment by a given database id
 	public Payment findPaymentById(long id);

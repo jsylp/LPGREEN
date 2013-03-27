@@ -41,7 +41,7 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 			// Test to find the LogixPath (OwnerAccountId=1) all Payments 
 			System.out.println("Test --> testFindAllSitePayments");
 			System.out.println("    testFindAllSitePayments [OwnerAccountId=1]");
-			List<Payment> payments = paymentDao.findPaymentsByOwnerAccountId(1);
+			List<Payment> payments = paymentDao.findPaymentsByOwnerAccountId(1, null);
 			assertNotNull(payments);
 			assertTrue(payments.size() == 4);
 			for (Payment payment : payments) {
