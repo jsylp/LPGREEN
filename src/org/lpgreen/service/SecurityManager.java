@@ -114,16 +114,16 @@ public interface SecurityManager {
 	// OperationRight management
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// get all OperationRight owned by a specific account id
+	// get all OperationRights owned by a specific owner account id
 	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId)
 			throws Exception;
 
-	// get a specific OperationRight by a given id
-	public OperationRight findOperationRightById(int ownerAccountId, int opRightId)
+	// get a specific OperationRight by a given database id
+	public OperationRight findOperationRightById(int opRightId)
 			throws Exception;
 
-	// get a specific OperationRight by a given name
-	public OperationRight findOperationRightByName(int ownerAccountId, String opName)
+	// get all OperationRights by OperationName
+	public List<OperationRight> findOperationRightByName(int ownerAccountId, String opName)
 			throws Exception;
 
 	// Create services

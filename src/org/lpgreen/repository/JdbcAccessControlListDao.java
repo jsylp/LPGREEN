@@ -235,7 +235,7 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 			return retRows;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcAccessControlListDao.addAccessControlList Exception: " + e1.getMessage());
+			System.out.println("JdbcAccessControlListDao.addAccessControlList DuplicateKeyException: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
@@ -287,7 +287,10 @@ public class JdbcAccessControlListDao implements AccessControlListDao {
 	public boolean hasPermission(int userId, String objectName, String operation, int ownerAccountId)
 			throws Exception {
 		try {
-			OperationRight opRight = operationRightDao.findOperationRightByName(ownerAccountId, operation);
+			List<OperationRight> opRights = operationRightDao.findOperationRightByName(ownerAccountId, operation);
+			if (opRights == null || opRights.isEmpty() || opRights.size() > 1)
+				return false;
+			OperationRight opRight = opRights.get(0);
 			if (opRight == null)
 				return false;
 			List<LoginUserRole> userRoles = loginUserRoleDao.findAllSiteLoginUserRoles(ownerAccountId, userId);

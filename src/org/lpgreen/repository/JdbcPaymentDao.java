@@ -720,7 +720,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 			return -1;
 		}
 		catch (DuplicateKeyException e) {
-			System.out.println("JdbcPaymentDao.addPayment Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.addPayment DuplicateKeyException: " + e.getMessage());
 			throw e;
 		}
 		catch (Exception e) {
@@ -741,7 +741,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 			return -1;
 		}
 		catch (DuplicateKeyException e) {
-			System.out.println("JdbcPaymentDao.savePayment Exception: " + e.getMessage());
+			System.out.println("JdbcPaymentDao.savePayment DuplicateKeyException: " + e.getMessage());
 			throw e;
 		}
 		catch (Exception e) {

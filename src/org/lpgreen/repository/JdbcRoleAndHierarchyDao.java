@@ -365,7 +365,7 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 			return retRows;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy Exception: " + e1.getMessage());
+			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy DuplicateKeyException: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {

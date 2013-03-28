@@ -427,7 +427,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			return -1;
 		}
 		catch (DuplicateKeyException e) {
-			System.out.println("JdbcProjectDao.addProject Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.addProject DuplicateKeyException: " + e.getMessage());
 			throw e;
 		}
 		catch (Exception e) {
@@ -448,7 +448,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			return -1;
 		}
 		catch (DuplicateKeyException e) {
-			System.out.println("JdbcProjectDao.saveProject Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.saveProject DuplicateKeyException: " + e.getMessage());
 			throw e;
 		}
 		catch (Exception e) {

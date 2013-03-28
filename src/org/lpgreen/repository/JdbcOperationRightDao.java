@@ -7,11 +7,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.lpgreen.domain.OperationRight;
+import org.lpgreen.util.MustOverrideException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -25,26 +24,28 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcOperationRightDao implements OperationRightDao {
+public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> implements OperationRightDao {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertOperationRight;
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertOperationRight = new SimpleJdbcInsert(dataSource).withTableName("OperationRight").usingGeneratedKeyColumns("id");
+	public void setDataSource(DataSource dataSource)
+			throws MustOverrideException {
+		try {
+			super.setDataSource(dataSource);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.setDataSource Exception: " + e.getMessage());
+			throw e;
+		}
 	}
 
 	// o: the main object: this OperationRight; 
 	protected final static String fieldSelectionForReadOperationRight =
 			"o.Id,o.OperationName,o.Description,o.OwnerAccountId";
 
+	// field selection for update
 	protected final static String fieldSetForUpdateOperationRight = 
 			"OperationName=:OperationName,Description=:Description,OwnerAccountId=:OwnerAccountId";
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// OperationRight related methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-
+	// RowMapper class
 	private static class OperationRightMapper implements RowMapper<OperationRight> {
 		
 		public OperationRight mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -57,74 +58,28 @@ public class JdbcOperationRightDao implements OperationRightDao {
 		}
 	}
 
-	// query OperationRight using OwnerAccountId
-	protected final static String strOperationRightQueryWithOwnerAccountId = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId";
-
-	// get all OperationRight owned by a specific account id
-	@Override
-	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId) {
-		try {
-			List<OperationRight> opRights = namedParameterJdbcTemplate.query(
-					strOperationRightQueryWithOwnerAccountId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new OperationRightMapper());
-			return opRights;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcOperationRightDao.findAllSiteOperationRights Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the SQL table name
+	protected String getSqlTable() {
+		return "OperationRight";
 	}
 
-	// query OperationRight using Id
-	protected final static String strOperationRightQueryWithId = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// get a specific OperationRight by a given id
-	@Override
-	public OperationRight findOperationRightById(int ownerAccountId, int id) {
-		try {
-			OperationRight opRight = namedParameterJdbcTemplate.queryForObject(
-					strOperationRightQueryWithId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
-					new OperationRightMapper());
-			return opRight;
-		} 
-		catch (Exception e) {
-			System.out.println("JdbcOperationRightDao.findOperationRightById Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadOperationRight;
 	}
 
-	// query OperationRight using OperationName
-	protected final static String strOperationRightQueryWithOperationName = "select " + fieldSelectionForReadOperationRight +
-			" from OperationRight as o where OwnerAccountId=:OwnerAccountId and OperationName=:OperationName";
-
-	// get a specific OperationRight by a given name
-	@Override
-	public OperationRight findOperationRightByName(int ownerAccountId, String opName) {
-		try {
-			OperationRight opRight = namedParameterJdbcTemplate.queryForObject(
-					strOperationRightQueryWithOperationName,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("OperationName", opName),
-					new OperationRightMapper());
-			
-			return opRight;
-		} 
-		catch (Exception e) {
-			System.out.println("JdbcOperationRightDao.findOperationRightByName Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the filed selection for update
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdateOperationRight;
 	}
 
-	/**
-	 * Set SQL Parameters used for creating OperationRight
-	 * @param opRight
-	 * @param bNew
-	 * @return
-	 */
-	private MapSqlParameterSource getOperationRightMapSqlParameterSource(OperationRight opRight, boolean bNew) {
+	// Override to return the RowMapper
+	protected RowMapper<OperationRight> getRowMapper() {
+		return new OperationRightMapper();
+	}
+
+	// Override to return MapSqlParameterSource for creating OperationRight
+	protected MapSqlParameterSource getDomainObjectMapSqlParameterSource(OperationRight opRight, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		if (!bNew) {
 			if (opRight.getId() > 0)
@@ -141,49 +96,100 @@ public class JdbcOperationRightDao implements OperationRightDao {
 		return parameters;
 	}
 
-	// Add an OperationRight. Return the generated id
-	@Override
-	public int addOperationRight(OperationRight opRight) 
-			throws DuplicateKeyException, Exception {
-		if (opRight == null)
-			throw new Exception("Missing input opRight");
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// OperationRight related methods
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-		MapSqlParameterSource parameters = this.getOperationRightMapSqlParameterSource(opRight, true);	
+	// get all OperationRights owned by a specific owner account id
+	@Override
+	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId) {
 		try {
-			// insert OperationRight record
-			int retId = insertOperationRight.executeAndReturnKey(parameters).intValue();
-			opRight.setId(retId);
-			return retId;
+			return findDomainObjectsByOwnerAccountId(ownerAccountId, null);
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcOperationRightDao.addOperationRight Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.findAllSiteOperationRights MustOverrideException: " + e.getMessage());
+			return null;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcOperationRightDao.addOperationRight Exception: " + e2.getMessage());
-			throw e2;
+		catch (Exception e) {
+			System.out.println("JdbcOperationRightDao.findAllSiteOperationRights Exception: " + e.getMessage());
+			return null;
 		}
 	}
 
-	// Save a the changes of an existing OperationRight object. Return the # of record updated
+	// get a specific OperationRight by a given database id
+	@Override
+	public OperationRight findOperationRightById(int id) {
+		try {
+			return findDomainObjectById(id);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.findOperationRightById MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcOperationRightDao.findOperationRightById Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all OperationRights by OperationName
+	@Override
+	public List<OperationRight> findOperationRightByName(int ownerAccountId, String opName) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "OperationName", opName, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.findOperationRightByName MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcOperationRightDao.findOperationRightByName Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// Add an OperationRight. Return the generated database id
+	@Override
+	public int addOperationRight(OperationRight opRight) 
+			throws DuplicateKeyException, Exception {
+		try {
+			// insert OperationRight record
+			int retId = addDomainObject(opRight);
+			opRight.setId(retId);
+			return retId;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.addOperationRight MustOverrideException: " + e.getMessage());
+			return -1;
+		}
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcOperationRightDao.addOperationRight DuplicateKeyException: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcOperationRightDao.addOperationRight Exception: " + e.getMessage());
+			throw e;
+		}
+	}
+
+	// Save changes of an existing OperationRight object. Return the # of records updated
 	@Override
 	public int saveOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception {
-		if (opRight == null)
-			throw new Exception("Missing input opRight");
 		try {
-			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update OperationRight set " + fieldSetForUpdateOperationRight + " where Id=:Id;",
-					getOperationRightMapSqlParameterSource(opRight, false));
-			return numRecUpdated;
+			return saveDomainObject(opRight);
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcOperationRightDao.saveOperationRight Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcOperationRightDao.saveOperationRight MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcOperationRightDao.saveOperationRight Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcOperationRightDao.saveOperationRight DuplicateKeyException: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcOperationRightDao.saveOperationRight Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
@@ -191,13 +197,8 @@ public class JdbcOperationRightDao implements OperationRightDao {
 	@Override
 	public int deleteOperationRight(int ownerAccountId, int id)
 			throws Exception {
-		if (ownerAccountId < 0 || id <= 0)
-			return 0;
 		try {
-			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from OperationRight where Id=:Id and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
-			return numRecDeleted;
+			return deleteDomainObject(ownerAccountId, id);
 		}
 		catch (Exception e) {
 			throw new Exception(e.getMessage());

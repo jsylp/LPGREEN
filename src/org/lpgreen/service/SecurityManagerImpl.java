@@ -455,7 +455,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	// OperationRight related management methods
 	////////////////////////////////////////////
 
-	// get all OperationRight owned by a specific account id
+	// get all OperationRights owned by a specific owner account id
 	@Override
 	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId)
 			throws Exception {
@@ -468,22 +468,19 @@ public class SecurityManagerImpl implements SecurityManager {
 		return opRights;
 	}
 
-	// get a specific OperationRight by a given id
+	// get a specific OperationRight by a given database id
 	@Override
-	public OperationRight findOperationRightById(int ownerAccountId, int opRightId)
+	public OperationRight findOperationRightById(int opRightId)
 			throws Exception {
-		if (ownerAccountId <= 0) {
-			throw new Exception("Missing input ownerAccountId");
-		}
 		if (opRightId <= 0) {
 			throw new Exception("Missing input operationRightId");
 		}
-		return operationRightDao.findOperationRightById(ownerAccountId, opRightId);
+		return operationRightDao.findOperationRightById(opRightId);
 	}
 
-	// get a specific OperationRight by a given id
+	// get all OperationRights by OperationName
 	@Override
-	public OperationRight findOperationRightByName(int ownerAccountId, String opName)
+	public List<OperationRight> findOperationRightByName(int ownerAccountId, String opName)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Missing input ownerAccountId");
@@ -533,7 +530,7 @@ public class SecurityManagerImpl implements SecurityManager {
 			opRight.setId(retId);
 
 			// retrieve the new data back
-			OperationRight retOpRight = this.findOperationRightById(opRight.getOwnerAccountId(), retId);
+			OperationRight retOpRight = this.findOperationRightById(retId);
 			return retOpRight;
 		}
 		catch (Exception e) {
@@ -564,7 +561,7 @@ public class SecurityManagerImpl implements SecurityManager {
 			int numRecordUpdated = operationRightDao.saveOperationRight(opRight);
 
 			// retrieve the new data back
-			OperationRight retOpRight = this.findOperationRightById(opRight.getOwnerAccountId(), opRight.getId());
+			OperationRight retOpRight = this.findOperationRightById(opRight.getId());
 			return retOpRight;
 		}
 		catch (Exception e) {

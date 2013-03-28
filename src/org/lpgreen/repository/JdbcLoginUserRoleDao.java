@@ -140,7 +140,7 @@ public class JdbcLoginUserRoleDao implements LoginUserRoleDao {
 			return retRows;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole Exception: " + e1.getMessage());
+			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole DuplicateKeyException: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {

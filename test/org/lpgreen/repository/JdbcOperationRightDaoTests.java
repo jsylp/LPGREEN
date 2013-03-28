@@ -45,7 +45,7 @@ public class JdbcOperationRightDaoTests  extends AbstractTransactionalDataSource
 			}
 
 			System.out.println("    find one specific OperationRight (id=6)");
-			OperationRight opRight = opRightDao.findOperationRightById(1, 6);
+			OperationRight opRight = opRightDao.findOperationRightById(6);
 			assertNotNull(opRight);
 			assertTrue(opRight.getOperationName() != null && opRight.getOperationName().equals("Clone"));
 			System.out.println("     <-- Done.");
@@ -66,7 +66,7 @@ public class JdbcOperationRightDaoTests  extends AbstractTransactionalDataSource
 		try {
 			int retId = opRightDao.addOperationRight(right);
 			assertTrue(retId > 0);
-			retRight = opRightDao.findOperationRightById(1, retId);
+			retRight = opRightDao.findOperationRightById(retId);
 			assertNotNull(retRight);
 			assertEquals(retRight.getOperationName(), "TestRight");
 			assertEquals(retRight.getDescription(), "The test right");
@@ -81,7 +81,7 @@ public class JdbcOperationRightDaoTests  extends AbstractTransactionalDataSource
 		try {
 			int numRecUpdated = opRightDao.saveOperationRight(retRight);
 			assertEquals(numRecUpdated, 1);
-			OperationRight retRightUpd = opRightDao.findOperationRightById(1, retRight.getId());
+			OperationRight retRightUpd = opRightDao.findOperationRightById(retRight.getId());
 			assertNotNull(retRightUpd);
 			assertEquals(retRightUpd.getOperationName(), "TestRight");
 			assertEquals(retRightUpd.getDescription(), "The new test right");

@@ -184,7 +184,7 @@ public class JdbcDepartmentDao implements DepartmentDao {
 			return retId;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.addDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcDepartmentDao.addDepartment DuplicateKeyException: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {
@@ -206,7 +206,7 @@ public class JdbcDepartmentDao implements DepartmentDao {
 			return numRecUpdated;
 		}
 		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcDepartmentDao.saveDepartment Exception: " + e1.getMessage());
+			System.out.println("JdbcDepartmentDao.saveDepartment DuplicateKeyException: " + e1.getMessage());
 			throw e1;
 		}
 		catch (Exception e2) {

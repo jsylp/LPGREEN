@@ -21,20 +21,20 @@ public interface OperationRightDao {
 	// OperationRight related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// get all OperationRight owned by a specific account id
+	// get all OperationRights owned by a specific owner account id
 	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId);
 
-	// get a specific OperationRight by a given id
-	public OperationRight findOperationRightById(int ownerAccountId, int id);
+	// get a specific OperationRight by a given database id
+	public OperationRight findOperationRightById(int id);
 
-	// get a specific OperationRight by a given name
-	public OperationRight findOperationRightByName(int ownerAccountId, String name);
+	// get all OperationRights by OperationName
+	public List<OperationRight> findOperationRightByName(int ownerAccountId, String name);
 
-	// Add an OperationRight. Return the generated id
+	// Add an OperationRight. Return the generated database id
 	public int addOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception;
 
-	// Save a the changes of an existing OperationRight object. Return the # of record updated
+	// Save changes of an existing OperationRight object. Return the # of records updated
 	public int saveOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception;
 
