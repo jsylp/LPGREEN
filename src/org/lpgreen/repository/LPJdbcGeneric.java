@@ -38,7 +38,7 @@ public class LPJdbcGeneric<T> {
 			throws MustOverrideException {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 		String strSqlTable = getSqlTable();
-		if (strSqlTable == null) {
+		if (strSqlTable == null || strSqlTable.isEmpty()) {
 			throw new MustOverrideException("JdbcGeneric.setDataSource: must override getSqlTable()");
 		}
 		insertDomainObject = new SimpleJdbcInsert(dataSource).withTableName(strSqlTable).usingGeneratedKeyColumns("id");
@@ -59,6 +59,11 @@ public class LPJdbcGeneric<T> {
 		return null;
 	}
 
+	// Must be overridden by the derived class to return the name of the current status column
+	protected String getCurrentStatusColumn() {
+		return null;
+	}
+
 	// Must be overridden by the derived class to return the record RowMapper
 	protected RowMapper<T> getRowMapper() {
 		return null;
@@ -69,30 +74,37 @@ public class LPJdbcGeneric<T> {
 		return null;
 	}
 
-	// Parse the input current phases and construct SQL query string part
-	private String getCurrentPhaseQueryPart(Set<String> currentPhases) {
-		if (currentPhases != null && currentPhases.size() > 0) {
-			StringBuffer sbCurrentPhases = new StringBuffer();
-			sbCurrentPhases.append(" AND LOWER(o.CurrentPhase) IN (");
+	// Parse the input current status and construct SQL query string part
+	private String getCurrentStatusQueryPart(Set<String> currentStatuses)
+			throws MustOverrideException {
+		if (currentStatuses != null && currentStatuses.size() > 0) {
+			String statusName = getCurrentStatusColumn();
+			if (statusName == null || statusName.isEmpty()) {
+				throw new MustOverrideException("Missing derived class override getCurrentStatusQueryPart");
+			}
+			StringBuffer sbCurrentStatuses = new StringBuffer();
+			sbCurrentStatuses.append(" AND LOWER(o.");
+			sbCurrentStatuses.append(statusName);
+			sbCurrentStatuses.append(") IN (");
 			boolean bFirst = true;
-			Iterator<String> it = currentPhases.iterator();
+			Iterator<String> it = currentStatuses.iterator();
 			while (it.hasNext()) {
-				String currentPhase = it.next();
-				if (currentPhase.isEmpty() || currentPhase.toLowerCase().equals("all")) {
-					sbCurrentPhases.setLength(0);
+				String currentStatus = it.next();
+				if (currentStatus.isEmpty() || currentStatus.toLowerCase().equals("all")) {
+					sbCurrentStatuses.setLength(0);
 					break;
 				}
 				else {
 					if (!bFirst)
-						sbCurrentPhases.append(", ");
+						sbCurrentStatuses.append(", ");
 					else
 						bFirst = false;
-					sbCurrentPhases.append("'" + currentPhase.toLowerCase() + "'");
+					sbCurrentStatuses.append("'" + currentStatus.toLowerCase() + "'");
 				}
 			}
-			if (sbCurrentPhases.length() > 0) {
-				sbCurrentPhases.append(") ");
-				return sbCurrentPhases.toString();
+			if (sbCurrentStatuses.length() > 0) {
+				sbCurrentStatuses.append(") ");
+				return sbCurrentStatuses.toString();
 			}
 			else
 				return "";
@@ -110,7 +122,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -140,7 +153,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -162,16 +176,17 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Get all domain objects owned by a specific owner account id and
-	// the current phases. Because this is a common operation, this method
+	// the current statuses. Because this is a common operation, this method
 	// assumes the database columns used in the queried is "OwnerAccountId"
-	// and the "CurrentPhase".
-	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases)
+	// and the return from getCurrentStatusColumn().
+	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses)
 			throws MustOverrideException {
 		try {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -180,7 +195,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
 			sbQuery.append(" as o where OwnerAccountId=:OwnerAccountId");
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -196,7 +211,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a boolean value column (database - decimal(1.0)).
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
-			String colName, boolean boolVal, Set<String> currentPhases)
+			String colName, boolean boolVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -205,7 +220,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -217,7 +233,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -234,7 +250,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by an integer value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
-			String colName, int intVal, Set<String> currentPhases)
+			String colName, int intVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -243,7 +259,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -255,7 +272,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -271,7 +288,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a long integer value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
-			String colName, long longVal, Set<String> currentPhases)
+			String colName, long longVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -280,7 +297,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -292,7 +310,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -308,7 +326,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
-			String colName, String strVal, Set<String> currentPhases)
+			String colName, String strVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -317,7 +335,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -329,7 +348,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -345,7 +364,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a UUID value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId,
-			String colName, UUID uuidVal, Set<String> currentPhases)
+			String colName, UUID uuidVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -354,7 +373,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -366,7 +386,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append("=:");
 			sbQuery.append(colName);
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -382,7 +402,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by an integer value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			int intStartVal, int intEndVal, Set<String> currentPhases)
+			int intStartVal, int intEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -391,7 +411,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			if (intStartVal > intEndVal) {
@@ -409,7 +430,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(" >= :StartVal and ");
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -426,7 +447,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a long value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			long longStartVal, long longEndVal, Set<String> currentPhases)
+			long longStartVal, long longEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -435,7 +456,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			if (longStartVal > longEndVal) {
@@ -453,7 +475,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(" >= :StartVal and ");
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -470,7 +492,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String colName,
-			String strStartVal, String strEndVal, Set<String> currentPhases)
+			String strStartVal, String strEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -482,7 +504,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -506,7 +529,7 @@ public class LPJdbcGeneric<T> {
 				sbQuery.append(" <= :EndVal");
 				sqlParameters.addValue("EndVal", strEndVal);
 			}
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -522,7 +545,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a DateTime value column in a [start, end] range.
 	public List<T> findDomainObjectsByDateTimeRange(int ownerAccountId, String colName,
-			DateTime dtStartVal, DateTime dtEndVal, Set<String> currentPhases)
+			DateTime dtStartVal, DateTime dtEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
 		try {
 			if (colName == null) {
@@ -534,7 +557,8 @@ public class LPJdbcGeneric<T> {
 			String strReadFields = getFieldSelectionForRead();
 			String strSqlTable  = getSqlTable();
 			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strSqlTable == null || mapper == null) {
+			if (strReadFields == null || strReadFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			StringBuffer sbQuery = new StringBuffer();
@@ -558,7 +582,7 @@ public class LPJdbcGeneric<T> {
 				sbQuery.append(" <= :EndDate");
 				sqlParameters.addValue("EndDate", dtEndVal.toCalendar(null), Types.TIMESTAMP);
 			}
-			sbQuery.append(getCurrentPhaseQueryPart(currentPhases));
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -605,7 +629,8 @@ public class LPJdbcGeneric<T> {
 			}
 			String strUpdateFields = getFieldSelectionForUpdate();
 			String strSqlTable = getSqlTable();
-			if (strUpdateFields == null || strSqlTable == null) {
+			if (strUpdateFields == null || strUpdateFields.isEmpty() ||
+			    strSqlTable == null || strSqlTable.isEmpty()) {
 				throw new MustOverrideException("Missing derived class override get functions");
 			}
 			MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, false);
@@ -665,7 +690,7 @@ public class LPJdbcGeneric<T> {
 			return 0;
 		try {
 			String strSqlTable = getSqlTable();
-			if (strSqlTable == null) {
+			if (strSqlTable == null || strSqlTable.isEmpty()) {
 				throw new MustOverrideException("Missing derived class override getSqlTable");
 			}
 			StringBuffer sbQuery = new StringBuffer();

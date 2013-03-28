@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -242,9 +241,9 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 
 	// get all Payments owned by a specific owner account id
 	@Override
-	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases) {
+	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByOwnerAccountId(ownerAccountId, currentPhases);
+			return findDomainObjectsByOwnerAccountId(ownerAccountId, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByOwerAccountId MustOverrideException: " + e.getMessage());
@@ -732,7 +731,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 
 	// Save changes of an existing Payment object. Return the # of records updated
 	@Override
-	public int savePayment(Payment payment) 
+	public int savePayment(Payment payment)
 			throws DuplicateKeyException, Exception {
 		try {
 			return saveDomainObject(payment);

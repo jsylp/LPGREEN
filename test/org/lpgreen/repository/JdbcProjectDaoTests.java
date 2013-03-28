@@ -61,8 +61,8 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			// Test to find project by project code 
 			System.out.println("Test --> testFindProjectById");
-			System.out.println("    testFindProjectById [OwnerAccountId=2, Id=2]");
-			Project project = projectDao.findProjectById(2, 2);
+			System.out.println("    testFindProjectById [Id=2]");
+			Project project = projectDao.findProjectById(2);
 			assertNotNull(project);
 			System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
 					"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
@@ -75,26 +75,28 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 		}
 	}
 
-	public void testFindProjectByProjectCode() {
+	public void testFindProjectsByProjectCode() {
 		try {
-			// Test to find project by project code 
-			System.out.println("Test --> testFindProjectByProjectCode");
-			System.out.println("    testFindProjectByProjectCode [OwnerAccountId=2, ProjectCode=Shanghai]");
-			Project project = projectDao.findProjectByProjectCode(2, "Shanghai");
-			assertNotNull(project);
-			System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-					"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			assertTrue(project.getProjectCode() != null && project.getProjectCode().equals("Shanghai"));
+			// Test to find projects by ProjectCode
+			System.out.println("Test --> testFindProjectsByProjectCode");
+			System.out.println("    testFindProjectsByProjectCode [OwnerAccountId=2, ProjectCode=Shanghai]");
+			List<Project> projects = projectDao.findProjectsByProjectCode(2, "Shanghai");
+			assertNotNull(projects);
+			assertTrue(projects.size() == 1);
+			for (Project project : projects) {
+				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
+						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			}
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectByProjectCode Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindProjectsByProjectCode Exception: " + e.getMessage());
 		}
 	}
 
 	public void testFindProjectsByName() {
 		try {
-			// Test to find the projects by name
+			// Test to find the projects by Name
 			System.out.println("Test --> testFindProjectsByName");
 			System.out.println("    testFindProjectsByName [OwnerAccountId=1, Name=New Bridge]");
 			List<Project> projects = projectDao.findProjectsByName(1, "New Bridge");
@@ -341,7 +343,7 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			int retId = projectDao.addProject(project);
 			assertTrue(retId > 0);
-			retProject = projectDao.findProjectById(1, retId);
+			retProject = projectDao.findProjectById(retId);
 			assertNotNull(retProject);
 			assertEquals(retProject.getName(), "New Factory");
 			assertEquals(retProject.getDescription(), "Factory can build 1200 cars/month");
@@ -356,7 +358,7 @@ public class JdbcProjectDaoTests  extends AbstractTransactionalDataSourceSpringC
 		try {
 			int numRecUpdated = projectDao.saveProject(retProject);
 			assertEquals(numRecUpdated, 1);
-			Project retProjectUpd = projectDao.findProjectById(1, retProject.getId());
+			Project retProjectUpd = projectDao.findProjectById(retProject.getId());
 			assertNotNull(retProjectUpd);
 			assertEquals(retProjectUpd.getName(), "New Factory");
 			assertEquals(retProjectUpd.getDescription(), "The new test project");

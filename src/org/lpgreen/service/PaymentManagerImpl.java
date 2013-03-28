@@ -44,12 +44,12 @@ public class PaymentManagerImpl implements PaymentManager {
 	
 	// get all Payments owned by a specific owner account id
 	@Override
-	public List<Payment> findAllSitePayments(int ownerAccountId, Set<String> currentPhases)
+	public List<Payment> findAllSitePayments(int ownerAccountId, Set<String> currentStatuses)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
 		}
-		List<Payment> payments = paymentDao.findPaymentsByOwnerAccountId(ownerAccountId, currentPhases);
+		List<Payment> payments = paymentDao.findPaymentsByOwnerAccountId(ownerAccountId, currentStatuses);
 		if (payments != null && payments.size() == 0)
 			payments = null;
 		return payments;

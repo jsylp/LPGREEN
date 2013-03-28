@@ -65,12 +65,12 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (ownerAccountId <= 0 || id <= 0) {
 			throw new Exception("Invalud input ownerAccountId or id");
 		}
-		return projectDao.findProjectById(ownerAccountId, id);
+		return projectDao.findProjectById(id);
 	}
 
-	// get a specific Project by a given project code
+	// get a specific Projects by a given ProjectCode
 	@Override
-	public Project findProjectByProjectCode(int ownerAccountId, String projectCode)
+	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
@@ -78,7 +78,7 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (projectCode == null) {
 			throw new Exception("Invalud input projectCode");
 		}
-		return projectDao.findProjectByProjectCode(ownerAccountId, projectCode);
+		return projectDao.findProjectsByProjectCode(ownerAccountId, projectCode);
 	}
 
 	// get a specific Project by a given name

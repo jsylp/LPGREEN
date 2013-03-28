@@ -28,7 +28,7 @@ public interface PaymentManager {
 	////////////////////////////////////////////
 
 	// get all Payments owned by a specific owner account id
-	public List<Payment> findAllSitePayments(int ownerAccountId, Set<String> currentPhases)
+	public List<Payment> findAllSitePayments(int ownerAccountId, Set<String> currentStatuses)
 			throws Exception;
 
 	// get a specific Payment by a given database id

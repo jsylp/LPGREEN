@@ -36,7 +36,7 @@ public interface ProjectManager {
 			throws Exception;
 
 	// get a specific Project by a given project code
-	public Project findProjectByProjectCode(int ownerAccountId, String projectCode)
+	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode)
 			throws Exception;
 
 	// get a specific Project by a given name

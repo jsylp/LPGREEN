@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -15,11 +14,10 @@ import javax.sql.DataSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.lpgreen.domain.Project;
+import org.lpgreen.util.MustOverrideException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -33,13 +31,17 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcProjectDao implements ProjectDao {
+public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertProject;
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertProject = new SimpleJdbcInsert(dataSource).withTableName("Project").usingGeneratedKeyColumns("id");
+	public void setDataSource(DataSource dataSource)
+			throws MustOverrideException {
+		try {
+			super.setDataSource(dataSource);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.setDataSource Exception: " + e.getMessage());
+			throw e;
+		}
 	}
 
 	// o: the main object: this Project 
@@ -49,6 +51,7 @@ public class JdbcProjectDao implements ProjectDao {
 			"o.Description,o.Budget,o.CurrencyCode,o.StartDate,o.EndDate,o.ParentProjectId," +
 			"o.Notes,o.OwnerId,o.OwnerAccountId";
 
+	// field selection for update
 	protected final static String fieldSetForUpdateProject = 
 			"ProjectCode=:ProjectCode,Name=:Name,CurrentPhase=:CurrentPhase," +
 			"ProjectManager1Id=:ProjectManager1Id,ProjectManager2Id=:ProjectManager1Id," +
@@ -58,43 +61,9 @@ public class JdbcProjectDao implements ProjectDao {
 			"StartDate=:StartDate,EndDate=:EndDate,ParentProjectId=:ParentProjectId," +
 			"Notes=:Notes,OwnerAccountId=:OwnerAccountId";
 
-	private String getCurrentPhaseQueryPart(Set<String> currentPhases) {
-		if (currentPhases != null && currentPhases.size() > 0) {
-			StringBuffer sbCurrentPhases = new StringBuffer();
-			sbCurrentPhases.append(" AND LOWER(o.CurrentPhase) IN (");
-			boolean bFirst = true;
-			Iterator<String> it = currentPhases.iterator();
-			while (it.hasNext()) {
-				String currentPhase = it.next();
-				if (currentPhase.isEmpty() || currentPhase.toLowerCase().equals("all")) {
-					sbCurrentPhases.setLength(0);
-					break;
-				}
-				else {
-					if (!bFirst)
-						sbCurrentPhases.append(", ");
-					else
-						bFirst = false;
-					sbCurrentPhases.append("'" + currentPhase.toLowerCase() + "'");
-				}
-			}
-			if (sbCurrentPhases.length() > 0) {
-				sbCurrentPhases.append(") ");
-				return sbCurrentPhases.toString();
-			}
-			else
-				return "";
-		}
-		else
-			return "";
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Project related methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-
+	// RowMapper class
 	private static class ProjectMapper implements RowMapper<Project> {
-		
+
 		public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
 			Project project = new Project();
 			project.setId(rs.getInt("Id"));
@@ -131,330 +100,33 @@ public class JdbcProjectDao implements ProjectDao {
 		}
 	}
 
-	// query Project using OwnerAccountId
-	protected final static String strProjectQueryWithOwnerAccountId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId";
-
-	// get all Project owned by a specific account id
-	@Override
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithOwnerAccountId);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByOwerAccountId Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the SQL table name
+	protected String getSqlTable() {
+		return "Project";
 	}
 
-	// query Project using Id
-	protected final static String strProjectQueryWithId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
-
-	// get a specific Project by a given id
-	@Override
-	public Project findProjectById(int ownerAccountId, int id) {
-		try {
-			Project project = namedParameterJdbcTemplate.queryForObject(
-					strProjectQueryWithId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
-					new ProjectMapper());
-			return project;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectById Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadProject;
 	}
 
-	// query Project using ProjectCode
-	protected final static String strProjectQueryWithProjectCode = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectCode=:ProjectCode";
-
-	// get a specific Project by a given ProjectCode
-	@Override
-	public Project findProjectByProjectCode(int ownerAccountId, String projectCode) {
-		try {
-			Project project = namedParameterJdbcTemplate.queryForObject(
-					strProjectQueryWithProjectCode,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectCode", projectCode),
-					new ProjectMapper());
-			return project;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectByProjectCode Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the filed selection for update
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdateProject;
 	}
 
-	// query Project using Name
-	protected final static String strProjectQueryWithName = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Name=:Name";
-
-	// get all Projects owned by a given name
-	@Override
-	public List<Project> findProjectsByName(int ownerAccountId, String name) {
-		try {
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithName,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Name", name),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByName Exception: " + e.getMessage());
-			return null;
-		}
+	// Overridden to return the name of the current status column
+	protected String getCurrentStatusColumn() {
+		return "CurrentPhase";
 	}
 
-	// query Project using ProjectManager1Id
-	protected final static String strProjectQueryWithProjManager1Id = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectManager1Id=:ProjectManager1Id";
-
-	// get all Projects owned by a given project manager1 id
-	@Override
-	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithProjManager1Id);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager1Id", projectMgr1Id),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id Exception: " + e.getMessage());
-			return null;
-		}
+	// Override to return the RowMapper
+	protected RowMapper<Project> getRowMapper() {
+		return new ProjectMapper();
 	}
 
-	// query Project using ProjectManager2Id
-	protected final static String strProjectQueryWithProjManager2Id = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ProjectManager2Id=:ProjectManager2Id";
-
-	// get all Projects owned by a given project manager2 id
-	@Override
-	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithProjManager2Id);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ProjectManager2Id", projectMgr2Id),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// query Project using CustomerAccount
-	protected final static String strProjectQueryWithCustomerAccount = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and CustomerAccount=:CustomerAccount";
-
-	// get all Projects owned by a given customer account
-	@Override
-	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithCustomerAccount);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerAccount", customerAccount),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// query Project using CustomerContact
-	protected final static String strProjectQueryWithCustomerContact = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and CustomerContact=:CustomerContact";
-
-	// get all Projects owned by a given customer contact
-	@Override
-	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithCustomerContact);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("CustomerContact", customerContact),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerContact Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// query Project using Sponsor
-	protected final static String strProjectQueryWithSponsor = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and Sponsor=:Sponsor";
-
-	// get all Projects owned by a given sponsor
-	@Override
-	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithSponsor);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Sponsor", sponsor),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsBySponsor Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// query Project using ManagingDeptId
-	protected final static String strProjectQueryWithManagingDeptId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ManagingDeptId=:ManagingDeptId";
-
-	// get all Projects owned by a given managing department id
-	@Override
-	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			Set<String> currentPhases) {
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append(strProjectQueryWithManagingDeptId);
-			sbQuery.append(this.getCurrentPhaseQueryPart(currentPhases));
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ManagingDeptId", managingDeptId),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// get all Projects by start date range
-	@Override
-	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception {
-		try {
-			if (fromDate == null && toDate == null) {
-				throw new Exception("Neither fromDate nor toDate is specified");
-			}
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadProject);
-			sbQuery.append(" from Project as o where OwnerAccountId=:OwnerAccountId");
-
-			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
-			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
-			if (fromDate != null) {
-				sbQuery.append(" and StartDate >= :FromDate");
-				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			if (toDate != null) {
-				sbQuery.append(" and StartDate <= :ToDate");
-				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					sqlParameters,
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// get all Projects by end date range
-	@Override
-	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception {
-		try {
-			if (fromDate == null && toDate == null) {
-				throw new Exception("Neither fromDate nor toDate is specified");
-			}
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(fieldSelectionForReadProject);
-			sbQuery.append(" from Project as o where OwnerAccountId=:OwnerAccountId");
-
-			MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
-			sqlParameters.addValue("OwnerAccountId", ownerAccountId);
-			if (fromDate != null) {
-				sbQuery.append(" and EndDate >= :FromDate");
-				sqlParameters.addValue("FromDate", fromDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			if (toDate != null) {
-				sbQuery.append(" and EndDate <= :ToDate");
-				sqlParameters.addValue("ToDate", toDate.toCalendar(null), Types.TIMESTAMP);
-			}
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					sqlParameters,
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// query Project using ParentProjectId
-	protected final static String strProjectQueryWithParentProjectId = "select " + fieldSelectionForReadProject +
-			" from Project as o where OwnerAccountId=:OwnerAccountId and ParentProjectId=:ParentProjectId";
-
-	// get all Projects by a given parent project id
-	@Override
-	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
-		try {
-			List<Project> projects = namedParameterJdbcTemplate.query(
-					strProjectQueryWithParentProjectId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("ParentProjectId", parentProjectId),
-					new ProjectMapper());
-			return projects;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByParentProjectId Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	/**
-	 * Set SQL Parameters used for creating Project
-	 * @param project
-	 * @param bNew
-	 * @return
-	 */
-	private MapSqlParameterSource getProjectMapSqlParameterSource(Project project, boolean bNew) {
+	// Override to return MapSqlParameterSource for creating Project
+	protected MapSqlParameterSource getDomainObjectMapSqlParameterSource(Project project, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		if (!bNew) {
 			if (project.getId() > 0)
@@ -522,50 +194,266 @@ public class JdbcProjectDao implements ProjectDao {
 		return parameters;
 	}
 
-	// Add a Project. Return the generated id
-	// Add an OperationRight. Return the generated id
-	@Override
-	public int addProject(Project project) 
-			throws DuplicateKeyException, Exception {
-		if (project == null)
-			throw new Exception("Missing input project");
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// Project related methods
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-		MapSqlParameterSource parameters = this.getProjectMapSqlParameterSource(project, true);	
+	// get all Projects owned by a specific owner account id and current phases
+	@Override
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses) {
 		try {
-			// insert Project record
-			int retId = insertProject.executeAndReturnKey(parameters).intValue();
-			project.setId(retId);
-			return retId;
+			return findDomainObjectsByOwnerAccountId(ownerAccountId, currentStatuses);
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcProjectDao.addProject Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId MustOverrideException: " + e.getMessage());
+			return null;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcProjectDao.addProject Exception: " + e2.getMessage());
-			throw e2;
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId Exception: " + e.getMessage());
+			return null;
 		}
 	}
 
-	// Save a the changes of an existing Project object. Return the # of record updated
+	// get a specific Project by a given database id
+	@Override
+	public Project findProjectById(int id) {
+		try {
+			return findDomainObjectById(id);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectById MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectById Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects by ProjectCode
+	@Override
+	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectCode", projectCode, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectCode MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectCode Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given Name
+	@Override
+	public List<Project> findProjectsByName(int ownerAccountId, String name) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "Name", name, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByName MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByName Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given ProjectManager1Id
+	@Override
+	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectManager1Id", projectMgr1Id, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given ProjectManager2Id
+	@Override
+	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectManager2Id", projectMgr2Id, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given CustomerAccount
+	@Override
+	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "CustomerAccount", customerAccount, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given CustomerContact
+	@Override
+	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "CustomerContact", customerContact, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByCustomerContact MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByCustomerContact Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given Sponsor
+	@Override
+	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "Sponsor", sponsor, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsBySponsor MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsBySponsor Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given ManagingDeptId
+	@Override
+	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
+			Set<String> currentStatuses) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "ManagingDeptId", managingDeptId, currentStatuses);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects by the StartDate range
+	@Override
+	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
+		try {
+			return findDomainObjectsByDateTimeRange(ownerAccountId, "StartDate", fromDate, toDate, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByStartDateRange MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByStartDateRange Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects by the EndDate range
+	@Override
+	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
+		try {
+			return findDomainObjectsByDateTimeRange(ownerAccountId, "EndDate", fromDate, toDate, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByEndDateRange MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByEndDateRange Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// get all Projects owned by a given ParentProjectId
+	@Override
+	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
+		try {
+			return findDomainObjectsByColumnVal(ownerAccountId, "ParentProjectId", parentProjectId, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByParentProjectId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByParentProjectId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// Add a Project. Return the generated database id
+	@Override
+	public int addProject(Project project) 
+			throws DuplicateKeyException, Exception {
+		try {
+			// insert Project record
+			int retId = addDomainObject(project);
+			project.setId(retId);
+			return retId;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.addProject MustOverrideException: " + e.getMessage());
+			return -1;
+		}
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcProjectDao.addProject Exception: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.addProject Exception: " + e.getMessage());
+			throw e;
+		}
+	}
+
+	// Save changes of an existing Project object. Return the # of records updated
 	@Override
 	public int saveProject(Project project) 
 			throws DuplicateKeyException, Exception {
-		if (project == null)
-			throw new Exception("Missing input project");
 		try {
-			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update Project set " + fieldSetForUpdateProject + " where Id=:Id;",
-					getProjectMapSqlParameterSource(project, false));
-			return numRecUpdated;
+			return saveDomainObject(project);
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcProjectDao.saveProject Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.saveProject MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcProjectDao.saveProject Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcProjectDao.saveProject Exception: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.saveProject Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
@@ -573,13 +461,8 @@ public class JdbcProjectDao implements ProjectDao {
 	@Override
 	public int deleteProject(int ownerAccountId, int id)
 			throws Exception {
-		if (ownerAccountId < 0 || id <= 0)
-			return 0;
 		try {
-			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from Project where Id=:Id and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
-			return numRecDeleted;
+			return deleteDomainObject(ownerAccountId, id);
 		}
 		catch (Exception e) {
 			throw new Exception(e.getMessage());

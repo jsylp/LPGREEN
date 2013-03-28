@@ -24,58 +24,56 @@ public interface ProjectDao {
 	// Project related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// get all Project owned by a specific account id and currentPhases
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentPhases);
+	// get all Projects owned by a specific owner account id and current phases
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses);
 
-	// get a specific Project by a given id
-	public Project findProjectById(int ownerAccountId, int id);
+	// get a specific Project by a given database id
+	public Project findProjectById(int id);
 
-	// get a specific Project by a given ProjectCode
-	public Project findProjectByProjectCode(int ownerAccountId, String projectCode);
+	// get all Projects by ProjectCode
+	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode);
 
-	// get all Projects owned by a given name
+	// get all Projects owned by a given Name
 	public List<Project> findProjectsByName(int ownerAccountId, String name);
 
-	// get all Projects owned by a given project manager1 id
+	// get all Projects owned by a given ProjectManager1Id
 	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId,
-			int projectMgr1Id, Set<String> currentPhases);
+			int projectMgr1Id, Set<String> currentStatuses);
 
-	// get all Projects owned by a given project manager2 id
+	// get all Projects owned by a given ProjectManager2Id
 	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId,
-			int projectMgr2Id, Set<String> currentPhases);
+			int projectMgr2Id, Set<String> currentStatuses);
 
-	// get all Projects owned by a given customer account
+	// get all Projects owned by a given CustomerAccount
 	public List<Project> findProjectsByCustomerAccount(int ownerAccountId,
-			int customerAccount, Set<String> currentPhases);
+			int customerAccount, Set<String> currentStatuses);
 
-	// get all Projects owned by a given customer contact
+	// get all Projects owned by a given CustomerContact
 	public List<Project> findProjectsByCustomerContact(int ownerAccountId,
-			UUID customerContact, Set<String> currentPhases);
+			UUID customerContact, Set<String> currentStatuses);
 
-	// get all Projects owned by a given sponsor
+	// get all Projects owned by a given Sponsor
 	public List<Project> findProjectsBySponsor(int ownerAccountId,
-			UUID sponsor, Set<String> currentPhases);
+			UUID sponsor, Set<String> currentStatuses);
 
-	// get all Projects owned by a given managing department id
+	// get all Projects owned by a given ManagingDeptId
 	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			Set<String> currentPhases);
+			Set<String> currentStatuses);
 
-	// get all Projects by start date range
-	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception;
+	// get all Projects by the StartDate range
+	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate);
 
-	// get all Projects by end date range
-	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate)
-			throws Exception;
+	// get all Projects by the EndDate range
+	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate);
 
-	// get all Projects by a given parent project id
+	// get all Projects owned by a given ParentProjectId
 	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId);
 
-	// Add a Project. Return the generated id
+	// Add a Project. Return the generated database id
 	public int addProject(Project project) 
 			throws DuplicateKeyException, Exception;
 
-	// Save a the changes of an existing Project object. Return the # of record updated
+	// Save changes of an existing Project object. Return the # of records updated
 	public int saveProject(Project project) 
 			throws DuplicateKeyException, Exception;
 
