@@ -234,7 +234,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectCode", projectCode, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectCode", projectCode, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectCode MustOverrideException: " + e.getMessage());
@@ -250,7 +250,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public List<Project> findProjectsByName(int ownerAccountId, String name) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "Name", name, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "Name", name, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByName MustOverrideException: " + e.getMessage());
@@ -267,7 +267,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectManager1Id", projectMgr1Id, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager1Id", projectMgr1Id, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id MustOverrideException: " + e.getMessage());
@@ -284,7 +284,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "ProjectManager2Id", projectMgr2Id, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager2Id", projectMgr2Id, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id MustOverrideException: " + e.getMessage());
@@ -301,7 +301,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "CustomerAccount", customerAccount, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerAccount", customerAccount, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount MustOverrideException: " + e.getMessage());
@@ -318,7 +318,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "CustomerContact", customerContact, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerContact", customerContact, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByCustomerContact MustOverrideException: " + e.getMessage());
@@ -335,7 +335,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "Sponsor", sponsor, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "Sponsor", sponsor, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsBySponsor MustOverrideException: " + e.getMessage());
@@ -352,7 +352,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
 			Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "ManagingDeptId", managingDeptId, currentStatuses);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "ManagingDeptId", managingDeptId, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId MustOverrideException: " + e.getMessage());
@@ -368,7 +368,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
 		try {
-			return findDomainObjectsByDateTimeRange(ownerAccountId, "StartDate", fromDate, toDate, null);
+			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "StartDate", fromDate, toDate, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByStartDateRange MustOverrideException: " + e.getMessage());
@@ -384,7 +384,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
 		try {
-			return findDomainObjectsByDateTimeRange(ownerAccountId, "EndDate", fromDate, toDate, null);
+			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "EndDate", fromDate, toDate, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByEndDateRange MustOverrideException: " + e.getMessage());
@@ -400,7 +400,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, "ParentProjectId", parentProjectId, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "ParentProjectId", parentProjectId, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByParentProjectId MustOverrideException: " + e.getMessage());

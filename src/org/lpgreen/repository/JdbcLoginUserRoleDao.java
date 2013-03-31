@@ -7,11 +7,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.lpgreen.domain.LoginUserRole;
+import org.lpgreen.util.MustOverrideException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -25,26 +24,28 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcLoginUserRoleDao implements LoginUserRoleDao {
+public class JdbcLoginUserRoleDao extends LPJdbcGeneric<LoginUserRole> implements LoginUserRoleDao {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertLoginUserRole;
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertLoginUserRole = new SimpleJdbcInsert(dataSource).withTableName("LoginUserRoles");
+	public void setDataSource(DataSource dataSource)
+			throws MustOverrideException {
+		try {
+			super.setDataSource(dataSource);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcLoginUserRoleDao.setDataSource Exception: " + e.getMessage());
+			throw e;
+		}
 	}
 
-	// o: the main object: this LoginUserRole; 
+	// o: the main object: this LoginUserRole;
 	protected final static String fieldSelectionForReadLoginUserRole =
 			"o.LoginUserId,o.RoleId,o.OwnerAccountId,r.RoleName";
 
+	// field selection for update
 	protected final static String fieldSetForUpdateLoginUserRole = 
 			"LoginUserId=:LoginUserId,RoleId=:RoleId,OwnerAccountId=:OwnerAccountId";
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// LoginUserRole related methods
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-
+	// RowMapper class
 	private static class LoginUserRoleMapper implements RowMapper<LoginUserRole> {
 
 		public LoginUserRole mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -57,22 +58,58 @@ public class JdbcLoginUserRoleDao implements LoginUserRoleDao {
 		}
 	}
 
-	// query LoginUserRole using OwnerAccountId and LoginUserId
-	protected final static String strLoginUserRoleQueryWithUserId = "select " + fieldSelectionForReadLoginUserRole +
-			" from LoginUserRoles as o" +
-			" LEFT OUTER JOIN Role as r ON o.RoleId=r.Id" +
-			" where o.OwnerAccountId=:OwnerAccountId and LoginUserId=:LoginUserId";
+	// Override to return the SQL table name
+	protected String getSqlTable() {
+		return "LoginUserRoles";
+	}
+
+	// Override to return the field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadLoginUserRole;
+	}
+
+	// Override to return the filed selection for update
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdateLoginUserRole;
+	}
+
+	// Override to return the RowMapper
+	protected RowMapper<LoginUserRole> getRowMapper() {
+		return new LoginUserRoleMapper();
+	}
+
+	// Override to return MapSqlParameterSource for creating LoginUserRole
+	protected MapSqlParameterSource getLoginUserRoleMapSqlParameterSource(LoginUserRole userRole) {
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		if (userRole.getLoginUserId() > 0)
+			parameters.addValue("LoginUserId", userRole.getLoginUserId());
+		else
+			parameters.addValue("LoginUserId", null);
+		if (userRole.getRoleId() > 0)
+			parameters.addValue("RoleId", userRole.getRoleId());
+		else
+			parameters.addValue("RoleId", null);
+		if (userRole.getOwnerAccountId() > 0)
+			parameters.addValue("OwnerAccountId", userRole.getOwnerAccountId());
+		else
+			parameters.addValue("OwnerAccountId", null);
+		return parameters;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// LoginUserRole related methods
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get all LoginUserRoles owned by a specific account id
 	@Override
 	public List<LoginUserRole> findAllSiteLoginUserRoles(int ownerAccountId, int userId) {
-
 		try {
-			List<LoginUserRole> userRoles = namedParameterJdbcTemplate.query(
-					strLoginUserRoleQueryWithUserId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("LoginUserId", userId),
-					new LoginUserRoleMapper());
-			return userRoles;
+			String outJoins = "LEFT OUTER JOIN Role as r ON o.RoleId=r.Id";
+			return findDomainObjectsByColumnVal(ownerAccountId, outJoins, "LoginUserId", userId, null);
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcLoginUserRoleDao.findAllSiteLoginUserRoles MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcLoginUserRoleDao.findAllSiteLoginUserRoles Exception: " + e.getMessage());
@@ -103,29 +140,6 @@ public class JdbcLoginUserRoleDao implements LoginUserRoleDao {
 		}
 	}
 
-	/**
-	 * Set SQL Parameters used for creating LoginUserRole
-	 * @param userRole
-	 * @param bNew
-	 * @return
-	 */
-	private MapSqlParameterSource getLoginUserRoleMapSqlParameterSource(LoginUserRole userRole) {
-		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		if (userRole.getLoginUserId() > 0)
-			parameters.addValue("LoginUserId", userRole.getLoginUserId());
-		else
-			parameters.addValue("LoginUserId", null);
-		if (userRole.getRoleId() > 0)
-			parameters.addValue("RoleId", userRole.getRoleId());
-		else
-			parameters.addValue("RoleId", null);
-		if (userRole.getOwnerAccountId() > 0)
-			parameters.addValue("OwnerAccountId", userRole.getOwnerAccountId());
-		else
-			parameters.addValue("OwnerAccountId", null);
-		return parameters;
-	}
-
 	// Add a LoginUserRole. Return the number of records added
 	@Override
 	public int addLoginUserRole(LoginUserRole userRole) 
@@ -136,16 +150,16 @@ public class JdbcLoginUserRoleDao implements LoginUserRoleDao {
 		MapSqlParameterSource parameters = this.getLoginUserRoleMapSqlParameterSource(userRole);	
 		try {
 			// insert LoginUserRole record
-			int retRows = insertLoginUserRole.execute(parameters);
+			int retRows = insertDomainObject.execute(parameters);
 			return retRows;
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole DuplicateKeyException: " + e1.getMessage());
-			throw e1;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole DuplicateKeyException: " + e.getMessage());
+			throw e;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole Exception: " + e2.getMessage());
-			throw e2;
+		catch (Exception e) {
+			System.out.println("JdbcLoginUserRoleDao.addLoginUserRole Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
