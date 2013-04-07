@@ -243,7 +243,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses) {
 		try {
-			return findDomainObjectsByOwnerAccountId(ownerAccountId, currentStatuses);
+			return findDomainObjectsByOwnerAccountId(ownerAccountId, null, currentStatuses);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByOwerAccountId MustOverrideException: " + e.getMessage());
@@ -259,7 +259,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public Payment findPaymentById(long id) {
 		try {
-			return findDomainObjectById(id);
+			return findDomainObjectById(id, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentById MustOverrideException: " + e.getMessage());

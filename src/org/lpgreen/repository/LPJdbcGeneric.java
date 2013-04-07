@@ -22,7 +22,7 @@ import org.lpgreen.util.InvalidDataValueException;
  * JdbcGeneric is the helper class to implement generic JDBC functions
  * 
  * Creation date: Mar. 21, 2013
- * Last modify date: Mar. 21, 2013
+ * Last modify date: Apr. 7, 2013
  * 
  * @author  Jiaxun Stephen Yu
  * @version 1.0
@@ -116,22 +116,26 @@ public class LPJdbcGeneric<T> {
 	// Get a specific domain object by a given database id. Because
 	// this is a common operation, this method assumes the database column
 	// used in the queried is "Id".
-	public T findDomainObjectById(int id)
+	public T findDomainObjectById(int id, String outJoins)
 			throws MustOverrideException {
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where o.Id=:Id;");
+			sbQuery.append(" as o ");
+			if (outJoins != null && !outJoins.isEmpty()) {
+				sbQuery.append(outJoins);
+			}
+			sbQuery.append(" where o.Id=:Id;");
 			T domanObj = namedParameterJdbcTemplate.queryForObject(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("Id", id),
@@ -147,22 +151,26 @@ public class LPJdbcGeneric<T> {
 	// Get a specific domain object by a given database id. Because
 	// this is a common operation, this method assumes the database column
 	// used in the queried is "Id".
-	public T findDomainObjectById(long id)
+	public T findDomainObjectById(long id, String outJoins)
 			throws MustOverrideException {
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where o.Id=:Id;");
+			sbQuery.append(" as o ");
+			if (outJoins != null && !outJoins.isEmpty()) {
+				sbQuery.append(outJoins);
+			}
+			sbQuery.append(" where o.Id=:Id;");
 			T domanObj = namedParameterJdbcTemplate.queryForObject(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("Id", id),
@@ -179,22 +187,26 @@ public class LPJdbcGeneric<T> {
 	// the current statuses. Because this is a common operation, this method
 	// assumes the database columns used in the queried is "OwnerAccountId"
 	// and the return from getCurrentStatusColumn().
-	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses)
+	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, String outJoins, Set<String> currentStatuses)
 			throws MustOverrideException {
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
 			sbQuery.append(" from ");
 			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o where o.OwnerAccountId=:OwnerAccountId");
+			sbQuery.append(" as o ");
+			if (outJoins != null && !outJoins.isEmpty()) {
+				sbQuery.append(outJoins);
+			}
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
@@ -213,17 +225,17 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
 			String colName, boolean boolVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -257,17 +269,17 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
 			String colName, int intVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -300,17 +312,17 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
 			String colName, long longVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -343,17 +355,17 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
 			String colName, String strVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -386,17 +398,17 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
 			String colName, UUID uuidVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -429,22 +441,21 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
 			String colName, int intStartVal, int intEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		if (intStartVal > intEndVal) {
+			throw new InvalidDataValueException("Start value is larger than the end value");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
-			if (intStartVal > intEndVal) {
-				int intTemp = intStartVal;
-				intStartVal = intEndVal;
-				intEndVal   = intTemp;
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -478,22 +489,20 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
 			String colName, long longStartVal, long longEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
+		if (longStartVal > longEndVal) {
+			throw new InvalidDataValueException("Start value is larger than the end value");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
-			if (longStartVal > longEndVal) {
-				long longTemp = longStartVal;
-				longStartVal = longEndVal;
-				longEndVal   = longTemp;
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -527,20 +536,20 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
 			String colName, String strStartVal, String strEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		if (strStartVal == null && strEndVal == null) {
+			throw new InvalidDataValueException("Missing input strStartVal and strEndVal");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			if (strStartVal == null && strEndVal == null) {
-				throw new InvalidDataValueException("Missing input strStartVal and strEndVal");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -584,20 +593,24 @@ public class LPJdbcGeneric<T> {
 	public List<T> findDomainObjectsByDateTimeRange(int ownerAccountId, String outJoins,
 			String colName, DateTime dtStartVal, DateTime dtEndVal, Set<String> currentStatuses)
 			throws MustOverrideException, InvalidDataValueException {
+		if (colName == null) {
+			throw new InvalidDataValueException("Missing input colName");
+		}
+		if (dtStartVal == null && dtEndVal == null) {
+			throw new InvalidDataValueException("Missing input dtStartVal and dtEndVal");
+		}
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
+		if (dtStartVal != null && dtEndVal != null && dtStartVal.getMillis() > dtEndVal.getMillis()) {
+			throw new InvalidDataValueException("Start DateTime is larger than the end DateTime");
+		}
+		
 		try {
-			if (colName == null) {
-				throw new InvalidDataValueException("Missing input colName");
-			}
-			if (dtStartVal == null && dtEndVal == null) {
-				throw new InvalidDataValueException("Missing input dtStartVal and dtEndVal");
-			}
-			String strReadFields = getFieldSelectionForRead();
-			String strSqlTable  = getSqlTable();
-			RowMapper<T> mapper = getRowMapper();
-			if (strReadFields == null || strReadFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("select ");
 			sbQuery.append(strReadFields);
@@ -640,14 +653,14 @@ public class LPJdbcGeneric<T> {
 	// Add a domain object to the database and return the generated database id
 	public int addDomainObject(T domainObj)
 			throws MustOverrideException, DuplicateKeyException, Exception {
+		if (domainObj == null) {
+			throw new Exception("Missing input domainObj");
+		}
+		MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, true);
+		if (parameters == null) {
+			throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
+		}
 		try {
-			if (domainObj == null) {
-				throw new Exception("Missing input domainObj");
-			}
-			MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, true);
-			if (parameters == null) {
-				throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
-			}
 			// Insert the domain object to the database
 			return insertDomainObject.executeAndReturnKey(parameters).intValue();
 		}
@@ -664,20 +677,20 @@ public class LPJdbcGeneric<T> {
 	// Save changes of an existing domain object to the database. Return the # of records updated
 	public int saveDomainObject(T domainObj)
 			throws DuplicateKeyException, Exception {
+		if (domainObj == null) {
+			throw new Exception("Missing input domainObj");
+		}
+		String strUpdateFields = getFieldSelectionForUpdate();
+		String strSqlTable = getSqlTable();
+		if (strUpdateFields == null || strUpdateFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty()) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
+		MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, false);
+		if (parameters == null) {
+			throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
+		}
 		try {
-			if (domainObj == null) {
-				throw new Exception("Missing input domainObj");
-			}
-			String strUpdateFields = getFieldSelectionForUpdate();
-			String strSqlTable = getSqlTable();
-			if (strUpdateFields == null || strUpdateFields.isEmpty() ||
-			    strSqlTable == null || strSqlTable.isEmpty()) {
-				throw new MustOverrideException("Missing derived class override get functions");
-			}
-			MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, false);
-			if (parameters == null) {
-				throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("update ");
 			sbQuery.append(strSqlTable);
@@ -704,11 +717,11 @@ public class LPJdbcGeneric<T> {
 		throws MustOverrideException, Exception {
 		if (ownerAccountId < 0 || id <= 0)
 			return 0;
+		String strSqlTable = getSqlTable();
+		if (strSqlTable == null) {
+			throw new MustOverrideException("Missing derived class override getSqlTable");
+		}
 		try {
-			String strSqlTable = getSqlTable();
-			if (strSqlTable == null) {
-				throw new MustOverrideException("Missing derived class override getSqlTable");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("delete from ");
 			sbQuery.append(strSqlTable);
@@ -729,11 +742,11 @@ public class LPJdbcGeneric<T> {
 		throws MustOverrideException, Exception {
 		if (ownerAccountId < 0 || id <= 0)
 			return 0;
+		String strSqlTable = getSqlTable();
+		if (strSqlTable == null || strSqlTable.isEmpty()) {
+			throw new MustOverrideException("Missing derived class override getSqlTable");
+		}
 		try {
-			String strSqlTable = getSqlTable();
-			if (strSqlTable == null || strSqlTable.isEmpty()) {
-				throw new MustOverrideException("Missing derived class override getSqlTable");
-			}
 			StringBuffer sbQuery = new StringBuffer();
 			sbQuery.append("delete from ");
 			sbQuery.append(strSqlTable);
