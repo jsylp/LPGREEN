@@ -22,7 +22,7 @@ import org.lpgreen.util.InvalidDataValueException;
  * JdbcGeneric is the helper class to implement generic JDBC functions
  * 
  * Creation date: Mar. 21, 2013
- * Last modify date: Apr. 7, 2013
+ * Last modify date: Apr. 8, 2013
  * 
  * @author  Jiaxun Stephen Yu
  * @version 1.0
@@ -61,6 +61,11 @@ public class LPJdbcGeneric<T> {
 
 	// Must be overridden by the derived class to return the name of the current status column
 	protected String getCurrentStatusColumn() {
+		return null;
+	}
+
+	// Must be overridden by the derived class to return the field order for read a list of objects
+	protected String getFieldOrderForReadList() {
 		return null;
 	}
 
@@ -208,6 +213,8 @@ public class LPJdbcGeneric<T> {
 			}
 			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -251,11 +258,13 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-							addValue(colName, boolVal ? 1.0 : 0.0),
+							addValue(colName.substring(colName.indexOf('.') + 1), boolVal ? 1 : 0),
 					mapper);
 			return domainObjs;
 		}
@@ -295,6 +304,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -338,6 +349,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -381,6 +394,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -424,6 +439,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -471,6 +488,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -518,6 +537,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -576,6 +597,8 @@ public class LPJdbcGeneric<T> {
 				sqlParameters.addValue("EndVal", strEndVal);
 			}
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
@@ -637,6 +660,8 @@ public class LPJdbcGeneric<T> {
 				sqlParameters.addValue("EndDate", dtEndVal.toCalendar(null), Types.TIMESTAMP);
 			}
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
