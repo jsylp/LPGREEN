@@ -192,7 +192,7 @@ public class LPJdbcGeneric<T> {
 	// the current statuses. Because this is a common operation, this method
 	// assumes the database columns used in the queried is "OwnerAccountId"
 	// and the return from getCurrentStatusColumn().
-	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, String outJoins, Set<String> currentStatuses)
+	public List<T> findDomainObjectsByOwnerAccountId(int ownerAccountId, String outJoins, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException {
 		String strReadFields = getFieldSelectionForRead();
 		String strSqlTable  = getSqlTable();
@@ -213,6 +213,8 @@ public class LPJdbcGeneric<T> {
 			}
 			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -230,7 +232,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a boolean value column (database - decimal(1.0)).
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, boolean boolVal, Set<String> currentStatuses)
+			String colName, boolean boolVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -258,6 +260,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -276,7 +280,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by an integer value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, int intVal, Set<String> currentStatuses)
+			String colName, int intVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -304,6 +308,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -321,7 +327,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a long integer value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, long longVal, Set<String> currentStatuses)
+			String colName, long longVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -349,6 +355,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -366,7 +374,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, String strVal, Set<String> currentStatuses)
+			String colName, String strVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -394,6 +402,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -411,7 +421,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a UUID value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, UUID uuidVal, Set<String> currentStatuses)
+			String colName, UUID uuidVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -439,6 +449,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -456,7 +468,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by an integer value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
-			String colName, int intStartVal, int intEndVal, Set<String> currentStatuses)
+			String colName, int intStartVal, int intEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 
 		String strReadFields = getFieldSelectionForRead();
@@ -488,6 +500,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -506,7 +520,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a long value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
-			String colName, long longStartVal, long longEndVal, Set<String> currentStatuses)
+			String colName, long longStartVal, long longEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -537,6 +551,8 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(colName);
 			sbQuery.append(" <= :EndVal");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -555,7 +571,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column in a [start, end] range.
 	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
-			String colName, String strStartVal, String strEndVal, Set<String> currentStatuses)
+			String colName, String strStartVal, String strEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -597,6 +613,8 @@ public class LPJdbcGeneric<T> {
 				sqlParameters.addValue("EndVal", strEndVal);
 			}
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
@@ -614,7 +632,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a DateTime value column in a [start, end] range.
 	public List<T> findDomainObjectsByDateTimeRange(int ownerAccountId, String outJoins,
-			String colName, DateTime dtStartVal, DateTime dtEndVal, Set<String> currentStatuses)
+			String colName, DateTime dtStartVal, DateTime dtEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -660,6 +678,8 @@ public class LPJdbcGeneric<T> {
 				sqlParameters.addValue("EndDate", dtEndVal.toCalendar(null), Types.TIMESTAMP);
 			}
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
