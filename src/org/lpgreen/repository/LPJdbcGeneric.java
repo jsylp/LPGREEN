@@ -315,7 +315,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, intVal),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), intVal),
 					mapper);
 			return domainObjs;
 		}
@@ -362,7 +362,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, longVal),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), longVal),
 					mapper);
 			return domainObjs;
 		}
@@ -409,7 +409,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, strVal),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), strVal),
 					mapper);
 			return domainObjs;
 		}
@@ -456,7 +456,7 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName, uuidVal),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), uuidVal),
 					mapper);
 			return domainObjs;
 		}
@@ -708,6 +708,30 @@ public class LPJdbcGeneric<T> {
 		try {
 			// Insert the domain object to the database
 			return insertDomainObject.executeAndReturnKey(parameters).intValue();
+		}
+		catch (DuplicateKeyException e) {
+			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
+			throw e;
+		}
+	}
+
+	// Add a domain object to the database and return the generated database id
+	public long addDomainObjectRetLong(T domainObj)
+			throws MustOverrideException, DuplicateKeyException, Exception {
+		if (domainObj == null) {
+			throw new Exception("Missing input domainObj");
+		}
+		MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, true);
+		if (parameters == null) {
+			throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
+		}
+		try {
+			// Insert the domain object to the database
+			return insertDomainObject.executeAndReturnKey(parameters).longValue();
 		}
 		catch (DuplicateKeyException e) {
 			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
