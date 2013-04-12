@@ -73,6 +73,13 @@ public class StringUtil {
 					print(dateTime);
 	}
 	
+	// Get date time string in UTC timezone from DateTime object
+	public static String getUTCDateTimeString(DateTime dateTime) {
+		return DateTimeFormat.forPattern("EE MMM dd, YYYY KK:mma").
+					withZone(DateTimeZone.UTC).
+					print(dateTime);
+	}
+	
 	// Get DateTime object from a string
 	public static DateTime parseDateTimeFromString(String strDateTime) {
 		if (strDateTime == null || strDateTime.isEmpty())
@@ -87,13 +94,12 @@ public class StringUtil {
 		}
 	}
 	
-	// Date: YYYY-MM-dd
-	// Time: HH:mm:ss (example: 14:20:00 for 2:20pm)
-	public static DateTime parseUTCDateTimeFromString_HHmmss(String strDateTime) {
+	// Get DateTime object in UTC timezone from a string
+	public static DateTime parseUTCDateTimeFromString(String strDateTime) {
 		if (strDateTime == null || strDateTime.isEmpty())
 			return null;
 		try {
-			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
+			return DateTimeFormat.forPattern("EE MMM dd, YYYY KK:mma").
 						withZone(DateTimeZone.UTC).
 						parseDateTime(strDateTime);
 		}
@@ -101,11 +107,18 @@ public class StringUtil {
 			return null;
 		}
 	}
-
+	
 	// Get a Date Only date time string from DateTime object
 	public static String getDateOnlyDateTimeString(DateTime dateTime) {
 		return DateTimeFormat.forPattern("YYYY-MM-dd").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
+					print(dateTime);
+	}
+	
+	// Get a Date Only date time string in UTC timezone from DateTime object
+	public static String getDateOnlyUTCDateTimeString(DateTime dateTime) {
+		return DateTimeFormat.forPattern("YYYY-MM-dd").
+					withZone(DateTimeZone.UTC).
 					print(dateTime);
 	}
 	
@@ -123,6 +136,20 @@ public class StringUtil {
 		}
 	}
 	
+	// Get a Date Only DateTime object in UTC timezone from a string
+	public static DateTime parseDateOnlyUTCDateTimeFromString(String strDateTime) {
+		if (strDateTime == null || strDateTime.isEmpty())
+			return null;
+		try {
+			return DateTimeFormat.forPattern("YYYY-MM-dd").
+					withZone(DateTimeZone.UTC).
+					parseDateTime(strDateTime);
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
 	// Pattern 1: Get date time string from DateTime object
 	public static String getDateTimeString_hhmma(DateTime dateTime) {
 		return DateTimeFormat.forPattern("YYYY-MM-dd hh:mma").
@@ -130,10 +157,24 @@ public class StringUtil {
 					print(dateTime);
 	}
 	
+	// Pattern 1: Get date time string in UTC timezone from DateTime object
+	public static String getUTCDateTimeString_hhmma(DateTime dateTime) {
+		return DateTimeFormat.forPattern("YYYY-MM-dd hh:mma").
+					withZone(DateTimeZone.UTC).
+					print(dateTime);
+	}
+	
 	// Pattern 1A: Get date time string from DateTime object with Day of the week
 	public static String getDateTimeString_hhmma_week(DateTime dateTime) {
 		return DateTimeFormat.forPattern("EEE YYYY-MM-dd hh:mma").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
+					print(dateTime);
+	}
+	
+	// Pattern 1A: Get date time string from DateTime object in UTC timezone with Day of the week
+	public static String getUTCDateTimeString_hhmma_week(DateTime dateTime) {
+		return DateTimeFormat.forPattern("EEE YYYY-MM-dd hh:mma").
+					withZone(DateTimeZone.UTC).
 					print(dateTime);
 	}
 	
@@ -151,6 +192,20 @@ public class StringUtil {
 		}
 	}
 	
+	// Pattern 1: Get DateTime object from a string in UTC timezone
+	public static DateTime parseUTCDateTimeFromString_hhmma(String strDateTime) {
+		if (strDateTime == null || strDateTime.isEmpty())
+			return null;
+		try {
+			return DateTimeFormat.forPattern("YYYY-MM-dd hh:mma").
+					withZone(DateTimeZone.UTC).
+					parseDateTime(strDateTime);
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
 	// Pattern 1: Get a Time Only string from DateTime object in the format: "T17:45:00"
 	public static String getTimeOnlyDateTimeString_hhmma(DateTime dateTime) {
 		String DateTimeString = DateTimeFormat.forPattern("YYYY-MM-dd hh:mma").
@@ -159,11 +214,42 @@ public class StringUtil {
 		return DateTimeString.substring(DateTimeString.indexOf(" ")+1);
 	}
 	
+	// Pattern 1: Get a Time Only string from DateTime object in the format: "T17:45:00"
+	public static String getTimeOnlyUTCDateTimeString_hhmma(DateTime dateTime) {
+		String DateTimeString = DateTimeFormat.forPattern("YYYY-MM-dd hh:mma").
+					withZone(DateTimeZone.UTC).
+					print(dateTime);
+		return DateTimeString.substring(DateTimeString.indexOf(" ")+1);
+	}
+	
 	// Pattern 2: Get date time string from DateTime object
 	public static String getDateTimeString_HHmmss(DateTime dateTime) {
-		return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
+		if (dateTime != null)
+			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
 					print(dateTime);
+		else
+			return "";
+	}
+	
+	// Pattern 2: Get date time string from DateTime object
+	public static String getUTCDateTimeString_HHmmss(DateTime dateTime) {
+		if (dateTime != null)
+			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
+					withZone(DateTimeZone.UTC).
+					print(dateTime);
+		else
+			return "";
+	}
+	
+	// Pattern 2: Get date time string from DateTime object
+	public static String getUTCDateTimeString_HHmmssSSS(DateTime dateTime) {
+		if (dateTime != null)
+			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS").
+					withZone(DateTimeZone.UTC).
+					print(dateTime);
+		else
+			return "";
 	}
 	
 	// Pattern 2: Parse DateTime object from a string
@@ -173,6 +259,20 @@ public class StringUtil {
 		try {
 			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
+					parseDateTime(strDateTime);
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	// Pattern 2: Parse DateTime object from a string
+	public static DateTime parseUTCDateTimeFromString_HHmmss(String strDateTime) {
+		if (strDateTime == null || strDateTime.isEmpty())
+			return null;
+		try {
+			return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
+					withZone(DateTimeZone.UTC).
 					parseDateTime(strDateTime);
 		}
 		catch (Exception e) {
@@ -202,12 +302,19 @@ public class StringUtil {
 			return null;
 		}
 	}
-
 	
 	// Pattern 2: Get a Time Only string from DateTime object in the format: "T17:45:00"
 	public static String getTimeOnlyDateTimeString_HHmmss(DateTime dateTime) {
 		String DateTimeString = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
+					print(dateTime);
+		return DateTimeString.substring(DateTimeString.indexOf(" ")+1);
+	}
+	
+	// Pattern 2: Get a Time Only string from DateTime object in the format: "T17:45:00"
+	public static String getTimeOnlyUTCDateTimeString_HHmmss(DateTime dateTime) {
+		String DateTimeString = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss").
+					withZone(DateTimeZone.UTC).
 					print(dateTime);
 		return DateTimeString.substring(DateTimeString.indexOf(" ")+1);
 	}
@@ -220,6 +327,22 @@ public class StringUtil {
 		try {
 			DateTime theDate = DateTimeFormat.forPattern("YYYY-MM-dd").
 					withZone(DateTimeZone.forID("America/Los_Angeles")).
+					parseDateTime(strDateTime);
+			return theDate;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static DateTime getUTCDateFromYearMonthDay(int year, int month, int day) {
+		if (year < 0 || month < 1 || month > 12 || day < 1 || day > 31)
+			return null;
+		
+		String strDateTime = String.format("%04d-%02d-%02d", year, month, day);
+		try {
+			DateTime theDate = DateTimeFormat.forPattern("YYYY-MM-dd").
+					withZone(DateTimeZone.UTC).
 					parseDateTime(strDateTime);
 			return theDate;
 		}

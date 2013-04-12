@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -44,12 +45,25 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 		}
 	}
 
+	// To do: uncomment
+//	private EmployeeDao employeeDao;
+//	public void setEmployeeDao(EmployeeDao employeeDao) {
+//		this.employeeDao = employeeDao;
+//	}
+
 	// o: the main object: this Project 
 	protected final static String fieldSelectionForReadProject =
 			"o.Id,o.ProjectCode,o.Name,o.CurrentPhase,o.ProjectManager1Id,o.ProjectManager2Id," +
 			"o.CustomerAccount,o.CustomerContact,o.Sponsor,o.ManagingDeptId,o.Objectives," +
 			"o.Description,o.Budget,o.CurrencyCode,o.StartDate,o.EndDate,o.ParentProjectId," +
 			"o.Notes,o.OwnerId,o.OwnerAccountId";
+
+	protected final static String payerAccountJoin = " LEFT OUTER JOIN Account as apayer ON o.PayerAccountId = apayer.Id";
+	protected final static String payeeAccountJoin = " LEFT OUTER JOIN Account as apayee ON o.PayeeAccountId = apayee.Id";
+	protected final static String payerContactJoin = " LEFT OUTER JOIN Contact as cpayer ON o.PayerContactId = cpayer.UniqueId";
+	protected final static String payeeContactJoin = " LEFT OUTER JOIN Contact as cpayee ON o.PayeeContactId = cpayee.UniqueId";
+	protected final static String deptJoin = " LEFT OUTER JOIN Department as d ON o.DepartmentId = d.Id";
+	protected final static String outJoins = payerAccountJoin + payeeAccountJoin + payerContactJoin + payeeContactJoin + deptJoin;
 
 	// field selection for update
 	protected final static String fieldSetForUpdateProject = 
@@ -98,6 +112,23 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			project.setOwnerAccountId(rs.getInt("OwnerAccountId"));
 			return project;
 		}
+	}
+
+	// Read detailed data of a project. The input project may have the header only.
+	@Override
+	public Project readProjectDetail(Project project) {
+		if (project == null)
+			return null;
+
+		// To do: uncomment
+		if (project.getProjectManager1Id() > 0)
+			;
+			//project.setProjectManager1Name(employeeDao.getEmployeeNameById(project.getProjectManager1Id()));
+		if (project.getProjectManager2Id() > 0)
+			;
+			//project.setProjectManager2Name(employeeDao.getEmployeeNameById(project.getProjectManager2Id()));
+
+		return project;
 	}
 
 	// Override to return the SQL table name
@@ -198,27 +229,15 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// Project related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// get all Projects owned by a specific owner account id and current phases
-	@Override
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses) {
-		try {
-			return findDomainObjectsByOwnerAccountId(ownerAccountId, currentStatuses);
-		}
-		catch (MustOverrideException e) {
-			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId MustOverrideException: " + e.getMessage());
-			return null;
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
 	// get a specific Project by a given database id
 	@Override
 	public Project findProjectById(int id) {
 		try {
-			return findDomainObjectById(id);
+			Project project = super.findDomainObjectById(id, outJoins);
+			if (project != null) {
+				project = this.readProjectDetail(project);
+			}
+			return project;
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectById MustOverrideException: " + e.getMessage());
@@ -230,9 +249,36 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 		}
 	}
 
+	// get all Projects owned by a specific owner account id
+	@Override
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, boolean headerOnly) {
+		if (ownerAccountId <= 0)
+			return null;
+		try {
+			List<Project> projects = super.findDomainObjectsByOwnerAccountId(ownerAccountId, outJoins, null, null);
+			if (projects != null && projects.size() > 0 && !headerOnly) {
+				Iterator<Project> it = projects.iterator();
+				while (it.hasNext()) {
+					Project project = it.next();
+					this.readProjectDetail(project);
+				}
+			}
+			return projects;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId MustOverrideException: " + e.getMessage());
+			return null;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
 	// get all Projects by ProjectCode
 	@Override
-	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode) {
+	public List<Project> findProjectsByProjectCode(int ownerAccountId,
+			String projectCode, boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectCode", projectCode, null);
 		}
@@ -248,7 +294,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a given Name
 	@Override
-	public List<Project> findProjectsByName(int ownerAccountId, String name) {
+	public List<Project> findProjectsByName(int ownerAccountId, String name,
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "Name", name, null);
 		}
@@ -265,7 +312,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given ProjectManager1Id
 	@Override
 	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager1Id", projectMgr1Id, currentStatuses);
 		}
@@ -282,7 +329,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given ProjectManager2Id
 	@Override
 	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager2Id", projectMgr2Id, currentStatuses);
 		}
@@ -299,7 +346,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given CustomerAccount
 	@Override
 	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerAccount", customerAccount, currentStatuses);
 		}
@@ -316,7 +363,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given CustomerContact
 	@Override
 	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerContact", customerContact, currentStatuses);
 		}
@@ -333,7 +380,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given Sponsor
 	@Override
 	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "Sponsor", sponsor, currentStatuses);
 		}
@@ -350,7 +397,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given ManagingDeptId
 	@Override
 	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			Set<String> currentStatuses) {
+			boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "ManagingDeptId", managingDeptId, currentStatuses);
 		}
@@ -366,7 +413,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects by the StartDate range
 	@Override
-	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
+	public List<Project> findProjectsByStartDateRange(int ownerAccountId,
+			DateTime fromDate, DateTime toDate, boolean headerOnly) {
 		try {
 			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "StartDate", fromDate, toDate, null);
 		}
@@ -382,7 +430,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects by the EndDate range
 	@Override
-	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate) {
+	public List<Project> findProjectsByEndDateRange(int ownerAccountId,
+			DateTime fromDate, DateTime toDate, boolean headerOnly) {
 		try {
 			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "EndDate", fromDate, toDate, null);
 		}
@@ -398,7 +447,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a given ParentProjectId
 	@Override
-	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId) {
+	public List<Project> findProjectsByParentProjectId(int ownerAccountId,
+			int parentProjectId, boolean headerOnly) {
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, null, "ParentProjectId", parentProjectId, null);
 		}

@@ -24,50 +24,57 @@ public interface ProjectDao {
 	// Project related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// get all Projects owned by a specific owner account id and current phases
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, Set<String> currentStatuses);
-
 	// get a specific Project by a given database id
 	public Project findProjectById(int id);
 
+	// read detailed data of a project. The input project may have the header only.
+	public Project readProjectDetail(Project project);
+
+	// get all Projects owned by a specific owner account id
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, boolean headerOnly);
+
 	// get all Projects by ProjectCode
-	public List<Project> findProjectsByProjectCode(int ownerAccountId, String projectCode);
+	public List<Project> findProjectsByProjectCode(int ownerAccountId,
+			String projectCode, boolean headerOnly);
 
 	// get all Projects owned by a given Name
-	public List<Project> findProjectsByName(int ownerAccountId, String name);
+	public List<Project> findProjectsByName(int ownerAccountId, String name, boolean headerOnly);
 
 	// get all Projects owned by a given ProjectManager1Id
 	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId,
-			int projectMgr1Id, Set<String> currentStatuses);
+			int projectMgr1Id, boolean headerOnly);
 
 	// get all Projects owned by a given ProjectManager2Id
 	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId,
-			int projectMgr2Id, Set<String> currentStatuses);
+			int projectMgr2Id, boolean headerOnly);
 
 	// get all Projects owned by a given CustomerAccount
 	public List<Project> findProjectsByCustomerAccount(int ownerAccountId,
-			int customerAccount, Set<String> currentStatuses);
+			int customerAccount, boolean headerOnly);
 
 	// get all Projects owned by a given CustomerContact
 	public List<Project> findProjectsByCustomerContact(int ownerAccountId,
-			UUID customerContact, Set<String> currentStatuses);
+			UUID customerContact, boolean headerOnly);
 
 	// get all Projects owned by a given Sponsor
 	public List<Project> findProjectsBySponsor(int ownerAccountId,
-			UUID sponsor, Set<String> currentStatuses);
+			UUID sponsor, boolean headerOnly);
 
 	// get all Projects owned by a given ManagingDeptId
 	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			Set<String> currentStatuses);
+			boolean headerOnly);
 
 	// get all Projects by the StartDate range
-	public List<Project> findProjectsByStartDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate);
+	public List<Project> findProjectsByStartDateRange(int ownerAccountId,
+			DateTime fromDate, DateTime toDate, boolean headerOnly);
 
 	// get all Projects by the EndDate range
-	public List<Project> findProjectsByEndDateRange(int ownerAccountId, DateTime fromDate, DateTime toDate);
+	public List<Project> findProjectsByEndDateRange(int ownerAccountId,
+			DateTime fromDate, DateTime toDate, boolean headerOnly);
 
 	// get all Projects owned by a given ParentProjectId
-	public List<Project> findProjectsByParentProjectId(int ownerAccountId, int parentProjectId);
+	public List<Project> findProjectsByParentProjectId(int ownerAccountId,
+			int parentProjectId, boolean headerOnly);
 
 	// Add a Project. Return the generated database id
 	public int addProject(Project project) 

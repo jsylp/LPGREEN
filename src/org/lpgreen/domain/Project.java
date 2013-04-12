@@ -1,10 +1,10 @@
 package org.lpgreen.domain;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.lpgreen.util.StringUtil;
 
 /**
  * Project is a domain object.
@@ -20,12 +20,14 @@ public class Project implements Serializable {
 
 	private static final long serialVersionUID = -4399220502314763280L;
 
-	private int         id;                 // database generated id
+	private int         id;                     // database generated id
 	private String		projectCode;
 	private String      name;
 	private String      currentPhase;
 	private int         projectManager1Id;
+	private String      projectManager1Name;
 	private int         projectManager2Id;
+	private String      projectManager2Name;
 	private int         customerAccount;
 	private UUID        customerContact;
 	private UUID        sponsor;
@@ -33,9 +35,11 @@ public class Project implements Serializable {
 	private String      objectives;
 	private String      description;
 	private double      budget;
-	private String      currencyCode;       // currency code: http://www.xe.com/iso4217.php
+	private String      currencyCode;           // currency code: http://www.xe.com/iso4217.php
 	private DateTime    startDate;
+	private String 		startDateInputString;   // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
 	private DateTime    endDate;
+	private String 		endDateInputString;     // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
 	private int         parentProjectId;
 	private String      notes;
 	private UUID        ownerId;
@@ -61,7 +65,7 @@ public class Project implements Serializable {
 			String description, double budget, String currencyCode,
 			DateTime startDate, DateTime endDate,
 			int parentProjectId, String notes)
-	{		
+	{
 		//super(createdDate, createdById, lastModifiedDate, lastModifiedById, ownerId, ownerAccountId);
 		this.ownerAccountId = ownerAccountId;
 		this.projectCode = projectCode;
@@ -77,8 +81,8 @@ public class Project implements Serializable {
 		this.description = description;
 		this.budget = budget;
 		this.currencyCode = currencyCode;
-		this.startDate = new DateTime(startDate);
-		this.endDate = new DateTime(endDate);
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.parentProjectId = parentProjectId;
 		this.notes = notes;
 	}
@@ -167,12 +171,24 @@ public class Project implements Serializable {
 	public void setProjectManager1Id(int projectManager1Id) {
 		this.projectManager1Id = projectManager1Id;
 	}
+	public String getProjectManager1Name() {
+		return projectManager1Name;
+	}
+	public void setProjectManager1Name(String projectManager1Name) {
+		this.projectManager1Name = projectManager1Name;
+	}
 
 	public int getProjectManager2Id() {
 		return projectManager2Id;
 	}
 	public void setProjectManager2Id(int projectManager2Id) {
 		this.projectManager2Id = projectManager2Id;
+	}
+	public String getProjectManager2Name() {
+		return projectManager2Name;
+	}
+	public void setProjectManager2Name(String projectManager2Name) {
+		this.projectManager2Name = projectManager2Name;
 	}
 
 	public int getCustomerAccount() {
@@ -235,16 +251,50 @@ public class Project implements Serializable {
 		return startDate;
 	}
 	public void setStartDate(DateTime startDate) {
-		//this.startDate = new DateTime(startDate);
 		this.startDate = startDate;
+	}
+	public String getStartDateInputString() {
+		return startDateInputString;
+	}
+	public void setStartDateInputString(String startDateInputString) {
+		this.startDateInputString = startDateInputString;
+	}
+	public String getStartDateString() {
+		if (this.startDate == null)
+			return null;
+		else
+			return StringUtil.getUTCDateTimeString_hhmma(this.startDate);
+	}
+	public String getStartDateStringLong() {
+		if (this.startDate == null)
+			return null;
+		else
+			return StringUtil.getUTCDateTimeString_hhmma_week(this.startDate);
 	}
 
 	public DateTime getEndDate() {
 		return endDate;
 	}
 	public void setEndDate(DateTime endDate) {
-		//this.endDate = new DateTime(endDate);
 		this.endDate = endDate;
+	}
+	public String getEndDateInputString() {
+		return endDateInputString;
+	}
+	public void setEndDateInputString(String endDateInputString) {
+		this.endDateInputString = endDateInputString;
+	}
+	public String getEndDateString() {
+		if (this.endDate == null)
+			return null;
+		else
+			return StringUtil.getUTCDateTimeString_hhmma(this.endDate);
+	}
+	public String getEndDateStringLong() {
+		if (this.endDate == null)
+			return null;
+		else
+			return StringUtil.getUTCDateTimeString_hhmma_week(this.endDate);
 	}
 
 	public int getParentProjectId() {
