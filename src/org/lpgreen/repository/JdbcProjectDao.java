@@ -25,7 +25,7 @@ import org.springframework.stereotype.Repository;
  * JdbcProjectDao is the JDBC implementation of the ProjectDao for Project related entity's persistence layer
  * 
  * Creation date: Mar. 06, 2013
- * Last modify date: Mar. 06, 2013
+ * Last modify date: Apr. 14, 2013
  * 
  * @author  Jiaxun Stephen Yu
  * @version 1.0
@@ -51,26 +51,35 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 //		this.employeeDao = employeeDao;
 //	}
 
-	// o: the main object: this Project 
+	// o: the main object: this Project
+	// ac: the CustomerAccount
+	// cc: the CustomerContact
+	// cs: the Sponsor
+	// dm: the ManagingDept
+	// pp: the ParentProject
 	protected final static String fieldSelectionForReadProject =
 			"o.Id,o.ProjectCode,o.Name,o.CurrentPhase,o.ProjectManager1Id,o.ProjectManager2Id," +
-			"o.CustomerAccount,o.CustomerContact,o.Sponsor,o.ManagingDeptId,o.Objectives," +
-			"o.Description,o.Budget,o.CurrencyCode,o.StartDate,o.EndDate,o.ParentProjectId," +
+			"o.CustomerAccountId,ac.Name as CustomerAccountName," +
+			"o.CustomerContactId,cc.LastName||','||cc.FirstName as CustomerContactName," +
+			"o.SponsorId,cs.LastName||','||cs.FirstName as SponsorContactName," +
+			"o.ManagingDeptId,dm.Name as ManagingDeptName,o.Objectives," +
+			"o.Description,o.Budget,o.CurrencyCode,o.StartDate,o.EndDate," +
+			"o.ParentProjectId,pp.ProjectCode as ParentProjectCode,pp.Name as ParentProjectName," +
 			"o.Notes,o.OwnerId,o.OwnerAccountId";
 
-	protected final static String payerAccountJoin = " LEFT OUTER JOIN Account as apayer ON o.PayerAccountId = apayer.Id";
-	protected final static String payeeAccountJoin = " LEFT OUTER JOIN Account as apayee ON o.PayeeAccountId = apayee.Id";
-	protected final static String payerContactJoin = " LEFT OUTER JOIN Contact as cpayer ON o.PayerContactId = cpayer.UniqueId";
-	protected final static String payeeContactJoin = " LEFT OUTER JOIN Contact as cpayee ON o.PayeeContactId = cpayee.UniqueId";
-	protected final static String deptJoin = " LEFT OUTER JOIN Department as d ON o.DepartmentId = d.Id";
-	protected final static String outJoins = payerAccountJoin + payeeAccountJoin + payerContactJoin + payeeContactJoin + deptJoin;
+	protected final static String custAcctJoin = " LEFT OUTER JOIN Account as ac ON o.CustomerAccountId = ac.Id";
+	protected final static String custContJoin = " LEFT OUTER JOIN Contact as cc ON o.CustomerContactId = cc.UniqueId";
+	protected final static String sponsorJoin = " LEFT OUTER JOIN Contact as cs ON o.SponsorId = cs.UniqueId";
+	protected final static String mngDeptJoin = " LEFT OUTER JOIN Department as dm ON o.ManagingDeptId = dm.Id";
+	protected final static String parProjJoin = " LEFT OUTER JOIN Project as pp ON o.ParentProjectId = pp.Id";
+	protected final static String outJoins = custAcctJoin + custContJoin + sponsorJoin + mngDeptJoin + parProjJoin;
 
 	// field selection for update
 	protected final static String fieldSetForUpdateProject = 
 			"ProjectCode=:ProjectCode,Name=:Name,CurrentPhase=:CurrentPhase," +
 			"ProjectManager1Id=:ProjectManager1Id,ProjectManager2Id=:ProjectManager1Id," +
-			"CustomerAccount=:CustomerAccount,CustomerContact=:CustomerContact," +
-			"Sponsor=:Sponsor,ManagingDeptId=:ManagingDeptId,Objectives=:Objectives," +
+			"CustomerAccountId=:CustomerAccountId,CustomerContactId=:CustomerContactId," +
+			"SponsorId=:SponsorId,ManagingDeptId=:ManagingDeptId,Objectives=:Objectives," +
 			"Description=:Description,Budget=:Budget,CurrencyCode=:CurrencyCode," +
 			"StartDate=:StartDate,EndDate=:EndDate,ParentProjectId=:ParentProjectId," +
 			"Notes=:Notes,OwnerAccountId=:OwnerAccountId";
@@ -80,24 +89,55 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 		public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
 			Project project = new Project();
+
 			project.setId(rs.getInt("Id"));
 			project.setProjectCode(rs.getString("ProjectCode"));
 			project.setName(rs.getString("Name"));
 			project.setCurrentPhase(rs.getString("CurrentPhase"));
 			project.setProjectManager1Id(rs.getInt("ProjectManager1Id"));
 			project.setProjectManager2Id(rs.getInt("ProjectManager2Id"));
-			project.setCustomerAccount(rs.getInt("CustomerAccount"));
-			if (rs.getString("CustomerContact") != null) {
-				project.setCustomerContact(UUID.fromString(rs.getString("CustomerContact")));
+
+			int customerAccountId = rs.getInt("CustomerAccountId");
+			if (customerAccountId > 0) {
+				project.setCustomerAccountId(customerAccountId);
+				project.setCustomerAccountName(rs.getString("CustomerAccountName"));
 			}
-			if (rs.getString("Sponsor") != null) {
-				project.setSponsor(UUID.fromString(rs.getString("Sponsor")));
+			else {
+				project.setCustomerAccountId(0);
+				project.setCustomerAccountName(null);
 			}
-			project.setManagingDeptId(rs.getInt("ManagingDeptId"));
+
+			if (rs.getString("CustomerContactId") != null) {
+				project.setCustomerContactId(UUID.fromString(rs.getString("CustomerContactId")));
+				project.setCustomerContactName(rs.getString("CustomerContactName"));
+			}
+			else {
+				project.setCustomerContactName(null);
+			}
+
+			if (rs.getString("SponsorId") != null) {
+				project.setSponsorId(UUID.fromString(rs.getString("SponsorId")));
+				project.setSponsorName(rs.getString("SponsorContactName"));
+			}
+			else {
+				project.setCustomerContactName(null);
+			}
+
+			int managingDeptId = rs.getInt("ManagingDeptId");
+			if (managingDeptId > 0) {
+				project.setManagingDeptId(managingDeptId);
+				project.setManagingDeptName(rs.getString("ManagingDeptName"));
+			}
+			else {
+				project.setManagingDeptId(0);
+				project.setManagingDeptName(null);
+			}
+
 			project.setObjectives(rs.getString("Objectives"));
 			project.setDescription(rs.getString("Description"));
 			project.setBudget(rs.getDouble("Budget"));
 			project.setCurrencyCode(rs.getString("CurrencyCode"));
+
 			// StartDate and EndDate
 			java.util.Calendar cal = Calendar.getInstance(); 
 			cal.setTimeZone(TimeZone.getTimeZone("UTC")); 
@@ -107,8 +147,25 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			if (rs.getTimestamp("EndDate") != null) {
 				project.setEndDate(new DateTime(rs.getTimestamp("EndDate", cal), DateTimeZone.UTC));
 			}
-			project.setParentProjectId(rs.getInt("ParentProjectId"));
-			project.setNotes(rs.getString("Notes"));
+
+			int parentProjectId = rs.getInt("ParentProjectId");
+			if (parentProjectId > 0) {
+				project.setParentProjectId(parentProjectId);
+				project.setParentProjectCode(rs.getString("ParentProjectCode"));
+				project.setParentProjectName(rs.getString("ParentProjectName"));
+			}
+			else {
+				project.setParentProjectId(0);
+				project.setParentProjectCode(null);
+				project.setParentProjectName(null);
+			}
+
+			String notes = rs.getString("Notes");
+			if (notes != null && !notes.isEmpty()) {
+				notes = notes.replaceAll("(\\r\\n|\\n)", "<br/>");
+				project.setNotes(notes);
+			}
+
 			project.setOwnerAccountId(rs.getInt("OwnerAccountId"));
 			return project;
 		}
@@ -159,70 +216,95 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// Override to return MapSqlParameterSource for creating Project
 	protected MapSqlParameterSource getDomainObjectMapSqlParameterSource(Project project, boolean bNew) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
+
+		// Persist data defined in UserObject
+		parameters.addValue("OwnerId", project.getOwnerId());
+		parameters.addValue("OwnerAccountId", project.getOwnerAccountId());
+
 		if (!bNew) {
 			if (project.getId() > 0)
 				parameters.addValue("Id", project.getId());	// auto generated when insert a Project, use it as the primary key when update it
 			else
 				parameters.addValue("Id", null);
 		}
+
 		parameters.addValue("ProjectCode", project.getProjectCode());
 		parameters.addValue("Name", project.getName());
 		parameters.addValue("CurrentPhase", project.getCurrentPhase());
-		if (project.getProjectManager1Id() > 0) {
+
+		if (project.getProjectManager1Id() > 0)
 			parameters.addValue("ProjectManager1Id", project.getProjectManager1Id());
-		}
-		else {
-			parameters.addValue("ProjectManager1Id", null);
-		}
-		if (project.getProjectManager2Id() > 0) {
-			parameters.addValue("ProjectManager2Id", project.getProjectManager2Id());
-		}
-		else {
-			parameters.addValue("ProjectManager2Id", null);
-		}
-		if (project.getCustomerAccount() > 0) {
-			parameters.addValue("CustomerAccount", project.getCustomerAccount());
-		}
-		else {
-			parameters.addValue("CustomerAccount", null);
-		}
-		parameters.addValue("CustomerContact", project.getCustomerContact());
-		parameters.addValue("Sponsor", project.getSponsor());
-		if (project.getManagingDeptId() > 0) {
-			parameters.addValue("ManagingDeptId", project.getManagingDeptId());
-		}
-		else {
-			parameters.addValue("ManagingDeptId", null);
-		}
-		parameters.addValue("Objectives", project.getObjectives());
-		parameters.addValue("Description", project.getDescription());
-		parameters.addValue("Budget", project.getBudget());
-		parameters.addValue("CurrencyCode", project.getCurrencyCode());
-		if (project.getStartDate() != null) {
-			parameters.addValue("StartDate", project.getStartDate().toCalendar(null), Types.TIMESTAMP);
-		}
-		else {
-			parameters.addValue("StartDate", null);
-		}
-		if (project.getEndDate() != null) {
-			parameters.addValue("EndDate", project.getEndDate().toCalendar(null), Types.TIMESTAMP);
-		}
-		else {
-			parameters.addValue("EndDate", null);
-		}
-		if (project.getParentProjectId() > 0) {
-			parameters.addValue("ParentProjectId", project.getParentProjectId());
-		}
-		else {
-			parameters.addValue("ParentProjectId", null);
-		}
-		parameters.addValue("Notes", project.getNotes());
-		parameters.addValue("OwnerId", project.getOwnerId());
-		if (project.getOwnerAccountId() > 0)
-			parameters.addValue("OwnerAccountId", project.getOwnerAccountId());
 		else
-			parameters.addValue("OwnerAccountId", null);
+			parameters.addValue("ProjectManager1Id", null);
+		if (project.getProjectManager2Id() > 0)
+			parameters.addValue("ProjectManager2Id", project.getProjectManager2Id());
+		else
+			parameters.addValue("ProjectManager2Id", null);
+
+		if (project.getCustomerAccountId() > 0)
+			parameters.addValue("CustomerAccountId", project.getCustomerAccountId());
+		else
+			parameters.addValue("CustomerAccountId", null);
+
+		parameters.addValue("CustomerContactId", project.getCustomerContactId());
+		parameters.addValue("SponsorId", project.getSponsorId());
+
+		if (project.getManagingDeptId() > 0)
+			parameters.addValue("ManagingDeptId", project.getManagingDeptId());
+		else
+			parameters.addValue("ManagingDeptId", null);
+
+		if (project.getObjectives() != null && !project.getObjectives().isEmpty())
+			parameters.addValue("Objectives", project.getObjectives());
+		else
+			parameters.addValue("Objectives", null);
+
+		if (project.getDescription() != null && !project.getDescription().isEmpty())
+			parameters.addValue("Description", project.getDescription());
+		else
+			parameters.addValue("Description", null);
+
+		if (project.getBudget() > 0)
+			parameters.addValue("Budget", project.getBudget());
+		else
+			parameters.addValue("Budget", null);
+
+		if (project.getCurrencyCode() != null && !project.getCurrencyCode().isEmpty())
+			parameters.addValue("CurrencyCode", project.getCurrencyCode());
+		else
+			parameters.addValue("CurrencyCode", null);
+
+		if (project.getStartDate() != null)
+			parameters.addValue("StartDate", project.getStartDate().toCalendar(null), Types.TIMESTAMP);
+		else
+			parameters.addValue("StartDate", null);
+
+		if (project.getEndDate() != null)
+			parameters.addValue("EndDate", project.getEndDate().toCalendar(null), Types.TIMESTAMP);
+		else
+			parameters.addValue("EndDate", null);
+
+		if (project.getParentProjectId() > 0)
+			parameters.addValue("ParentProjectId", project.getParentProjectId());
+		else
+			parameters.addValue("ParentProjectId", null);
+
+		if (project.getNotes() != null && !project.getNotes().isEmpty())
+			parameters.addValue("Notes", project.getNotes());
+		else
+			parameters.addValue("Notes", null);
 		return parameters;
+	}
+
+	protected List<Project> getQueryDetail(List<Project> projects, boolean headerOnly) {
+		if (projects != null && projects.size() > 0 && !headerOnly) {
+			Iterator<Project> it = projects.iterator();
+			while (it.hasNext()) {
+				Project project = it.next();
+				this.readProjectDetail(project);
+			}
+		}
+		return projects;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,19 +333,14 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a specific owner account id
 	@Override
-	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId, boolean headerOnly) {
+	public List<Project> findProjectsByOwnerAccountId(int ownerAccountId,
+			Set<String> currentPhases, boolean headerOnly) {
 		if (ownerAccountId <= 0)
 			return null;
 		try {
-			List<Project> projects = super.findDomainObjectsByOwnerAccountId(ownerAccountId, outJoins, null, null);
-			if (projects != null && projects.size() > 0 && !headerOnly) {
-				Iterator<Project> it = projects.iterator();
-				while (it.hasNext()) {
-					Project project = it.next();
-					this.readProjectDetail(project);
-				}
-			}
-			return projects;
+			List<Project> projects = super.findDomainObjectsByOwnerAccountId(ownerAccountId, outJoins,
+					currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByOwnerAccountId MustOverrideException: " + e.getMessage());
@@ -278,9 +355,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects by ProjectCode
 	@Override
 	public List<Project> findProjectsByProjectCode(int ownerAccountId,
-			String projectCode, boolean headerOnly) {
+			String projectCode, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectCode", projectCode, null);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.ProjectCode", projectCode, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectCode MustOverrideException: " + e.getMessage());
@@ -294,10 +373,12 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a given Name
 	@Override
-	public List<Project> findProjectsByName(int ownerAccountId, String name,
-			boolean headerOnly) {
+	public List<Project> findProjectsByName(int ownerAccountId,
+			String name, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "Name", name, null);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.Name", name, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByName MustOverrideException: " + e.getMessage());
@@ -311,10 +392,12 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a given ProjectManager1Id
 	@Override
-	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId, int projectMgr1Id,
-			boolean headerOnly) {
+	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId,
+			int projectMgr1Id, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager1Id", projectMgr1Id, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.ProjectManager1Id", projectMgr1Id, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectManager1Id MustOverrideException: " + e.getMessage());
@@ -328,10 +411,12 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 
 	// get all Projects owned by a given ProjectManager2Id
 	@Override
-	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId, int projectMgr2Id,
-			boolean headerOnly) {
+	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId,
+			int projectMgr2Id, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "ProjectManager2Id", projectMgr2Id, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.ProjectManager2Id", projectMgr2Id, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByProjectManager2Id MustOverrideException: " + e.getMessage());
@@ -343,63 +428,71 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 		}
 	}
 
-	// get all Projects owned by a given CustomerAccount
+	// get all Projects owned by a given CustomerAccountId
 	@Override
-	public List<Project> findProjectsByCustomerAccount(int ownerAccountId, int customerAccount,
-			boolean headerOnly) {
+	public List<Project> findProjectsByCustomerAccountId(int ownerAccountId,
+			int customerAccountId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerAccount", customerAccount, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.CustomerAccountId", customerAccountId, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount MustOverrideException: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsByCustomerAccountId MustOverrideException: " + e.getMessage());
 			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerAccount Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsByCustomerAccountId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get all Projects owned by a given CustomerContact
+	// get all Projects owned by a given CustomerContactId
 	@Override
-	public List<Project> findProjectsByCustomerContact(int ownerAccountId, UUID customerContact,
-			boolean headerOnly) {
+	public List<Project> findProjectsByCustomerContactId(int ownerAccountId,
+			UUID customerContactId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "CustomerContact", customerContact, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.CustomerContactId", customerContactId, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerContact MustOverrideException: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsByCustomerContactId MustOverrideException: " + e.getMessage());
 			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsByCustomerContact Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsByCustomerContactId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get all Projects owned by a given Sponsor
+	// get all Projects owned by a given SponsorId
 	@Override
-	public List<Project> findProjectsBySponsor(int ownerAccountId, UUID sponsor,
-			boolean headerOnly) {
+	public List<Project> findProjectsBySponsorId(int ownerAccountId,
+			UUID sponsorId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "Sponsor", sponsor, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.SponsorId", sponsorId, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
-			System.out.println("JdbcProjectDao.findProjectsBySponsor MustOverrideException: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsBySponsorId MustOverrideException: " + e.getMessage());
 			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDao.findProjectsBySponsor Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDao.findProjectsBySponsorId Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
 	// get all Projects owned by a given ManagingDeptId
 	@Override
-	public List<Project> findProjectsByManagingDeptId(int ownerAccountId, int managingDeptId,
-			boolean headerOnly) {
+	public List<Project> findProjectsByManagingDeptId(int ownerAccountId,
+			int managingDeptId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "ManagingDeptId", managingDeptId, currentStatuses);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.ManagingDeptId", managingDeptId, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByManagingDeptId MustOverrideException: " + e.getMessage());
@@ -414,9 +507,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects by the StartDate range
 	@Override
 	public List<Project> findProjectsByStartDateRange(int ownerAccountId,
-			DateTime fromDate, DateTime toDate, boolean headerOnly) {
+			DateTime fromDate, DateTime toDate, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "StartDate", fromDate, toDate, null);
+			List<Project> projects = super.findDomainObjectsByDateTimeRange(ownerAccountId, outJoins,
+					"o.StartDate", fromDate, toDate, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByStartDateRange MustOverrideException: " + e.getMessage());
@@ -431,9 +526,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects by the EndDate range
 	@Override
 	public List<Project> findProjectsByEndDateRange(int ownerAccountId,
-			DateTime fromDate, DateTime toDate, boolean headerOnly) {
+			DateTime fromDate, DateTime toDate, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByDateTimeRange(ownerAccountId, null, "EndDate", fromDate, toDate, null);
+			List<Project> projects = super.findDomainObjectsByDateTimeRange(ownerAccountId, outJoins,
+					"o.EndDate", fromDate, toDate, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByEndDateRange MustOverrideException: " + e.getMessage());
@@ -448,9 +545,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	// get all Projects owned by a given ParentProjectId
 	@Override
 	public List<Project> findProjectsByParentProjectId(int ownerAccountId,
-			int parentProjectId, boolean headerOnly) {
+			int parentProjectId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "ParentProjectId", parentProjectId, null);
+			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.ParentProjectId", parentProjectId, currentPhases, null);
+			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.findProjectsByParentProjectId MustOverrideException: " + e.getMessage());
@@ -491,7 +590,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public int saveProject(Project project) 
 			throws DuplicateKeyException, Exception {
 		try {
-			return saveDomainObject(project);
+			int numObjectUpdated = saveDomainObject(project);
+			if (numObjectUpdated == 0) {
+				throw new Exception("Fail to update the Project obejct");
+			}
+			return numObjectUpdated;
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcProjectDao.saveProject MustOverrideException: " + e.getMessage());

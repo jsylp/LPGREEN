@@ -21,32 +21,38 @@ public class Project implements Serializable {
 	private static final long serialVersionUID = -4399220502314763280L;
 
 	private int         id;                     // database generated id
-	private String		projectCode;
+	private String      projectCode;
 	private String      name;
 	private String      currentPhase;
 	private int         projectManager1Id;
 	private String      projectManager1Name;
 	private int         projectManager2Id;
 	private String      projectManager2Name;
-	private int         customerAccount;
-	private UUID        customerContact;
-	private UUID        sponsor;
+	private int         customerAccountId;
+	private String      customerAccountName;
+	private UUID        customerContactId;
+	private String      customerContactName;
+	private UUID        sponsorId;
+	private String      sponsorName;
 	private int         managingDeptId;
+	private String      managingDeptName;
 	private String      objectives;
 	private String      description;
 	private double      budget;
 	private String      currencyCode;           // currency code: http://www.xe.com/iso4217.php
 	private DateTime    startDate;
-	private String 		startDateInputString;   // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
+	private String      startDateInputString;   // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
 	private DateTime    endDate;
-	private String 		endDateInputString;     // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
+	private String      endDateInputString;     // format in UTC timezone: YYYY-MM-dd HH:mm:ss, passed from client to server
 	private int         parentProjectId;
+	private String      parentProjectCode;
+	private String      parentProjectName;
 	private String      notes;
 	private UUID        ownerId;
-	private int 		ownerAccountId;
-	private DateTime 	createdDate;
+	private int         ownerAccountId;
+	private DateTime    createdDate;
 	private UUID        createdById;
-	private DateTime 	lastModifiedDate;
+	private DateTime    lastModifiedDate;
 	private UUID        lastModifiedById;
 
 	// Constructor
@@ -60,8 +66,8 @@ public class Project implements Serializable {
 			UUID ownerId, int ownerAccountId,
 			String projectCode, String name, String currentPhase,  
 			int projectManager1Id, int projectManager2Id, 
-			int customerAccount, UUID customerContact, 
-			UUID sponsor, int managingDeptId, String objectives,
+			int customerAccountId, UUID customerContactId, 
+			UUID sponsorId, int managingDeptId, String objectives,
 			String description, double budget, String currencyCode,
 			DateTime startDate, DateTime endDate,
 			int parentProjectId, String notes)
@@ -73,9 +79,9 @@ public class Project implements Serializable {
 		this.currentPhase = currentPhase;
 		this.projectManager1Id = projectManager1Id;
 		this.projectManager2Id = projectManager2Id;
-		this.customerAccount = customerAccount;
-		this.customerContact = customerContact;
-		this.sponsor = sponsor;
+		this.customerAccountId = customerAccountId;
+		this.customerContactId = customerContactId;
+		this.sponsorId = sponsorId;
 		this.managingDeptId = managingDeptId;
 		this.objectives = objectives;
 		this.description = description;
@@ -91,8 +97,8 @@ public class Project implements Serializable {
 			DateTime lastModifiedDate, UUID lastModifiedById, UUID ownerId, 
 			String projectCode, String name, String currentPhase,  
 			int projectManager1Id, int projectManager2Id, 
-			int customerAccount, UUID customerContact, 
-			UUID sponsor, int managingDeptId, String objectives,
+			int customerAccountId, UUID customerContactId, 
+			UUID sponsorId, int managingDeptId, String objectives,
 			String description, double budget, String currencyCode,
 			DateTime startDate, DateTime endDate,
 			int parentProjectId, String notes) {
@@ -102,9 +108,9 @@ public class Project implements Serializable {
 		this.currentPhase = currentPhase;
 		this.projectManager1Id = projectManager1Id;
 		this.projectManager2Id = projectManager2Id;
-		this.customerAccount = customerAccount;
-		this.customerContact = customerContact;
-		this.sponsor = sponsor;
+		this.customerAccountId = customerAccountId;
+		this.customerContactId = customerContactId;
+		this.sponsorId = sponsorId;
 		this.managingDeptId = managingDeptId;
 		this.objectives = objectives;
 		this.description = description;
@@ -124,9 +130,9 @@ public class Project implements Serializable {
 		clonedProject.setCurrentPhase(this.currentPhase);
 		clonedProject.setProjectManager1Id(this.projectManager1Id);
 		clonedProject.setProjectManager2Id(this.projectManager2Id);
-		clonedProject.setCustomerAccount(this.customerAccount);
-		clonedProject.setCustomerContact(this.customerContact);
-		clonedProject.setSponsor(this.sponsor);
+		clonedProject.setCustomerAccountId(this.customerAccountId);
+		clonedProject.setCustomerContactId(this.customerContactId);
+		clonedProject.setSponsorId(this.sponsorId);
 		clonedProject.setManagingDeptId(this.managingDeptId);
 		clonedProject.setObjectives(this.objectives);
 		clonedProject.setDescription(this.description);
@@ -191,25 +197,43 @@ public class Project implements Serializable {
 		this.projectManager2Name = projectManager2Name;
 	}
 
-	public int getCustomerAccount() {
-		return customerAccount;
+	public int getCustomerAccountId() {
+		return customerAccountId;
 	}
-	public void setCustomerAccount(int customerAccount) {
-		this.customerAccount = customerAccount;
+	public void setCustomerAccountId(int customerAccountId) {
+		this.customerAccountId = customerAccountId;
+	}
+	public String getCustomerAccountName() {
+		return customerAccountName;
+	}
+	public void setCustomerAccountName(String customerAccountName) {
+		this.customerAccountName = customerAccountName;
 	}
 
-	public UUID getCustomerContact() {
-		return customerContact;
+	public UUID getCustomerContactId() {
+		return customerContactId;
 	}
-	public void setCustomerContact(UUID customerContact) {
-		this.customerContact = customerContact;
+	public void setCustomerContactId(UUID customerContactId) {
+		this.customerContactId = customerContactId;
+	}
+	public String getCustomerContactName() {
+		return customerContactName;
+	}
+	public void setCustomerContactName(String customerContactName) {
+		this.customerContactName = customerContactName;
 	}
 
-	public UUID getSponsor() {
-		return sponsor;
+	public UUID getSponsorId() {
+		return sponsorId;
 	}
-	public void setSponsor(UUID sponsor) {
-		this.sponsor = sponsor;
+	public void setSponsorId(UUID sponsorId) {
+		this.sponsorId = sponsorId;
+	}
+	public String getSponsorName() {
+		return sponsorName;
+	}
+	public void setSponsorName(String sponsorName) {
+		this.sponsorName = sponsorName;
 	}
 
 	public int getManagingDeptId() {
@@ -217,6 +241,12 @@ public class Project implements Serializable {
 	}
 	public void setManagingDeptId(int managingDeptId) {
 		this.managingDeptId = managingDeptId;
+	}
+	public String getManagingDeptName() {
+		return managingDeptName;
+	}
+	public void setManagingDeptName(String managingDeptName) {
+		this.managingDeptName = managingDeptName;
 	}
 
 	public String getObjectives() {
@@ -302,6 +332,18 @@ public class Project implements Serializable {
 	}
 	public void setParentProjectId(int parentProjectId) {
 		this.parentProjectId = parentProjectId;
+	}
+	public String getParentProjectCode() {
+		return parentProjectCode;
+	}
+	public void setParentProjectCode(String parentProjectCode) {
+		this.parentProjectCode = parentProjectCode;
+	}
+	public String getParentProjectName() {
+		return parentProjectName;
+	}
+	public void setParentProjectName(String parentProjectName) {
+		this.parentProjectName = parentProjectName;
 	}
 
 	public String getNotes() {
