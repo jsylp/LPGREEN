@@ -1,6 +1,8 @@
 package org.lpgreen.domain;
 
 import java.io.Serializable;
+import java.util.UUID;
+
 import org.joda.time.DateTime;
 
 /**
@@ -20,8 +22,11 @@ public class OperationRight implements Serializable {
 	private String          operationName;
 	private String          description;
 	private int             ownerAccountId;
-	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
-	
+	private DateTime        createdDate;	// NOTE: we will learn the Joda datetime manipulation in the future
+	private UUID            createdById;
+	private DateTime        lastModifiedDate;
+	private UUID            lastModifiedById;
+
 	/*
 	Id                      serial NOT NULL PRIMARY KEY UNIQUE,
 	OperationName           varchar(255) NOT NULL,
@@ -65,11 +70,11 @@ public class OperationRight implements Serializable {
 		this.ownerAccountId = ownerAccountId;
 	}
 	
-	public DateTime getCreatedDateTime() {
-		return createdDateTime;
+	public DateTime getCreatedDate() {
+		return createdDate;
 	}
-	public void setCreatedDateTime(DateTime createdDateTime) {
-		this.createdDateTime = createdDateTime;
+	public void setCreatedDate(DateTime createdDate) {
+		this.createdDate = createdDate;
 	}
 
 	// TODO: generate getting and setting for the remaining fields.

@@ -73,6 +73,11 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 		return fieldSetForUpdateOperationRight;
 	}
 
+	// Override to return the field order for read a list of objects
+	protected String getFieldOrderForReadList() {
+		return "o.OwnerAccountId, o.OperationName ASC";
+	}
+
 	// Override to return the RowMapper
 	protected RowMapper<OperationRight> getRowMapper() {
 		return new OperationRightMapper();
@@ -88,7 +93,10 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 				parameters.addValue("Id", null);
 		}
 		parameters.addValue("OperationName", opRight.getOperationName());
-		parameters.addValue("Description", opRight.getDescription());
+		if (opRight.getDescription() != null && !opRight.getDescription().isEmpty())
+			parameters.addValue("Description", opRight.getDescription());
+		else
+			parameters.addValue("Description",null);
 		if (opRight.getOwnerAccountId() > 0)
 			parameters.addValue("OwnerAccountId", opRight.getOwnerAccountId());
 		else
@@ -104,7 +112,8 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	@Override
 	public List<OperationRight> findAllSiteOperationRights(int ownerAccountId) {
 		try {
-			return findDomainObjectsByOwnerAccountId(ownerAccountId, null);
+			return findDomainObjectsByOwnerAccountId(ownerAccountId, null,
+					null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcOperationRightDao.findAllSiteOperationRights MustOverrideException: " + e.getMessage());
@@ -120,7 +129,7 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	@Override
 	public OperationRight findOperationRightById(int id) {
 		try {
-			return findDomainObjectById(id);
+			return findDomainObjectById(id, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcOperationRightDao.findOperationRightById MustOverrideException: " + e.getMessage());
@@ -136,7 +145,8 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	@Override
 	public List<OperationRight> findOperationRightByName(int ownerAccountId, String opName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "OperationName", opName, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null,
+					"o.OperationName", opName, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcOperationRightDao.findOperationRightByName MustOverrideException: " + e.getMessage());
@@ -177,7 +187,11 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	public int saveOperationRight(OperationRight opRight) 
 			throws DuplicateKeyException, Exception {
 		try {
-			return saveDomainObject(opRight);
+			int numObjectUpdated = saveDomainObject(opRight);
+			if (numObjectUpdated == 0) {
+				throw new Exception("Fail to update the OperationRight obejct");
+			}
+			return numObjectUpdated;
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcOperationRightDao.saveOperationRight MustOverrideException: " + e.getMessage());
@@ -197,6 +211,8 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	@Override
 	public int deleteOperationRight(int ownerAccountId, int id)
 			throws Exception {
+		if (ownerAccountId <= 0 || id <= 0)
+			return 0;
 		try {
 			return deleteDomainObject(ownerAccountId, id);
 		}

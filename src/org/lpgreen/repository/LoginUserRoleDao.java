@@ -3,6 +3,7 @@ package org.lpgreen.repository;
 import java.util.List;
 
 import org.lpgreen.domain.LoginUserRole;
+import org.lpgreen.util.InvalidDataValueException;
 import org.springframework.dao.DuplicateKeyException;
 
 /**
@@ -25,7 +26,8 @@ public interface LoginUserRoleDao {
 	public List<LoginUserRole> findAllSiteLoginUserRoles(int ownerAccountId, int userId);
 
 	// get a specific LoginUserRole by given loginUserId and roleId
-	public LoginUserRole findLoginUserRoleByUserIdAndRoleId(int ownerAccountId, int userId, int roleId);
+	public LoginUserRole findLoginUserRoleByUserIdAndRoleId(int ownerAccountId, int userId, int roleId)
+			throws InvalidDataValueException;
 
 	// Add a LoginUserRole. Return the number of records added
 	public int addLoginUserRole(LoginUserRole userRole) 

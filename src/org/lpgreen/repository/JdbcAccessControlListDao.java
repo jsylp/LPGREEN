@@ -10,6 +10,7 @@ import org.lpgreen.domain.AccessControlList;
 import org.lpgreen.domain.LoginUserRole;
 import org.lpgreen.domain.OperationRight;
 import org.lpgreen.domain.Role;
+import org.lpgreen.util.InvalidDataValueException;
 import org.lpgreen.util.MustOverrideException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -61,11 +62,18 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 
 	// o: the main object: this AccessControlList;
 	protected final static String fieldSelectionForReadAccessControlList =
-			"o.RoleId,o.ObjectName,o.OperationRightId,o.OwnerAccountId,r.RoleName,p.OperationName";
+			"o.RoleId,r.RoleName,o.ObjectName,o.OperationRightId,opr.OperationName,o.OwnerAccountId";
 
 	// field selection for update
 	protected final static String fieldSetForUpdateAccessControlList =
 			"RoleId=:RoleId,ObjectName=:ObjectName,OperationRightId=:OperationRightId,OwnerAccountId=:OwnerAccountId";
+
+	// o: the main object: this AccessControlList
+	// r: the Role object
+	// opr: the OperationRight object
+	protected final static String roleJoin = " LEFT OUTER JOIN Role as r ON o.RoleId=r.Id";
+	protected final static String opRightJoin = " LEFT OUTER JOIN OperationRight as opr ON o.OperationRightId=opr.Id";
+	protected final static String outJoins = roleJoin + opRightJoin;
 
 	// RowMapper class
 	private static class AccessControlListMapper implements RowMapper<AccessControlList> {
@@ -73,11 +81,17 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 		public AccessControlList mapRow(ResultSet rs, int rowNum) throws SQLException {
 			AccessControlList acList = new AccessControlList();
 			acList.setRoleId(rs.getInt("RoleId"));
+			if (rs.getString("RoleName") != null && !rs.getString("RoleName").isEmpty())
+				acList.setRoleName(rs.getString("RoleName"));
+			else
+				acList.setRoleName(null);
 			acList.setObjectName(rs.getString("ObjectName"));
 			acList.setOperationRightId(rs.getInt("OperationRightId"));
+			if (rs.getString("OperationName") != null && !rs.getString("OperationName").isEmpty())
+				acList.setOperationName(rs.getString("OperationName"));
+			else
+				acList.setOperationName(null);
 			acList.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			acList.setRoleName(rs.getString("RoleName"));
-			acList.setOperationName(rs.getString("OperationName"));
 			return acList;
 		}
 	}
@@ -95,6 +109,11 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 	// Override to return the filed selection for update
 	protected String getFieldSelectionForUpdate() {
 		return fieldSetForUpdateAccessControlList;
+	}
+
+	// Override to return the field order for read a list of objects
+	protected String getFieldOrderForReadList() {
+		return "o.OwnerAccountId, o.RoleId,  o.OperationRightId, o.ObjectName ASC";
 	}
 
 	// Override to return the RowMapper
@@ -134,13 +153,23 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 
 	// get all AccessControlLists owned by a specific account id
 	@Override
-	public List<AccessControlList> findAllSiteAccessControlLists(int ownerAccountId) {
+	public List<AccessControlList> findAccessControlListsByOwnerAccountId(int ownerAccountId) {
+		if (ownerAccountId <= 0)
+			return null;
 		try {
+			List<AccessControlList> acLists = super.findDomainObjectsByOwnerAccountId(ownerAccountId, outJoins,
+					null, null);
+			/*
 			List<AccessControlList> acLists = namedParameterJdbcTemplate.query(
 					strAccessControlListQueryWithOwnerAccountId,
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
 					new AccessControlListMapper());
+					*/
 			return acLists;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcAccessControlListDao.findAccessControlListsByOwnerAccountId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcAccessControlListDao.findAllSiteAccessControlLists Exception: " + e.getMessage());
@@ -150,10 +179,14 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 
 	// get a specific AccessControlList by a given roleId
 	@Override
-	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId) {
+	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId)
+			throws InvalidDataValueException {
+		if (roleId <= 0) {
+			throw new InvalidDataValueException("Invalid input roleId");
+		}
 		try {
-			String outJoins = "LEFT OUTER JOIN Role as r ON o.RoleId=r.Id LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id";
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins, "RoleId", roleId, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.RoleId", roleId, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListsByRoleId MustOverrideException: " + e.getMessage());
@@ -166,10 +199,14 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 	}
 
 	// get a specific AccessControlList by a given opRightId
-	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId) {
+	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId)
+			throws InvalidDataValueException {
+		if (opRightId <= 0) {
+			throw new InvalidDataValueException("Invalid input opRightId");
+		}
 		try {
-			String outJoins = "LEFT OUTER JOIN Role as r ON o.RoleId=r.Id LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id";
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins, "OperationRightId", opRightId, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"o.OperationRightId", opRightId, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListsByOperationRightId MustOverrideException: " + e.getMessage());
@@ -183,10 +220,14 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 
 	// get a specific AccessControlList by a given name
 	@Override
-	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String name) {
+	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String name)
+			throws InvalidDataValueException {
+		if (name == null || name.isEmpty()) {
+			throw new InvalidDataValueException("Invalid input name");
+		}
 		try {
-			String outJoins = "LEFT OUTER JOIN Role as r ON o.RoleId=r.Id LEFT OUTER JOIN OperationRight as p ON o.OperationRightId=p.Id";
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins, "ObjectName", name, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+					"ObjectName", name, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListsByObjectName MustOverrideException: " + e.getMessage());
@@ -208,17 +249,31 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 
 	// get a specific AccessControlList by a given roleId, name and opRightId
 	@Override
-	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String name, int opRightId) {
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId,
+			String name, int opRightId) throws InvalidDataValueException {
+		if (roleId <= 0 || name == null || name.isEmpty() || opRightId <= 0) {
+			throw new InvalidDataValueException("Invalid input roleId, or name, opRightId");
+		}
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(fieldSelectionForReadAccessControlList);
+			sbQuery.append(" from AccessControlList as o");
+			sbQuery.append(outJoins);
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and");
+			sbQuery.append(" o.RoleId=:RoleId and o.ObjectName=:ObjectName and");
+			sbQuery.append(" o.OperationRightId=:OperationRightId order by ");
+			sbQuery.append(getFieldOrderForReadList());
+			sbQuery.append(";");
 			AccessControlList acList = namedParameterJdbcTemplate.queryForObject(
-					strAccessControlListQueryWithAllColumns,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", roleId).
 						addValue("ObjectName", name).addValue("OperationRightId", opRightId),
 					new AccessControlListMapper());
 			return acList;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcAccessControlListDao.findAccessControlListByAll Exception: " + e.getMessage());
+			System.out.println("JdbcAccessControlListDao.findAccessControlListsByObjectName Exception: " + e.getMessage());
 			return null;
 		}
 	}

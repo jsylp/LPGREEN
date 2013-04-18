@@ -1,6 +1,8 @@
 package org.lpgreen.domain;
 
 import java.io.Serializable;
+import java.util.UUID;
+
 import org.joda.time.DateTime;
 
 /**
@@ -17,12 +19,15 @@ public class AccessControlList implements Serializable {
 
 	private static final long serialVersionUID = 7697797138591781838L;
 	private int             roleId;
+	private String          roleName;           // Retrieved from outer join
 	private String          objectName;
 	private int             operationRightId;
+	private String          operationName;      // Retrieved from outer join
 	private int             ownerAccountId;
-	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
-	private String          roleName;           // Implementation helper - retrieved from outer join
-	private String          operationName;      // Implementation helper - retrieved from outer join
+	private DateTime        createdDate;	// NOTE: we will learn the Joda datetime manipulation in the future
+	private UUID            createdById;
+	private DateTime        lastModifiedDate;
+	private UUID            lastModifiedById;
 
 	/*
 	RoleId                  int REFERENCES Role(Id) NOT NULL,
@@ -80,11 +85,11 @@ public class AccessControlList implements Serializable {
 		this.operationName = operationName;
 	}
 
-	public DateTime getCreatedDateTime() {
-		return createdDateTime;
+	public DateTime getCreatedDate() {
+		return createdDate;
 	}
-	public void setCreatedDateTime(DateTime createdDateTime) {
-		this.createdDateTime = createdDateTime;
+	public void setCreatedDate(DateTime createdDate) {
+		this.createdDate = createdDate;
 	}
 
 	// TODO: generate getting and setting for the remaining fields.

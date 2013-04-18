@@ -17,7 +17,9 @@ public class RoleHierarchy implements Serializable {
 
 	private static final long serialVersionUID = -9207571163059812615L;
 	private int             roleId;
+	private String          roleName;
 	private int             includedRoleId;
+	private String          includedRoleName;
 	private int             ownerAccountId;
 	private DateTime        createdDateTime;	// NOTE: we will learn the Joda datetime manipulation in the future
 	
@@ -36,20 +38,34 @@ public class RoleHierarchy implements Serializable {
 		this.roleId = roleId;
 		this.includedRoleId = includedRoleId;
 		this.ownerAccountId = ownerAccountId;
-	}	
-	
+	}
+
 	public int getRoleId() {
 		return roleId;
 	}
 	public void setRoleId(int roleId) {
 		this.roleId = roleId;
 	}
+	public String getRoleName() {
+		return roleName;
+	}
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
+	}
+
 	public int getIncludedRoleId() {
 		return includedRoleId;
 	}
 	public void setIncludedRoleId(int includedRoleId) {
 		this.includedRoleId = includedRoleId;
 	}
+	public String getIncludedRoleName() {
+		return includedRoleName;
+	}
+	public void setIncludedRoleName(String includedRoleName) {
+		this.includedRoleName = includedRoleName;
+	}
+
 	public int getOwnerAccountId() {
 		return ownerAccountId;
 	}

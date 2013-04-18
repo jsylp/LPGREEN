@@ -9,10 +9,10 @@ import javax.sql.DataSource;
 
 import org.lpgreen.domain.Role;
 import org.lpgreen.domain.RoleHierarchy;
+import org.lpgreen.util.MustOverrideException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
@@ -27,15 +27,19 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
+public class JdbcRoleAndHierarchyDao extends LPJdbcGeneric<Role> implements RoleAndHierarchyDao {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private SimpleJdbcInsert insertRole;
 	private SimpleJdbcInsert insertRoleHiera;
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		insertRole = new SimpleJdbcInsert(dataSource).withTableName("Role").usingGeneratedKeyColumns("id");
-		insertRoleHiera = new SimpleJdbcInsert(dataSource).withTableName("RoleHierarchy");
+	public void setDataSource(DataSource dataSource)
+			throws MustOverrideException {
+		try {
+			super.setDataSource(dataSource);
+			insertRoleHiera = new SimpleJdbcInsert(dataSource).withTableName("RoleHierarchy");
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.setDataSource Exception: " + e.getMessage());
+			throw e;
+		}
 	}
 
 	// o: the main object: this Role
@@ -47,19 +51,12 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 
 	// o: the main object: this RoleHierarchy
 	protected final static String fieldSelectionForReadRoleHierarchy =
-			"o.RoleId,o.IncludedRoleId,o.OwnerAccountId";
+			"o.RoleId,r1.RoleName as RoleName,o.IncludedRoleId,r2.RoleName as IncludedRoleName,o.OwnerAccountId";
 
 	protected final static String fieldSetForUpdateRoleHierarchy = 
 			"RoleId=:RoleId,IncludedRoleId=:IncludedRoleId,OwnerAccountId=:OwnerAccountId";
 
-	// query RoleHierarchy using RoleId
-	protected final static String strHieraQueryWithRoleId = "select " + fieldSelectionForReadRoleHierarchy + 
-			" from RoleHierarchy as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId"; 
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// Role Mapper
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-
+	// RowMapper class for Role
 	private static class RoleMapper implements RowMapper<Role> {
 
 		public Role mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -72,33 +69,113 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
-	// query Role using Id
-	protected final static String strRoleQueryWithId = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId and Id=:Id";
+	// RowMapper class for RoleHierarchy with RoleName and IncludedRoleName 
+	private static class RoleHierarchyNoRoleNamesMapper implements RowMapper<RoleHierarchy> {
+
+		public RoleHierarchy mapRow(ResultSet rs, int rowNum) throws SQLException {
+			RoleHierarchy roleHierarchy = new RoleHierarchy();
+			roleHierarchy.setRoleId(rs.getInt("RoleId"));
+			roleHierarchy.setIncludedRoleId(rs.getInt("IncludedRoleId"));
+			roleHierarchy.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return roleHierarchy;
+		}
+	}
+
+	// RowMapper class for RoleHierarchy
+	private static class RoleHierarchyMapper implements RowMapper<RoleHierarchy> {
+
+		public RoleHierarchy mapRow(ResultSet rs, int rowNum) throws SQLException {
+			RoleHierarchy roleHierarchy = new RoleHierarchy();
+			roleHierarchy.setRoleId(rs.getInt("RoleId"));
+			String roleName = rs.getString("RoleName");
+			if (roleName != null && !roleName.isEmpty())
+				roleHierarchy.setRoleName(roleName);
+			else 
+				roleHierarchy.setRoleName(null);
+			roleHierarchy.setIncludedRoleId(rs.getInt("IncludedRoleId"));
+			String includedRoleName = rs.getString("IncludedRoleName");
+			if (includedRoleName != null && !includedRoleName.isEmpty())
+				roleHierarchy.setIncludedRoleName(includedRoleName);
+			else
+				roleHierarchy.setIncludedRoleName(null);
+			roleHierarchy.setOwnerAccountId(rs.getInt("OwnerAccountId"));
+			return roleHierarchy;
+		}
+	}
+
+	// Override to return the SQL table name
+	protected String getSqlTable() {
+		return "Role";
+	}
+
+	// Override to return the field selection for read
+	protected String getFieldSelectionForRead() {
+		return fieldSelectionForReadRole;
+	}
+
+	// Override to return the filed selection for update
+	protected String getFieldSelectionForUpdate() {
+		return fieldSetForUpdateRole;
+	}
+
+	// Override to return the field order for read a list of objects
+	protected String getFieldOrderForReadList() {
+		return "o.OwnerAccountId, o.RoleName ASC";
+	}
+
+	// Override to return the RowMapper
+	protected RowMapper<Role> getRowMapper() {
+		return new RoleMapper();
+	}
+
+	// Override to return MapSqlParameterSource for creating Role
+	protected MapSqlParameterSource getDomainObjectMapSqlParameterSource(Role role, boolean bNew) {
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+
+		// Persist data defined in UserObject
+		parameters.addValue("OwnerAccountId", role.getOwnerAccountId());
+		if (!bNew) {
+			if (role.getId() > 0)
+				parameters.addValue("Id", role.getId());	// auto generated when insert a Role, use it as the primary key when update it
+			else
+				parameters.addValue("Id", null);
+		}
+		parameters.addValue("RoleName", role.getRoleName());
+		if (role.getDescription() != null && !role.getDescription().isEmpty())
+			parameters.addValue("Description", role.getDescription());
+		else
+			parameters.addValue("Description", null);
+		return parameters;
+	}
 
 	// get hierarchical included Roles by a given role
 	private List<Role> getAllIncludedRoles(Role role, List<Role> rolesIncluded)
 			throws Exception {
+		if (role == null)
+			throw new Exception("Missing input role");
 		try {
-			if (role == null)
-				throw new Exception("Missing input role");
-
 			int ownerAccountId = role.getOwnerAccountId(); 
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(" o.RoleId,o.IncludedRoleId,o.OwnerAccountId");
+			sbQuery.append(" from RoleHierarchy as o");
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and o.RoleId=:RoleId");
+			sbQuery.append(" order by o.RoleId, o.IncludedRoleId ASC;");
 			List<RoleHierarchy> roleHierarchys = namedParameterJdbcTemplate.query(
-					strHieraQueryWithRoleId,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleId", role.getId()),
-					new RoleHierarchyMapper());
+					new RoleHierarchyNoRoleNamesMapper());
 
 			for (RoleHierarchy roleHiera : roleHierarchys) {
-				Role roleInc = namedParameterJdbcTemplate.queryForObject(
-						strRoleQueryWithId,
-						new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", roleHiera.getIncludedRoleId()),
-						new RoleMapper());
-				
+				if (roleHiera.getIncludedRoleId() <= 0) {
+					throw new Exception("IncludedRole has negative Id");
+				}
+				Role roleInc = findRoleById(ownerAccountId, roleHiera.getIncludedRoleId());
+
 				// check if the incRole has been added already
 				// note: if performance is a concern, we can create an ArrayList
 				// of just RoleId and use it to check if the role was added already.
-				if (!rolesIncluded.contains(roleInc)) {
+				if (roleInc != null && !rolesIncluded.contains(roleInc)) {
 					rolesIncluded.add(roleInc);
 
 					// recurse into the included role's included roles
@@ -127,19 +204,19 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
-	// query Role using OwnerAccountId
-	protected final static String strRoleQueryWithOwnerAccountId = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId";
-
 	// get all Roles owned by a specific account id
 	@Override
-	public List<Role> findAllOwnerAccountRoles(int ownerAccountId) {
+	public List<Role> findRolesByOwnerAccountId(int ownerAccountId) {
+		if (ownerAccountId <= 0)
+			return null;
 		try {
-			List<Role> roles = namedParameterJdbcTemplate.query(
-					strRoleQueryWithOwnerAccountId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId),
-					new RoleMapper());
+			List<Role> roles = super.findDomainObjectsByOwnerAccountId(ownerAccountId, null,
+					null, null);
 			return roles;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.findRolesByOwnerAccountId MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcRoleAndHierarchyDao.findAllOwnerAccountRoles Exception: " + e.getMessage());
@@ -151,31 +228,30 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	@Override
 	public Role findRoleById(int ownerAccountId, int id) {
 		try {
-			Role role = namedParameterJdbcTemplate.queryForObject(
-					strRoleQueryWithId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("Id", id),
-					new RoleMapper());
+			Role role = super.findDomainObjectById(id, null);
 			return role;
 		} 
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.findRoleById MustOverrideException: " + e.getMessage());
+			return null;
+		}
 		catch (Exception e) {
 			System.out.println("JdbcRoleAndHierarchyDao.findRoleById Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// query Role using RoleName
-	protected final static String strRoleQueryWithRoleName = "select " + fieldSelectionForReadRole +
-			" from Role as o where OwnerAccountId=:OwnerAccountId and RoleName=:RoleName";
-
 	// get a specific Role by a given name
 	@Override
-	public Role findRoleByName(int ownerAccountId, String roleName) {
+	public List<Role> findRoleByName(int ownerAccountId, String roleName) {
 		try {
-			Role role = namedParameterJdbcTemplate.queryForObject(
-					strRoleQueryWithRoleName,
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue("RoleName", roleName),
-					new RoleMapper());
-			return role;
+			List<Role> roles = super.findDomainObjectsByColumnVal(ownerAccountId, null,
+					"o.RoleName", roleName, null, null);
+			return roles;
+		}
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.findRoleByName MustOverrideException: " + e.getMessage());
+			return null;
 		}
 		catch (Exception e) {
 			System.out.println("JdbcRoleAndHierarchyDao.findRoleByName Exception: " + e.getMessage());
@@ -183,50 +259,29 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		}
 	}
 
-	/**
-	 * Set SQL Parameters used for creating Role
-	 * @param role
-	 * @param bNew
-	 * @return
-	 */
-	private MapSqlParameterSource getRoleMapSqlParameterSource(Role role, boolean bNew) {
-		MapSqlParameterSource parameters = new MapSqlParameterSource();
-		if (!bNew) {
-			if (role.getId() > 0)
-				parameters.addValue("Id", role.getId());	// auto generated when insert a Role, use it as the primary key when update it
-			else
-				parameters.addValue("Id", null);
-		}
-		parameters.addValue("RoleName", role.getRoleName());
-		parameters.addValue("Description", role.getDescription());
-		if (role.getOwnerAccountId() > 0)
-			parameters.addValue("OwnerAccountId", role.getOwnerAccountId());
-		else
-			parameters.addValue("OwnerAccountId", null);
-		return parameters;
-	}
-
-	// Add a Role. Return the generated id
+	// Add a Role. Return the generated database id
 	@Override
-	public int addRole(Role role) 
+	public int addRole(Role role)
 			throws DuplicateKeyException, Exception {
 		if (role == null)
 			throw new Exception("Missing input role");
-
-		MapSqlParameterSource parameters = this.getRoleMapSqlParameterSource(role, true);	
 		try {
 			// insert Role record
-			int retId = insertRole.executeAndReturnKey(parameters).intValue();
+			int retId = addDomainObject(role);
 			role.setId(retId);
 			return retId;
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcRoleAndHierarchyDao.addRole Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.addRole MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcRoleAndHierarchyDao.addRole Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.addRole DuplicateKeyException: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcRoleAndHierarchyDao.addRole Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
@@ -234,21 +289,24 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	@Override
 	public int saveRole(Role role) 
 			throws DuplicateKeyException, Exception {
-		if (role == null)
-			throw new Exception("Missing input role");
 		try {
-			int numRecUpdated = namedParameterJdbcTemplate.update(
-					"update Role set " + fieldSetForUpdateRole + " where Id=:Id;",
-					getRoleMapSqlParameterSource(role, false));
-			return numRecUpdated;
+			int numObjectUpdated = saveDomainObject(role);
+			if (numObjectUpdated == 0) {
+				throw new Exception("Fail to update the role obejct");
+			}
+			return numObjectUpdated;
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcRoleAndHierarchyDao.saveRole Exception: " + e1.getMessage());
-			throw e1;
+		catch (MustOverrideException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.saveRole MustOverrideException: " + e.getMessage());
+			return -1;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcRoleAndHierarchyDao.saveRole Exception: " + e2.getMessage());
-			throw e2;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.saveRole DuplicateKeyException: " + e.getMessage());
+			throw e;
+		}
+		catch (Exception e) {
+			System.out.println("JdbcRoleAndHierarchyDao.saveRole Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 
@@ -259,10 +317,7 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 		if (ownerAccountId < 0 || id <= 0)
 			return 0;
 		try {
-			int numRecDeleted = namedParameterJdbcTemplate.update(
-					"delete from Role where Id=:Id and OwnerAccountId=:OwnerAccountId", 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
-			return numRecDeleted;
+			return deleteDomainObject(ownerAccountId, id);
 		}
 		catch (Exception e) {
 			throw new Exception(e.getMessage());
@@ -270,38 +325,32 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// RoleHierarchy Mapper
+	// RoleHierarchy related methods
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-
-	private static class RoleHierarchyMapper implements RowMapper<RoleHierarchy> {
-
-		public RoleHierarchy mapRow(ResultSet rs, int rowNum) throws SQLException {
-			RoleHierarchy roleHierarchy = new RoleHierarchy();
-			roleHierarchy.setRoleId(rs.getInt("RoleId"));
-			roleHierarchy.setIncludedRoleId(rs.getInt("IncludedRoleId"));
-			roleHierarchy.setOwnerAccountId(rs.getInt("OwnerAccountId"));
-			return roleHierarchy;
-		}
-	}
-
-	// query RoleHierarchy using RoleIdAndIncludedRoleId
-	protected final static String strHieraQueryWithRoleIdAndIncludedRoleId = "select " + fieldSelectionForReadRoleHierarchy + 
-			" from RoleHierarchy as o where OwnerAccountId=:OwnerAccountId and RoleId=:RoleId and IncludedRoleId=:IncludedRoleId"; 
-
+	
 	// get a specific RoleHierarchy by a given Role and included Role
 	@Override
-	public RoleHierarchy findRoleHierarchy(Role role, Role roleInc) 
+	public RoleHierarchy findRoleHierarchy(int ownerAccountId, Role role, Role roleInc) 
 			throws Exception {
 		if (role == null || roleInc == null)
 			throw new Exception("Missing input role or roleInc");
 		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(fieldSelectionForReadRoleHierarchy);
+			sbQuery.append(" from RoleHierarchy as o");
+			sbQuery.append(" LEFT OUTER JOIN Role as r1 ON o.RoleId=r1.Id");
+			sbQuery.append(" LEFT OUTER JOIN Role as r2 ON o.IncludedRoleId=r2.Id");
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
+			sbQuery.append(" and o.RoleId=:RoleId and o.IncludedRoleId=:IncludedRoleId");
+			sbQuery.append(" order by o.RoleId, o.IncludedRoleId ASC;");
 			RoleHierarchy roleHiera = namedParameterJdbcTemplate.queryForObject(
-					strHieraQueryWithRoleIdAndIncludedRoleId,
-					new MapSqlParameterSource().addValue("OwnerAccountId", role.getOwnerAccountId()).
+					sbQuery.toString(),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
 							addValue("RoleId", role.getId()).addValue("IncludedRoleId", roleInc.getId()),
 					new RoleHierarchyMapper());
 			return roleHiera;
-		} 
+		}
 		catch (Exception e) {
 			System.out.println("JdbcRoleAndHierarchyDao.findRoleHierarchy Exception: " + e.getMessage());
 			return null;
@@ -312,11 +361,20 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	@Override
 	public RoleHierarchy findRoleHierarchyByRoleIds(int ownerAccountId, int roleId, int roleIdInc)
 			throws Exception {
+		if (roleId <= 0 || roleIdInc <= 0)
+			throw new Exception("Invalid roleId or includeRoleId");
 		try {
-			if (roleId <= 0 || roleIdInc <= 0)
-				throw new Exception("Invalid roleId or includeRoleId");
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(fieldSelectionForReadRoleHierarchy);
+			sbQuery.append(" from RoleHierarchy as o");
+			sbQuery.append(" LEFT OUTER JOIN Role as r1 ON o.RoleId=r1.Id");
+			sbQuery.append(" LEFT OUTER JOIN Role as r2 ON o.IncludedRoleId=r2.Id");
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
+			sbQuery.append(" and o.RoleId=:RoleId and o.IncludedRoleId=:IncludedRoleId");
+			sbQuery.append(" order by o.RoleId, o.IncludedRoleId ASC;");
 			RoleHierarchy roleHiera = namedParameterJdbcTemplate.queryForObject(
-					strHieraQueryWithRoleIdAndIncludedRoleId,
+					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
 							addValue("RoleId", roleId).addValue("IncludedRoleId", roleIdInc),
 					new RoleHierarchyMapper());
@@ -336,6 +394,8 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 	 */
 	private MapSqlParameterSource getRoleHierarchyMapSqlParameterSource(RoleHierarchy roleHiera) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		// Persist data defined in UserObject
+		parameters.addValue("OwnerAccountId", roleHiera.getOwnerAccountId());
 		if (roleHiera.getRoleId() > 0)
 			parameters.addValue("RoleId", roleHiera.getRoleId());
 		else
@@ -344,10 +404,6 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 			parameters.addValue("IncludedRoleId", roleHiera.getIncludedRoleId());
 		else
 			parameters.addValue("IncludedRoleId", null);
-		if (roleHiera.getOwnerAccountId() > 0)
-			parameters.addValue("OwnerAccountId", roleHiera.getOwnerAccountId());
-		else
-			parameters.addValue("OwnerAccountId", null);
 		return parameters;
 	}
 
@@ -364,13 +420,13 @@ public class JdbcRoleAndHierarchyDao implements RoleAndHierarchyDao {
 			int retRows = insertRoleHiera.execute(parameters);
 			return retRows;
 		}
-		catch (DuplicateKeyException e1) {
-			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy DuplicateKeyException: " + e1.getMessage());
-			throw e1;
+		catch (DuplicateKeyException e) {
+			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy DuplicateKeyException: " + e.getMessage());
+			throw e;
 		}
-		catch (Exception e2) {
-			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy Exception: " + e2.getMessage());
-			throw e2;
+		catch (Exception e) {
+			System.out.println("JdbcRoleAndHierarchyDao.addRoleHierarchy Exception: " + e.getMessage());
+			throw e;
 		}
 	}
 

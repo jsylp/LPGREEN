@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.UUID;
 
-import org.joda.time.DateTime;
 import org.lpgreen.domain.Role;
 import org.lpgreen.domain.RoleHierarchy;
 import org.lpgreen.domain.LoginUserRole;
@@ -82,7 +81,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
 		}
-		return roleAndHierarchyDao.findAllOwnerAccountRoles(ownerAccountId);
+		return roleAndHierarchyDao.findRolesByOwnerAccountId(ownerAccountId);
 	}
 
 	// get a specific Role by a given id
@@ -96,7 +95,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	// get a specific Role by a given name
 	@Override
-	public Role findRoleByName(int ownerAccountId, String roleName)
+	public List<Role> findRoleByName(int ownerAccountId, String roleName)
 			throws Exception {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
@@ -235,7 +234,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (roleInc == null) {
 			throw new Exception("Missing input roleInc");
 		}
-		return roleAndHierarchyDao.findRoleHierarchy(role, roleInc);
+		return roleAndHierarchyDao.findRoleHierarchy(role.getOwnerAccountId(), role, roleInc);
 	}
 
 	// get a specific RoleHierarchy by a given RoleId
@@ -618,7 +617,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (ownerAccountId <= 0) {
 			throw new Exception("Invalud input ownerAccountId");
 		}
-		List<AccessControlList> acLists = accessControlListDao.findAllSiteAccessControlLists(ownerAccountId);
+		List<AccessControlList> acLists = accessControlListDao.findAccessControlListsByOwnerAccountId(ownerAccountId);
 		if (acLists != null && acLists.size() == 0)
 			acLists = null;
 		return acLists;

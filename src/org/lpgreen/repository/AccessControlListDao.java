@@ -3,6 +3,7 @@ package org.lpgreen.repository;
 import java.util.List;
 
 import org.lpgreen.domain.AccessControlList;
+import org.lpgreen.util.InvalidDataValueException;
 import org.springframework.dao.DuplicateKeyException;
 
 /**
@@ -22,19 +23,23 @@ public interface AccessControlListDao {
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// get all AccessControlLists owned by a specific account id
-	public List<AccessControlList> findAllSiteAccessControlLists(int ownerAccountId);
+	public List<AccessControlList> findAccessControlListsByOwnerAccountId(int ownerAccountId);
 
 	// get all AccessControlLists by a given roleId
-	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId);
+	public List<AccessControlList> findAccessControlListsByRoleId(int ownerAccountId, int roleId)
+			throws InvalidDataValueException;
 
 	// get all AccessControlLists by a given opRightId
-	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId);
+	public List<AccessControlList> findAccessControlListsByOperationRightId(int ownerAccountId, int opRightId)
+			throws InvalidDataValueException;
 
 	// get all AccessControlLists by a given objName
-	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String objName);
+	public List<AccessControlList> findAccessControlListsByObjectName(int ownerAccountId, String objName)
+			throws InvalidDataValueException;
 
 	// get a specific AccessControlList by a given roleId, objName and opRightId
-	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId, String objName, int opRightId);
+	public AccessControlList findAccessControlListByRoleIdObjNameOperationRight(int ownerAccountId, int roleId,
+			String objName, int opRightId) throws InvalidDataValueException;
 
 	// Add a AccessControlList. Return the generated id
 	public int addAccessControlList(AccessControlList acList) throws DuplicateKeyException, Exception;

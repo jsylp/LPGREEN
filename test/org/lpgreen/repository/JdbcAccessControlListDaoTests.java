@@ -3,7 +3,6 @@ package org.lpgreen.repository;
 import java.util.List;
 
 import org.lpgreen.domain.AccessControlList;
-import org.lpgreen.domain.RoleHierarchy;
 import org.springframework.test.AbstractTransactionalDataSourceSpringContextTests;
 
 /**
@@ -33,12 +32,12 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 	protected void onSetUpInTransaction() throws Exception {
 	}
 
-	public void testfindAllSiteAccessControlLists() {
+	public void testFindAccessControlListsByOwnerAccountId() {
 		try {
 			// Test find all site AccessControlList (OwnerAccountId=1)
-			System.out.println("Test --> findAllSiteAccessControlLists");
+			System.out.println("Test --> findAccessControlListsByOwnerAccountId");
 			System.out.println("    findAllSiteAccessControlLists [OwnerAccountId=1]");
-			List<AccessControlList> acLists = AccessControlListDao.findAllSiteAccessControlLists(1);
+			List<AccessControlList> acLists = AccessControlListDao.findAccessControlListsByOwnerAccountId(1);
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 4);
 			for (AccessControlList acl : acLists) {
@@ -47,7 +46,7 @@ public class JdbcAccessControlListDaoTests  extends AbstractTransactionalDataSou
 						"; operationName=" + acl.getOperationName() + "; ownerAccountId=" + acl.getOwnerAccountId());
 			}
 
-			System.out.println("    findAllSiteAccessControlLists [OwnerAccountId=1, RoleId=2]");
+			System.out.println("    findAccessControlListsByOwnerAccountId [OwnerAccountId=1, RoleId=2]");
 			acLists = AccessControlListDao.findAccessControlListsByRoleId(1, 2);
 			assertNotNull(acLists);
 			assertTrue(acLists.size() >= 3);

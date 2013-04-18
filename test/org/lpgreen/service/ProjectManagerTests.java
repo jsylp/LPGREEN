@@ -79,9 +79,9 @@ public class ProjectManagerTests extends AbstractTransactionalDataSourceSpringCo
 		project.setCurrentPhase("Study");
 		project.setProjectManager1Id(1);
 		project.setProjectManager2Id(2);
-		project.setCustomerAccount(2);
-		project.setCustomerContact(customerContact);
-		project.setSponsor(sponsor);
+		project.setCustomerAccountId(2);
+		project.setCustomerContactId(customerContact);
+		project.setSponsorId(sponsor);
 		project.setManagingDeptId(1);
 		project.setObjectives("Landing to small business");
 		project.setDescription("Establish seed funding for 100 startup");
@@ -102,7 +102,7 @@ public class ProjectManagerTests extends AbstractTransactionalDataSourceSpringCo
 			assertEquals(retProject.getCurrentPhase(), "Study");
 			assertEquals(retProject.getProjectManager1Id(), 1);
 			assertEquals(retProject.getProjectManager2Id(), 2);
-			assertEquals(retProject.getCustomerAccount(), 2);
+			assertEquals(retProject.getCustomerAccountId(), 2);
 			assertEquals(retProject.getDescription(), "Establish seed funding for 100 startup");
 		}
 		catch (Exception e) {

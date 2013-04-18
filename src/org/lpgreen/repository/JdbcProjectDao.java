@@ -208,6 +208,11 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 		return "CurrentPhase";
 	}
 
+	// Override to return the field order for read a list of objects
+	protected String getFieldOrderForReadList() {
+		return "o.OwnerAccountId, o.ProjectCode ASC";
+	}
+
 	// Override to return the RowMapper
 	protected RowMapper<Project> getRowMapper() {
 		return new ProjectMapper();
@@ -565,6 +570,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public int addProject(Project project) 
 			throws DuplicateKeyException, Exception {
+		if (project == null)
+			throw new Exception("Missing input project");
 		try {
 			// insert Project record
 			int retId = addDomainObject(project);
@@ -614,6 +621,8 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	@Override
 	public int deleteProject(int ownerAccountId, int id)
 			throws Exception {
+		if (ownerAccountId <= 0 || id <= 0)
+			return 0;
 		try {
 			return deleteDomainObject(ownerAccountId, id);
 		}

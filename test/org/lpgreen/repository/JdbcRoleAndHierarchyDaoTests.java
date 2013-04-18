@@ -50,8 +50,10 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_ALLEN_CO_SITE_USERADMIN, OwnerAccountId=2]");
-			role = roleAndHierarchyDao.findRoleByName(2, "ROLE_ALLEN_CO_SITE_USERADMIN");
-			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
+			List<Role> roles = roleAndHierarchyDao.findRoleByName(2, "ROLE_ALLEN_CO_SITE_USERADMIN");
+			assertNotNull(roles);
+			assertTrue(roles.size() == 1);
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(roles.get(0));
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 2);
 			for (Role r : allRoles) {
@@ -59,8 +61,10 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_BOBBY_CO_SITE_SUPERVISOR, OwnerAccountId=3]");
-			role = roleAndHierarchyDao.findRoleByName(3, "ROLE_BOBBY_CO_SITE_SUPERVISOR");
-			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
+			roles = roleAndHierarchyDao.findRoleByName(3, "ROLE_BOBBY_CO_SITE_SUPERVISOR");
+			assertNotNull(roles);
+			assertTrue(roles.size() == 1);
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(roles.get(0));
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 1);
 			for (Role r : allRoles) {
@@ -68,8 +72,10 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			}
 
 			System.out.println("    getAllIncludedRoles [name=ROLE_CATHY_CO_SITE_USER, OwnerAccountId=4]");
-			role = roleAndHierarchyDao.findRoleByName(4, "ROLE_CATHY_CO_SITE_USER");
-			allRoles = roleAndHierarchyDao.getAllIncludedRoles(role);
+			roles = roleAndHierarchyDao.findRoleByName(4, "ROLE_CATHY_CO_SITE_USER");
+			assertNotNull(roles);
+			assertTrue(roles.size() == 1);
+			allRoles = roleAndHierarchyDao.getAllIncludedRoles(roles.get(0));
 			assertNotNull(allRoles);
 			assertTrue(allRoles.size() == 0);
 			for (Role r : allRoles) {
@@ -140,7 +146,7 @@ public class JdbcRoleAndHierarchyDaoTests  extends AbstractTransactionalDataSour
 			// Test RoleHierarchy
 			System.out.println("Test --> findRoleHierarchy");
 			System.out.println("    findRoleHierarchy [role=ROLE_LP_SUPERADMIN, includedRole=ROLE_LP_SYSADMIN OwnerAccountId=1]");
-			RoleHierarchy roleHiera = roleAndHierarchyDao.findRoleHierarchy(role, roleInc);
+			RoleHierarchy roleHiera = roleAndHierarchyDao.findRoleHierarchy(1, role, roleInc);
 			assertNotNull(roleHiera);
 			assertEquals(roleHiera.getRoleId(), 1);
 			assertEquals(roleHiera.getIncludedRoleId(), 2);

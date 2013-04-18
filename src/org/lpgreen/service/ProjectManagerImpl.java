@@ -52,7 +52,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (currentPhases == null || currentPhases.isEmpty()) {
 			throw new Exception("Invalud input currentPhases");
 		}
-		List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId, currentPhases);
+		List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId,
+				currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -78,7 +79,7 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (projectCode == null) {
 			throw new Exception("Invalud input projectCode");
 		}
-		return projectDao.findProjectsByProjectCode(ownerAccountId, projectCode);
+		return projectDao.findProjectsByProjectCode(ownerAccountId, projectCode, null, false);
 	}
 
 	// get a specific Project by a given name
@@ -91,7 +92,7 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (name == null) {
 			throw new Exception("Invalud input name");
 		}
-		List<Project> projects = projectDao.findProjectsByName(ownerAccountId, name);
+		List<Project> projects = projectDao.findProjectsByName(ownerAccountId, name, null, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -109,7 +110,7 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Invalud input currentPhases");
 		}
 		List<Project> projects = projectDao.findProjectsByProjectManager1Id(ownerAccountId,
-				projectMgr1Id, currentPhases);
+				projectMgr1Id, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -127,7 +128,7 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Invalud input currentPhases");
 		}
 		List<Project> projects = projectDao.findProjectsByProjectManager2Id(ownerAccountId,
-				projectMgr2Id, currentPhases);
+				projectMgr2Id, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -144,8 +145,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (currentPhases == null || currentPhases.isEmpty()) {
 			throw new Exception("Invalud input currentPhases");
 		}
-		List<Project> projects = projectDao.findProjectsByCustomerAccount(ownerAccountId,
-				customerAccount, currentPhases);
+		List<Project> projects = projectDao.findProjectsByCustomerAccountId(ownerAccountId,
+				customerAccount, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -165,8 +166,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (currentPhases == null || currentPhases.isEmpty()) {
 			throw new Exception("Invalud input currentPhases");
 		}
-		List<Project> projects = projectDao.findProjectsByCustomerContact(ownerAccountId,
-				customerContact, currentPhases);
+		List<Project> projects = projectDao.findProjectsByCustomerContactId(ownerAccountId,
+				customerContact, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -186,8 +187,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (currentPhases == null || currentPhases.isEmpty()) {
 			throw new Exception("Invalud input currentPhases");
 		}
-		List<Project> projects = projectDao.findProjectsBySponsor(ownerAccountId,
-				sponsor, currentPhases);
+		List<Project> projects = projectDao.findProjectsBySponsorId(ownerAccountId,
+				sponsor, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -205,7 +206,7 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Invalud input currentPhases");
 		}
 		List<Project> projects = projectDao.findProjectsByManagingDeptId(ownerAccountId,
-				managingDeptId, currentPhases);
+				managingDeptId, currentPhases, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -233,7 +234,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		try {
 			UnitsUtil unitsUtil = new UnitsUtil();
 			List<Project> retProjects = new ArrayList<Project>();
-			List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId, null);
+			List<Project> projects = projectDao.findProjectsByOwnerAccountId(ownerAccountId,
+					null, false);
 			for (Project project : projects) {
 				double convBudget = unitsUtil.convertCurrencyUnits(project.getCurrencyCode(),
 						currencyCode, project.getBudget());
@@ -260,7 +262,7 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Both fromDate and toDate are null");
 		}
 		List<Project> projects = projectDao.findProjectsByStartDateRange(ownerAccountId,
-				fromDate, toDate);
+				fromDate, toDate, null, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -277,7 +279,7 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Both fromDate and toDate are null");
 		}
 		List<Project> projects = projectDao.findProjectsByEndDateRange(ownerAccountId,
-				fromDate, toDate);
+				fromDate, toDate, null, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -290,7 +292,8 @@ public class ProjectManagerImpl implements ProjectManager {
 		if (ownerAccountId <= 0 || parentProjectId <= 0) {
 			throw new Exception("Invalud input ownerAccountId or parentProjectId");
 		}
-		List<Project> projects = projectDao.findProjectsByParentProjectId(ownerAccountId, parentProjectId);
+		List<Project> projects = projectDao.findProjectsByParentProjectId(ownerAccountId,
+				parentProjectId, null, false);
 		if (projects != null && projects.size() == 0)
 			projects = null;
 		return projects;
@@ -313,11 +316,11 @@ public class ProjectManagerImpl implements ProjectManager {
 			throw new Exception("Invalid projectManager1Id");
 		if (project.getProjectManager2Id() <= 0)
 			throw new Exception("Invalid projectManager2Id");
-		if (project.getCustomerAccount() <= 0)
+		if (project.getCustomerAccountId() <= 0)
 			throw new Exception("Invalid customerAccount");
-		if (project.getCustomerContact() == null)
+		if (project.getCustomerContactId() == null)
 			throw new Exception("Missing required customerContact");
-		if (project.getSponsor() == null)
+		if (project.getSponsorId() == null)
 			throw new Exception("Missing required sponsor");
 		if (project.getManagingDeptId() <= 0)
 			throw new Exception("Invalid managingDeptId");

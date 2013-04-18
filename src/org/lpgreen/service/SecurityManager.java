@@ -39,7 +39,7 @@ public interface SecurityManager {
 	public Role findRoleById(int ownerAccountId, int id) throws Exception;
 
 	// get a specific Role by a given name
-	public Role findRoleByName(int ownerAccountId, String roleName) throws Exception;
+	public List<Role> findRoleByName(int ownerAccountId, String roleName) throws Exception;
 
 	// Create services
 	public Role createRole(UUID userId, int ownerAccountId, Role role) 
