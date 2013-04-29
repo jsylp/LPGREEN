@@ -291,7 +291,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPaymentType(int ownerAccountId, String paymentType) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentType", paymentType, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentType", paymentType, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPaymentType MustOverrideException: " + e.getMessage());
@@ -307,7 +307,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPaymentCategory(int ownerAccountId, String paymentCategory) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentCategory", paymentCategory, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentCategory", paymentCategory, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPaymentCategory MustOverrideException: " + e.getMessage());
@@ -323,7 +323,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByDescription(int ownerAccountId, String description) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "Description", description, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "Description", description, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByDescription MustOverrideException: " + e.getMessage());
@@ -339,7 +339,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByCurrencyCode(int ownerAccountId, String currencyCode) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "CurrencyCode", currencyCode, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "CurrencyCode", currencyCode, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByCurrencyCode MustOverrideException: " + e.getMessage());
@@ -355,7 +355,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPaymentMethodType(int ownerAccountId, String paymentMethodType) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentMethodType", paymentMethodType, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PaymentMethodType", paymentMethodType, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPaymentMethodType MustOverrideException: " + e.getMessage());
@@ -453,7 +453,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPayerAccountName(int ownerAccountId, String payerAccountName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayerAccountName", payerAccountName, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayerAccountName", payerAccountName, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPayerAccountName MustOverrideException: " + e.getMessage());
@@ -485,7 +485,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPayerContactName(int ownerAccountId, String payerContactName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayerContactName", payerContactName, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayerContactName", payerContactName, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPayerContactName MustOverrideException: " + e.getMessage());
@@ -533,7 +533,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPayeeAccountName(int ownerAccountId, String payeeAccountName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayeeAccountName", payeeAccountName, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayeeAccountName", payeeAccountName, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPayeeAccountName MustOverrideException: " + e.getMessage());
@@ -565,7 +565,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByPayeeContactName(int ownerAccountId, String payeeContactName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayeeContactName", payeeContactName, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "PayeeContactName", payeeContactName, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByPayeeContactName MustOverrideException: " + e.getMessage());
@@ -613,7 +613,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByCostCenterNumber(int ownerAccountId, String costCenterNumber) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "CostCenterNumber", costCenterNumber, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "CostCenterNumber", costCenterNumber, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByCostCenterNumber MustOverrideException: " + e.getMessage());
@@ -693,7 +693,7 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 	@Override
 	public List<Payment> findPaymentsByNotes(int ownerAccountId, String notes) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null, "Notes", notes, null, null);
+			return findDomainObjectsByColumnVal(ownerAccountId, null, "Notes", notes, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcPaymentDao.findPaymentsByNotes MustOverrideException: " + e.getMessage());

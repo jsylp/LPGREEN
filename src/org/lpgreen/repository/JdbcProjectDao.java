@@ -363,7 +363,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			String projectCode, Set<String> currentPhases, boolean headerOnly) {
 		try {
 			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
-					"o.ProjectCode", projectCode, currentPhases, null);
+					"o.ProjectCode", projectCode, true, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
@@ -382,7 +382,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 			String name, Set<String> currentPhases, boolean headerOnly) {
 		try {
 			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
-					"o.Name", name, currentPhases, null);
+					"o.Name", name, true, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
 		catch (MustOverrideException e) {
