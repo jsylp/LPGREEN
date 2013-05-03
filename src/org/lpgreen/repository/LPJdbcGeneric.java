@@ -80,7 +80,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Parse the input current status and construct SQL query string part
-	private String getCurrentStatusQueryPart(Set<String> currentStatuses)
+	protected String getCurrentStatusQueryPart(Set<String> currentStatuses)
 			throws MustOverrideException {
 		if (currentStatuses != null && currentStatuses.size() > 0) {
 			String statusName = getCurrentStatusColumn();
@@ -374,7 +374,7 @@ public class LPJdbcGeneric<T> {
 
 	// Get domain objects by a string value column.
 	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, String strVal, Set<String> currentStatuses, String extraCondition)
+			String colName, String strVal, boolean caseSensitive, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -397,7 +397,10 @@ public class LPJdbcGeneric<T> {
 				sbQuery.append(outJoins);
 			}
 			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and ");
-			sbQuery.append(colName);
+			if (caseSensitive)
+				sbQuery.append(colName);
+			else
+				sbQuery.append("LOWER(").append(colName).append(")");
 			sbQuery.append("=:");
 			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
 			sbQuery.append(" ");
@@ -407,6 +410,10 @@ public class LPJdbcGeneric<T> {
 			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
 				sbQuery.append(" order by ").append(getFieldOrderForReadList());
 			sbQuery.append(";");
+			
+			if (!caseSensitive)
+				strVal = strVal.toLowerCase();
+			
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), strVal),

@@ -227,7 +227,7 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 		}
 		try {
 			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
-					"ObjectName", name, null, null);
+					"ObjectName", name, true, null, null);
 		}
 		catch (MustOverrideException e) {
 			System.out.println("JdbcAccessControlListDao.findAccessControlListsByObjectName MustOverrideException: " + e.getMessage());
