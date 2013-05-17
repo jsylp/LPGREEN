@@ -145,7 +145,7 @@ public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> impleme
 	@Override
 	public List<OperationRight> findOperationRightByName(int ownerAccountId, String opName) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, null,
+			return super.findDomainObjectsByStringColumnVal(ownerAccountId, null,
 					"o.OperationName", opName, true, null, null);
 		}
 		catch (MustOverrideException e) {

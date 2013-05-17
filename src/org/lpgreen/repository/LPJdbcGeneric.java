@@ -22,7 +22,7 @@ import org.lpgreen.util.InvalidDataValueException;
  * JdbcGeneric is the helper class to implement generic JDBC functions
  * 
  * Creation date: Mar. 21, 2013
- * Last modify date: Apr. 8, 2013
+ * Last modify date: May. 17, 2013
  * 
  * @author  Jiaxun Stephen Yu
  * @version 1.0
@@ -230,8 +230,8 @@ public class LPJdbcGeneric<T> {
 		}
 	}
 
-	// Get domain objects by a boolean value column (database - decimal(1.0)).
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
+	// Get domain objects by a boolean column value (database - decimal(1.0)).
+	public List<T> findDomainObjectsByBooleanColumnVal(int ownerAccountId, String outJoins,
 			String colName, boolean boolVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
@@ -273,14 +273,14 @@ public class LPJdbcGeneric<T> {
 			return domainObjs;
 		}
 		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByBoolVal Exception: " + e.getMessage());
+			System.out.println("LPJdbcGeneric.findDomainObjectsByBooleanColumnVal Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// Get domain objects by an integer value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, int intVal, Set<String> currentStatuses, String extraCondition)
+	// Get domain objects by a generic column value (Integer, Long, Double, UUID).
+	public <V> List<T> findDomainObjectsByGenericTypeColumnVal(int ownerAccountId, String outJoins,
+			String colName, V genVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
@@ -315,65 +315,18 @@ public class LPJdbcGeneric<T> {
 			sbQuery.append(";");
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), intVal),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), genVal),
 					mapper);
 			return domainObjs;
 		}
 		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByIntVal Exception: " + e.getMessage());
+			System.out.println("LPJdbcGeneric.findDomainObjectsByGenericTypeColumnVal Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// Get domain objects by a long integer value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, long longVal, Set<String> currentStatuses, String extraCondition)
-			throws MustOverrideException, InvalidDataValueException {
-		if (colName == null) {
-			throw new InvalidDataValueException("Missing input colName");
-		}
-		String strReadFields = getFieldSelectionForRead();
-		String strSqlTable  = getSqlTable();
-		RowMapper<T> mapper = getRowMapper();
-		if (strReadFields == null || strReadFields.isEmpty() ||
-		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-			throw new MustOverrideException("Missing derived class override get functions");
-		}
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(strReadFields);
-			sbQuery.append(" from ");
-			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o ");
-			if (outJoins != null && !outJoins.isEmpty()) {
-				sbQuery.append(outJoins);
-			}
-			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and ");
-			sbQuery.append(colName);
-			sbQuery.append("=:");
-			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
-			sbQuery.append(" ");
-			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
-			if (extraCondition != null && !extraCondition.isEmpty())
-				sbQuery.append(" AND ").append(extraCondition);
-			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
-				sbQuery.append(" order by ").append(getFieldOrderForReadList());
-			sbQuery.append(";");
-			List<T> domainObjs = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), longVal),
-					mapper);
-			return domainObjs;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByLongVal Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// Get domain objects by a string value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
+	// Get domain objects by a string column value.
+	public List<T> findDomainObjectsByStringColumnVal(int ownerAccountId, String outJoins,
 			String colName, String strVal, boolean caseSensitive, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
@@ -421,61 +374,14 @@ public class LPJdbcGeneric<T> {
 			return domainObjs;
 		}
 		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByStringVal Exception: " + e.getMessage());
+			System.out.println("LPJdbcGeneric.findDomainObjectsByStringColumnVal Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// Get domain objects by a UUID value column.
-	public List<T> findDomainObjectsByColumnVal(int ownerAccountId, String outJoins,
-			String colName, UUID uuidVal, Set<String> currentStatuses, String extraCondition)
-			throws MustOverrideException, InvalidDataValueException {
-		if (colName == null) {
-			throw new InvalidDataValueException("Missing input colName");
-		}
-		String strReadFields = getFieldSelectionForRead();
-		String strSqlTable  = getSqlTable();
-		RowMapper<T> mapper = getRowMapper();
-		if (strReadFields == null || strReadFields.isEmpty() ||
-		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-			throw new MustOverrideException("Missing derived class override get functions");
-		}
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(strReadFields);
-			sbQuery.append(" from ");
-			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o ");
-			if (outJoins != null && !outJoins.isEmpty()) {
-				sbQuery.append(outJoins);
-			}
-			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and ");
-			sbQuery.append(colName);
-			sbQuery.append("=:");
-			sbQuery.append(colName.substring(colName.indexOf('.') + 1));
-			sbQuery.append(" ");
-			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
-			if (extraCondition != null && !extraCondition.isEmpty())
-				sbQuery.append(" AND ").append(extraCondition);
-			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
-				sbQuery.append(" order by ").append(getFieldOrderForReadList());
-			sbQuery.append(";");
-			List<T> domainObjs = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).addValue(colName.substring(colName.indexOf('.') + 1), uuidVal),
-					mapper);
-			return domainObjs;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByUUIDVal Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// Get domain objects by an integer value column in a [start, end] range.
-	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
-			String colName, int intStartVal, int intEndVal, Set<String> currentStatuses, String extraCondition)
+	// Get domain objects by a column value of Number in the [start, end] range.
+	public <V extends Comparable<V>> List<T> findDomainObjectsByNumberColumnRange(int ownerAccountId, String outJoins,
+			String colName, V numStartVal, V numEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 
 		String strReadFields = getFieldSelectionForRead();
@@ -488,7 +394,7 @@ public class LPJdbcGeneric<T> {
 		if (colName == null) {
 			throw new InvalidDataValueException("Missing input colName");
 		}
-		if (intStartVal > intEndVal) {
+		if (numStartVal.compareTo(numEndVal) > 0) {
 			throw new InvalidDataValueException("Start value is larger than the end value");
 		}
 		try {
@@ -515,69 +421,18 @@ public class LPJdbcGeneric<T> {
 			List<T> domainObjs = namedParameterJdbcTemplate.query(
 					sbQuery.toString(),
 					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-						addValue("StartVal", intStartVal).addValue("EndVal", intEndVal),
+						addValue("StartVal", numStartVal).addValue("EndVal", numEndVal),
 					mapper);
 			return domainObjs;
 		}
 		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByIntValRange Exception: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// Get domain objects by a long value column in a [start, end] range.
-	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
-			String colName, long longStartVal, long longEndVal, Set<String> currentStatuses, String extraCondition)
-			throws MustOverrideException, InvalidDataValueException {
-		if (colName == null) {
-			throw new InvalidDataValueException("Missing input colName");
-		}
-		String strReadFields = getFieldSelectionForRead();
-		String strSqlTable  = getSqlTable();
-		RowMapper<T> mapper = getRowMapper();
-		if (strReadFields == null || strReadFields.isEmpty() ||
-		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
-			throw new MustOverrideException("Missing derived class override get functions");
-		}
-		if (longStartVal > longEndVal) {
-			throw new InvalidDataValueException("Start value is larger than the end value");
-		}
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("select ");
-			sbQuery.append(strReadFields);
-			sbQuery.append(" from ");
-			sbQuery.append(strSqlTable);
-			sbQuery.append(" as o ");
-			if (outJoins != null && !outJoins.isEmpty()) {
-				sbQuery.append(outJoins);
-			}
-			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and ");
-			sbQuery.append(colName);
-			sbQuery.append(" >= :StartVal and ");
-			sbQuery.append(colName);
-			sbQuery.append(" <= :EndVal");
-			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
-			if (extraCondition != null && !extraCondition.isEmpty())
-				sbQuery.append(" AND ").append(extraCondition);
-			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
-				sbQuery.append(" order by ").append(getFieldOrderForReadList());
-			sbQuery.append(";");
-			List<T> domainObjs = namedParameterJdbcTemplate.query(
-					sbQuery.toString(),
-					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
-						addValue("StartVal", longStartVal).addValue("EndVal", longEndVal),
-					mapper);
-			return domainObjs;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByLongValRange Exception: " + e.getMessage());
+			System.out.println("LPJdbcGeneric.findDomainObjectsByNumberColumnRange Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
 	// Get domain objects by a string value column in a [start, end] range.
-	public List<T> findDomainObjectsByColumnValRange(int ownerAccountId, String outJoins,
+	public List<T> findDomainObjectsByStringColumnRange(int ownerAccountId, String outJoins,
 			String colName, String strStartVal, String strEndVal, Set<String> currentStatuses, String extraCondition)
 			throws MustOverrideException, InvalidDataValueException {
 		if (colName == null) {
@@ -632,7 +487,7 @@ public class LPJdbcGeneric<T> {
 			return domainObjs;
 		}
 		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.findDomainObjectsByStringValRange Exception: " + e.getMessage());
+			System.out.println("LPJdbcGeneric.findDomainObjectsByStringColumnRange Exception: " + e.getMessage());
 			return null;
 		}
 	}

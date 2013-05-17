@@ -185,7 +185,7 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 			throw new InvalidDataValueException("Invalid input roleId");
 		}
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			return super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.RoleId", roleId, null, null);
 		}
 		catch (MustOverrideException e) {
@@ -205,7 +205,7 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 			throw new InvalidDataValueException("Invalid input opRightId");
 		}
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			return super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.OperationRightId", opRightId, null, null);
 		}
 		catch (MustOverrideException e) {
@@ -226,7 +226,7 @@ public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> i
 			throw new InvalidDataValueException("Invalid input name");
 		}
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			return super.findDomainObjectsByStringColumnVal(ownerAccountId, outJoins,
 					"ObjectName", name, true, null, null);
 		}
 		catch (MustOverrideException e) {

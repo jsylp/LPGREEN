@@ -245,7 +245,7 @@ public class JdbcRoleAndHierarchyDao extends LPJdbcGeneric<Role> implements Role
 	@Override
 	public List<Role> findRoleByName(int ownerAccountId, String roleName) {
 		try {
-			List<Role> roles = super.findDomainObjectsByColumnVal(ownerAccountId, null,
+			List<Role> roles = super.findDomainObjectsByStringColumnVal(ownerAccountId, null,
 					"o.RoleName", roleName, true, null, null);
 			return roles;
 		}

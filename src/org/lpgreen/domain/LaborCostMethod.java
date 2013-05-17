@@ -21,13 +21,18 @@ public class LaborCostMethod implements Serializable {
 	private int             id;                 // database generated id
 	private String          costMethodCode;
 	private String          costMethodType;
+	private String          status;
 	private String          description;
 	private double          unitQuantity;
-	private String          uMCode;
-	private int             minQuantity;
-	private int             maxQuantity;
-	private String          startTime;          // WD-HH:MM
-	private String          duration;           // HH:MM
+	private double          unitQuantityCost;
+	private String          unitQuantityUMCode;
+	private String          userDefinedUMCode;
+	private double          multiplier;
+	private int             rangeStartQuantity;
+	private int             rangeEndQuantity;
+	private String          OTStartWeekdayTime;     // HH:MM
+	private String          OTDuration;             // HH:MM
+	private UUID            ownerId;
 	private int             ownerAccountId;
 	private DateTime        createdDate;
 	private UUID            createdById;
@@ -38,13 +43,17 @@ public class LaborCostMethod implements Serializable {
 	Id                      serial NOT NULL PRIMARY KEY UNIQUE,
 	CostMethodCode          varchar(30) NOT NULL,
 	CostMethodType          varchar(30) NOT NULL,
+	Status                  varchar(30) NOT NULL,
 	Description             varchar(255),
 	UnitQuantity            decimal(19,4),
-	UMCode                  varchar(20),
-	MinQuantity             int,
-	MaxQuantity             int,
-	StartTime               char(8),            // WD: weekday (00 - Sunday, 06 - Saturday)
-	Duration                char(5),            // HH:MM  hour:minutes
+	UnitQuantityCost        decimal(19,4),
+	UnitQuantityUMCode      varchar(20),
+	UserDefinedUMCode       varchar(20),
+	Multiplier              decimal(10,4),
+	RangeStartQuantity      int,
+	RangeEndQuantity        int,
+	OTStartWeekdayTime      char(5),
+	OTDuration              char(5),
 	OwnerId                 uuid,
 	OwnerAccountId          int REFERENCES Account(Id),
 	*/
@@ -54,18 +63,24 @@ public class LaborCostMethod implements Serializable {
 	}
 	
 	// Constructor
-	public LaborCostMethod(String costMethodCode, String costMethodType,
-			String description,	double unitQuantity, String uMCode,	int minQuantity,
-			int maxQuantity, String startTime, String duration, int ownerAccountId) {
+	public LaborCostMethod(String costMethodCode, String costMethodType, String status,
+			String description,	double unitQuantity, double unitQuantityCost,
+			String unitQuantityUMCode, String userDefinedUMCode, double multiplier,
+			int rangeStartQuantity, int rangeEndQuantity,
+			String OTStartWeekdayTime, String OTDuration, int ownerAccountId) {
 		this.costMethodCode = costMethodCode;
 		this.costMethodType = costMethodType;
+		this.status = status;
 		this.description = description;
 		this.unitQuantity = unitQuantity;
-		this.uMCode = uMCode;
-		this.minQuantity = minQuantity;
-		this.maxQuantity = maxQuantity;
-		this.startTime = startTime;
-		this.duration = duration;
+		this.unitQuantityCost = unitQuantityCost;
+		this.unitQuantityUMCode = unitQuantityUMCode;
+		this.userDefinedUMCode = userDefinedUMCode;
+		this.multiplier = multiplier;
+		this.rangeStartQuantity = rangeStartQuantity;
+		this.rangeEndQuantity = rangeEndQuantity;
+		this.OTStartWeekdayTime = OTStartWeekdayTime;
+		this.OTDuration = OTDuration;
 		this.ownerAccountId = ownerAccountId;
 	}	
 
@@ -90,6 +105,12 @@ public class LaborCostMethod implements Serializable {
 	public void setCostMethodType(String costMethodType) {
 		this.costMethodType = costMethodType;
 	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
 	public String getDescription() {
 		return description;
 	}
@@ -102,35 +123,59 @@ public class LaborCostMethod implements Serializable {
 	public void setUnitQuantity(double unitQuantity) {
 		this.unitQuantity = unitQuantity;
 	}
-	public String getUMCode() {
-		return uMCode;
+	public double getUnitQuantityCost() {
+		return unitQuantityCost;
 	}
-	public void setUMCode(String uMCode) {
-		this.uMCode = uMCode;
+	public void setUnitQuantityCost(double unitQuantityCost) {
+		this.unitQuantityCost = unitQuantityCost;
 	}
-	public int getMinQuantity() {
-		return minQuantity;
+	public String getUnitQuantityUMCode() {
+		return unitQuantityUMCode;
 	}
-	public void setMinQuantity(int minQuantity) {
-		this.minQuantity = minQuantity;
+	public void setUnitQuantityUMCode(String unitQuantityUMCode) {
+		this.unitQuantityUMCode = unitQuantityUMCode;
 	}
-	public int getMaxQuantity() {
-		return maxQuantity;
+	public String getUserDefinedUMCode() {
+		return userDefinedUMCode;
 	}
-	public void setMaxQuantity(int maxQuantity) {
-		this.maxQuantity = maxQuantity;
+	public void setUserDefinedUMCode(String userDefinedUMCode) {
+		this.userDefinedUMCode = userDefinedUMCode;
 	}
-	public String getStartTime() {
-		return startTime;
+	public double getMultiplier() {
+		return multiplier;
 	}
-	public void setStartTime(String startTime) {
-		this.startTime = startTime;
+	public void setMultiplier(double multiplier) {
+		this.multiplier = multiplier;
 	}
-	public String getDuration() {
-		return duration;
+	public int getRangeStartQuantity() {
+		return rangeStartQuantity;
 	}
-	public void setDuration(String duration) {
-		this.duration = duration;
+	public void setRangeStartQuantity(int rangeStartQuantity) {
+		this.rangeStartQuantity = rangeStartQuantity;
+	}
+	public int getRangeEndQuantity() {
+		return rangeEndQuantity;
+	}
+	public void setRangeEndQuantity(int rangeEndQuantity) {
+		this.rangeEndQuantity = rangeEndQuantity;
+	}
+	public String getOTStartWeekdayTime() {
+		return OTStartWeekdayTime;
+	}
+	public void setOTStartWeekdayTime(String OTStartWeekdayTime) {
+		this.OTStartWeekdayTime = OTStartWeekdayTime;
+	}
+	public String getOTDuration() {
+		return OTDuration;
+	}
+	public void setOTDuration(String OTDuration) {
+		this.OTDuration = OTDuration;
+	}
+	public UUID getOwnerId() {
+		return ownerId;
+	}
+	public void setOwnerId(UUID ownerId) {
+		this.ownerId = ownerId;
 	}
 	public int getOwnerAccountId() {
 		return ownerAccountId;

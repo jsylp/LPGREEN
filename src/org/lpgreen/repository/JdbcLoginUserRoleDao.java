@@ -117,7 +117,7 @@ public class JdbcLoginUserRoleDao extends LPJdbcGeneric<LoginUserRole> implement
 	@Override
 	public List<LoginUserRole> findAllSiteLoginUserRoles(int ownerAccountId, int userId) {
 		try {
-			return findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			return super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.LoginUserId", userId, null, null);
 		}
 		catch (MustOverrideException e) {

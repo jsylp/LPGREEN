@@ -362,7 +362,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByProjectCode(int ownerAccountId,
 			String projectCode, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.findDomainObjectsByStringColumnVal(ownerAccountId, outJoins,
 					"o.ProjectCode", projectCode, true, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -381,7 +381,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByName(int ownerAccountId,
 			String name, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.findDomainObjectsByStringColumnVal(ownerAccountId, outJoins,
 					"o.Name", name, true, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -400,7 +400,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByProjectManager1Id(int ownerAccountId,
 			int projectMgr1Id, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.ProjectManager1Id", projectMgr1Id, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -419,7 +419,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByProjectManager2Id(int ownerAccountId,
 			int projectMgr2Id, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.ProjectManager2Id", projectMgr2Id, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -438,7 +438,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByCustomerAccountId(int ownerAccountId,
 			int customerAccountId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.CustomerAccountId", customerAccountId, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -457,7 +457,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByCustomerContactId(int ownerAccountId,
 			UUID customerContactId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<UUID>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.CustomerContactId", customerContactId, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -476,7 +476,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsBySponsorId(int ownerAccountId,
 			UUID sponsorId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<UUID>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.SponsorId", sponsorId, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -495,7 +495,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByManagingDeptId(int ownerAccountId,
 			int managingDeptId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.ManagingDeptId", managingDeptId, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
@@ -552,7 +552,7 @@ public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao
 	public List<Project> findProjectsByParentProjectId(int ownerAccountId,
 			int parentProjectId, Set<String> currentPhases, boolean headerOnly) {
 		try {
-			List<Project> projects = super.findDomainObjectsByColumnVal(ownerAccountId, outJoins,
+			List<Project> projects = super.<Integer>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
 					"o.ParentProjectId", parentProjectId, currentPhases, null);
 			return getQueryDetail(projects, headerOnly);
 		}
