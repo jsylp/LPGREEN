@@ -168,7 +168,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 		try {
 			// Test to find the laborCostMethods by UnitQuantity range
 			System.out.println("Test --> testFindLaborCostMethodsByUnitQuantityRange");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantityRange [OwnerAccountId=2, UnitQuantity=1.0]");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityRange [OwnerAccountId=1, StartUnitQuantity=1.0, EndUnitQuantity=1.0]");
 			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityRange(1, 1.0, 1.0, null, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 7);
@@ -178,7 +178,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			}
 			Set<String> statuses = new HashSet<String>();
 			statuses.add("Active");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantity [OwnerAccountId=2, UnitQuantity=1.0, Status=Active]");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityRange [OwnerAccountId=1, StartUnitQuantity=1.0, EndUnitQuantity=1.0, Status=Active]");
 			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityRange(1, 1.0, 1.0, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 5);
@@ -188,7 +188,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			}
 			statuses.clear();
 			statuses.add("Inactive");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantity [OwnerAccountId=2, UnitQuantity=1.0, Status=Inactive]");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityRange [OwnerAccountId=1, StartUnitQuantity=1.0, EndUnitQuantity=1.0, Status=Inactive]");
 			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityRange(1, 1.0, 1.0, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 2);
@@ -199,15 +199,15 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUnitQuantity Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUnitQuantityRange Exception: " + e.getMessage());
 		}
 	}
 
-	public void TTTtestFindLaborCostMethodsByUnitQuantityCost() {
+	public void TTTtestFindLaborCostMethodsByUnitQuantityCostRange() {
 		try {
 			// Test to find the laborCostMethods by UnitQuantityCost
-			System.out.println("Test --> testFindLaborCostMethodsByUnitQuantityCost");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantityCost [OwnerAccountId=2, UnitQuantity=1.0]");
+			System.out.println("Test --> testFindLaborCostMethodsByUnitQuantityCostRange");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityCost [OwnerAccountId=1, UnitQuantity=1.0]");
 			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, null, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 7);
@@ -217,7 +217,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			}
 			Set<String> statuses = new HashSet<String>();
 			statuses.add("Active");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantity [OwnerAccountId=2, UnitQuantity=1.0, Status=Active]");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityCostRange [OwnerAccountId=1, UnitQuantity=1.0, Status=Active]");
 			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 5);
@@ -227,7 +227,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			}
 			statuses.clear();
 			statuses.add("Inactive");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantity [OwnerAccountId=2, UnitQuantity=1.0, Status=Inactive]");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityCostRange [OwnerAccountId=1, UnitQuantity=1.0, Status=Inactive]");
 			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 2);
@@ -238,7 +238,7 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUnitQuantity Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUnitQuantityCostRange Exception: " + e.getMessage());
 		}
 	}
 
