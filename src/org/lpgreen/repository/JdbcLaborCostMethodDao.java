@@ -32,7 +32,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcLaborCostMethodDao extends LPJdbcGeneric<LaborCostMethod> implements LaborCostMethodDao {
+public class JdbcLaborCostMethodDao extends LPJdbcGeneric<LaborCostMethod, Integer> implements LaborCostMethodDao {
 
 	public void setDataSource(DataSource dataSource)
 			throws MustOverrideException {

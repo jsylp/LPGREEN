@@ -32,7 +32,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao {
+public class JdbcPaymentDao extends LPJdbcGeneric<Payment, Long> implements PaymentDao {
 
 	public void setDataSource(DataSource dataSource)
 			throws MustOverrideException {
@@ -707,11 +707,11 @@ public class JdbcPaymentDao extends LPJdbcGeneric<Payment> implements PaymentDao
 
 	// Add a Payment. Return the generated database id
 	@Override
-	public int addPayment(Payment payment)
+	public long addPayment(Payment payment)
 			throws DuplicateKeyException, Exception {
 		try {
 			// insert Project record
-			int retId = addDomainObject(payment);
+			long retId = addDomainObject(payment);
 			payment.setId(retId);
 			return retId;
 		}

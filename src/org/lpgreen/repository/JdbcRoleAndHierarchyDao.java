@@ -27,7 +27,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcRoleAndHierarchyDao extends LPJdbcGeneric<Role> implements RoleAndHierarchyDao {
+public class JdbcRoleAndHierarchyDao extends LPJdbcGeneric<Role, Integer> implements RoleAndHierarchyDao {
 
 	private SimpleJdbcInsert insertRoleHiera;
 	public void setDataSource(DataSource dataSource)

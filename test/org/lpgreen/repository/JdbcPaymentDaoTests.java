@@ -702,7 +702,7 @@ public class JdbcPaymentDaoTests  extends AbstractTransactionalDataSourceSpringC
 		System.out.println("    Add Payment [OwnerAccountId=" + payment.getOwnerAccountId() + "]");
 		Payment retPayment = null;
 		try {
-			int retId = paymentDao.addPayment(payment);
+			long retId = paymentDao.addPayment(payment);
 			assertTrue(retId > 0);
 			retPayment = paymentDao.findPaymentById(retId);
 			assertNotNull(retPayment);

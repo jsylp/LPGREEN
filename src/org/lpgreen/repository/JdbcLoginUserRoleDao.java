@@ -25,7 +25,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcLoginUserRoleDao extends LPJdbcGeneric<LoginUserRole> implements LoginUserRoleDao {
+public class JdbcLoginUserRoleDao extends LPJdbcGeneric<LoginUserRole, Integer> implements LoginUserRoleDao {
 
 	public void setDataSource(DataSource dataSource)
 			throws MustOverrideException {

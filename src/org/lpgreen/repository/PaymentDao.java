@@ -112,7 +112,7 @@ public interface PaymentDao {
 	public List<Payment> findPaymentsByNotes(int ownerAccountId, String notes);
 
 	// Add a Payment. Return the generated database id
-	public int addPayment(Payment payment) throws DuplicateKeyException, Exception;
+	public long addPayment(Payment payment) throws DuplicateKeyException, Exception;
 
 	// Save changes of an existing Payment object. Return the # of records updated
 	public int savePayment(Payment payment)	throws DuplicateKeyException, Exception;

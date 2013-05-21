@@ -595,7 +595,7 @@ public class PaymentManagerImpl implements PaymentManager {
 
 		// Persist the Payment object
 		try {
-			int retId = paymentDao.addPayment(payment);
+			long retId = paymentDao.addPayment(payment);
 			payment.setId(retId);
 
 			// retrieve the new data back

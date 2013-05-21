@@ -32,7 +32,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcProjectDao extends LPJdbcGeneric<Project> implements ProjectDao {
+public class JdbcProjectDao extends LPJdbcGeneric<Project, Integer> implements ProjectDao {
 
 	public void setDataSource(DataSource dataSource)
 			throws MustOverrideException {

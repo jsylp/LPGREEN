@@ -28,7 +28,7 @@ import org.lpgreen.util.InvalidDataValueException;
  * @version 1.0
  */
 
-public class LPJdbcGeneric<T> {
+public class LPJdbcGeneric<T, R extends Number> {
 
 	protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	protected SimpleJdbcInsert insertDomainObject;
@@ -558,7 +558,7 @@ public class LPJdbcGeneric<T> {
 	}
 
 	// Add a domain object to the database and return the generated database id
-	public int addDomainObject(T domainObj)
+	public R addDomainObject(T domainObj)
 			throws MustOverrideException, DuplicateKeyException, Exception {
 		if (domainObj == null) {
 			throw new Exception("Missing input domainObj");
@@ -569,31 +569,7 @@ public class LPJdbcGeneric<T> {
 		}
 		try {
 			// Insert the domain object to the database
-			return insertDomainObject.executeAndReturnKey(parameters).intValue();
-		}
-		catch (DuplicateKeyException e) {
-			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
-			throw e;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
-			throw e;
-		}
-	}
-
-	// Add a domain object to the database and return the generated database id
-	public long addDomainObjectRetLong(T domainObj)
-			throws MustOverrideException, DuplicateKeyException, Exception {
-		if (domainObj == null) {
-			throw new Exception("Missing input domainObj");
-		}
-		MapSqlParameterSource parameters = getDomainObjectMapSqlParameterSource(domainObj, true);
-		if (parameters == null) {
-			throw new MustOverrideException("Missing derived class override getDomainObjectMapSqlParameterSource");
-		}
-		try {
-			// Insert the domain object to the database
-			return insertDomainObject.executeAndReturnKey(parameters).longValue();
+			return (R)insertDomainObject.executeAndReturnKey(parameters);
 		}
 		catch (DuplicateKeyException e) {
 			System.out.println("LPJdbcGeneric.addDomainObject Exception: " + e.getMessage());
@@ -643,38 +619,13 @@ public class LPJdbcGeneric<T> {
 		}
 	}
 
-	// Delete a domain object from the database. Return the # of records deleted
-	public int deleteDomainObject(int ownerAccountId, int id)
-		throws MustOverrideException, Exception {
-		if (ownerAccountId < 0 || id <= 0)
+	public int deleteDomainObject(int ownerAccountId, R id)
+			throws MustOverrideException, Exception {
+		// The derived class test if the id is less than or equal to zero
+		if (ownerAccountId < 0) // || id <= 0)
 			return 0;
 		String strSqlTable = getSqlTable();
 		if (strSqlTable == null) {
-			throw new MustOverrideException("Missing derived class override getSqlTable");
-		}
-		try {
-			StringBuffer sbQuery = new StringBuffer();
-			sbQuery.append("delete from ");
-			sbQuery.append(strSqlTable);
-			sbQuery.append(" where Id=:Id and OwnerAccountId=:OwnerAccountId;");
-			int numRecDeleted = namedParameterJdbcTemplate.update(
-					sbQuery.toString(), 
-					new MapSqlParameterSource().addValue("Id", id).addValue("OwnerAccountId", ownerAccountId));
-			return numRecDeleted;
-		}
-		catch (Exception e) {
-			System.out.println("LPJdbcGeneric.deleteDomainObject Exception: " + e.getMessage());
-			throw e;
-		}
-	}
-
-	// Delete a domain object from the database. Return the # of records deleted
-	public int deleteDomainObject(int ownerAccountId, long id)
-		throws MustOverrideException, Exception {
-		if (ownerAccountId < 0 || id <= 0)
-			return 0;
-		String strSqlTable = getSqlTable();
-		if (strSqlTable == null || strSqlTable.isEmpty()) {
 			throw new MustOverrideException("Missing derived class override getSqlTable");
 		}
 		try {

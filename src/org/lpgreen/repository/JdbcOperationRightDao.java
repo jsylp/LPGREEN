@@ -24,7 +24,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight> implements OperationRightDao {
+public class JdbcOperationRightDao extends LPJdbcGeneric<OperationRight, Integer> implements OperationRightDao {
 
 	public void setDataSource(DataSource dataSource)
 			throws MustOverrideException {

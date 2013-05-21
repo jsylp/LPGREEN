@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList> implements AccessControlListDao {
+public class JdbcAccessControlListDao extends LPJdbcGeneric<AccessControlList, Integer> implements AccessControlListDao {
 
 	private LoginUserRoleDao loginUserRoleDao;
 	@Autowired
