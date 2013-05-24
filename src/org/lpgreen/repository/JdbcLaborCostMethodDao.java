@@ -408,40 +408,40 @@ public class JdbcLaborCostMethodDao extends LPJdbcGeneric<LaborCostMethod, Integ
 		}
 	}
 
-	// get all LaborCostMethods by a given Multiplier
+	// get all LaborCostMethods by a given Multiplier range
 	@Override
-	public List<LaborCostMethod> findLaborCostMethodsByMultiplier(int ownerAccountId,
-			double multiplier, Set<String> currentStatuses, boolean headerOnly) {
+	public List<LaborCostMethod> findLaborCostMethodsByMultiplierRange(int ownerAccountId,
+			double startMultiplier, double endMultiplier, Set<String> currentStatuses, boolean headerOnly) {
 		try {
-			List<LaborCostMethod> laborCostMethods = super.<Double>findDomainObjectsByGenericTypeColumnVal(ownerAccountId, outJoins,
-					"o.Multiplier", multiplier, currentStatuses, null);
+			List<LaborCostMethod> laborCostMethods = super.<Double>findDomainObjectsByNumberColumnRange(ownerAccountId,
+					outJoins, "o.Multiplier", startMultiplier, endMultiplier, currentStatuses, null);
 			return getQueryDetail(laborCostMethods, headerOnly);
 		}
 		catch (MustOverrideException e) {
-			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByMultiplier MustOverrideException: " + e.getMessage());
+			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByMultiplierRange MustOverrideException: " + e.getMessage());
 			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByMultiplier Exception: " + e.getMessage());
+			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByMultiplierRange Exception: " + e.getMessage());
 			return null;
 		}
 	}
 
-	// get all LaborCostMethods by the range of [RangeStartQuantity, RangeEndQuantity]
+	// get all LaborCostMethods where the input value is in the range [RangeStartQuantity, RangeEndQuantity]
 	@Override
-	public List<LaborCostMethod> findLaborCostMethodsByRangeQuantity(int ownerAccountId,
-			int rangeStartQuantity, int rangeEndQuantity, Set<String> currentStatuses, boolean headerOnly) {
+	public List<LaborCostMethod> findLaborCostMethodsByValueInQuantityRange(int ownerAccountId,
+			int valQuantity, Set<String> currentStatuses, boolean headerOnly) {
 		try {
-			List<LaborCostMethod> laborCostMethods = super.<Integer>findDomainObjectsByNumberColumnRange(ownerAccountId, outJoins,
-					"o.RangeStartQuantity", rangeStartQuantity, rangeEndQuantity, currentStatuses, null);
+			List<LaborCostMethod> laborCostMethods = super.<Integer>findDomainObjectsByNumberInRangeColumns(ownerAccountId, outJoins,
+					"o.RangeStartQuantity", "o.RangeEndQuantity", valQuantity, currentStatuses, null);
 			return getQueryDetail(laborCostMethods, headerOnly);
 		}
 		catch (MustOverrideException e) {
-			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByRangeQuantity MustOverrideException: " + e.getMessage());
+			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByValueInQuantityRange MustOverrideException: " + e.getMessage());
 			return null;
 		}
 		catch (Exception e) {
-			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByRangeQuantity Exception: " + e.getMessage());
+			System.out.println("JdbcLaborCostMethodDao.findLaborCostMethodsByValueInQuantityRange Exception: " + e.getMessage());
 			return null;
 		}
 	}

@@ -144,7 +144,7 @@ INSERT INTO LaborCostMethod(CostMethodCode, CostMethodType, Status, Description,
 	       OTStartWeekDayTime, OTDuration, OwnerAccountId)
 	VALUES('CMC-0014', 'PerOvertime', 'Active', 'First shift overtime',
 	       null, null, null, null,
-	       1.5, null, null, '16:00', '16:00', 1);
+	       1.5, null, null, '16:00', '08:00', 1);
 
 INSERT INTO LaborCostMethod(CostMethodCode, CostMethodType, Status, Description,
 	       UnitQuantity, UnitQuantityCost, UnitQuantityUMCode, UserDefinedUMCode,
@@ -152,7 +152,7 @@ INSERT INTO LaborCostMethod(CostMethodCode, CostMethodType, Status, Description,
 	       OTStartWeekDayTime, OTDuration, OwnerAccountId)
 	VALUES('CMC-0015', 'PerOvertime', 'Active', 'Second shift overtime',
 	       null, null, null, null,
-	       1.75, null, null, '00:00', '16:00', 1);
+	       1.75, null, null, '00:00', '08:00', 1);
 
 INSERT INTO LaborCostMethod(CostMethodCode, CostMethodType, Status, Description,
 	       UnitQuantity, UnitQuantityCost, UnitQuantityUMCode, UserDefinedUMCode,
@@ -160,4 +160,4 @@ INSERT INTO LaborCostMethod(CostMethodCode, CostMethodType, Status, Description,
 	       OTStartWeekDayTime, OTDuration, OwnerAccountId)
 	VALUES('CMC-0016', 'PerOvertime', 'Active', 'Third shift overtime',
 	       null, null, null, null,
-	       2.00, null, null, '08:00', '16:00', 1);
+	       2.00, null, null, '08:00', '08:00', 1);

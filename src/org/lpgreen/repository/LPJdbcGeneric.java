@@ -211,7 +211,7 @@ public class LPJdbcGeneric<T, R extends Number> {
 			if (outJoins != null && !outJoins.isEmpty()) {
 				sbQuery.append(outJoins);
 			}
-			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId");
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			if (extraCondition != null && !extraCondition.isEmpty())
 				sbQuery.append(" AND ").append(extraCondition);
@@ -411,7 +411,7 @@ public class LPJdbcGeneric<T, R extends Number> {
 			sbQuery.append(colName);
 			sbQuery.append(" >= :StartVal and ");
 			sbQuery.append(colName);
-			sbQuery.append(" <= :EndVal");
+			sbQuery.append(" <= :EndVal ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			if (extraCondition != null && !extraCondition.isEmpty())
 				sbQuery.append(" AND ").append(extraCondition);
@@ -474,6 +474,7 @@ public class LPJdbcGeneric<T, R extends Number> {
 				sbQuery.append(" <= :EndVal");
 				sqlParameters.addValue("EndVal", strEndVal);
 			}
+			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			if (extraCondition != null && !extraCondition.isEmpty())
 				sbQuery.append(" AND ").append(extraCondition);
@@ -539,6 +540,7 @@ public class LPJdbcGeneric<T, R extends Number> {
 				sbQuery.append(" <= :EndDate");
 				sqlParameters.addValue("EndDate", dtEndVal.toCalendar(null), Types.TIMESTAMP);
 			}
+			sbQuery.append(" ");
 			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
 			if (extraCondition != null && !extraCondition.isEmpty())
 				sbQuery.append(" AND ").append(extraCondition);
@@ -553,6 +555,60 @@ public class LPJdbcGeneric<T, R extends Number> {
 		}
 		catch (Exception e) {
 			System.out.println("LPJdbcGeneric.findDomainObjectsByDateTimeRange Exception: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// Get domain objects by a value that belongs the range [column start, column end].
+	public <V extends Comparable<V>> List<T> findDomainObjectsByNumberInRangeColumns(int ownerAccountId, String outJoins,
+			String colNameStart, String colNameEnd, V numVal, Set<String> currentStatuses, String extraCondition)
+			throws MustOverrideException, InvalidDataValueException {
+
+		String strReadFields = getFieldSelectionForRead();
+		String strSqlTable  = getSqlTable();
+		RowMapper<T> mapper = getRowMapper();
+		if (strReadFields == null || strReadFields.isEmpty() ||
+		    strSqlTable == null || strSqlTable.isEmpty() || mapper == null) {
+			throw new MustOverrideException("Missing derived class override get functions");
+		}
+		if (colNameStart == null) {
+			throw new InvalidDataValueException("Missing input colNameStart");
+		}
+		if (colNameEnd == null) {
+			throw new InvalidDataValueException("Missing input colNameEnd");
+		}
+		try {
+			StringBuffer sbQuery = new StringBuffer();
+			sbQuery.append("select ");
+			sbQuery.append(strReadFields);
+			sbQuery.append(" from ");
+			sbQuery.append(strSqlTable);
+			sbQuery.append(" as o ");
+			if (outJoins != null && !outJoins.isEmpty()) {
+				sbQuery.append(outJoins);
+			}
+			sbQuery.append(" where o.OwnerAccountId=:OwnerAccountId and ");
+			sbQuery.append(":NumVal >= ");
+			sbQuery.append(colNameStart);
+			sbQuery.append(" and ");
+			sbQuery.append(":NumVal <= ");
+			sbQuery.append(colNameEnd);
+			sbQuery.append(" ");
+			sbQuery.append(getCurrentStatusQueryPart(currentStatuses));
+			if (extraCondition != null && !extraCondition.isEmpty())
+				sbQuery.append(" AND ").append(extraCondition);
+			if (getFieldOrderForReadList() != null && !getFieldOrderForReadList().isEmpty())
+				sbQuery.append(" order by ").append(getFieldOrderForReadList());
+			sbQuery.append(";");
+			List<T> domainObjs = namedParameterJdbcTemplate.query(
+					sbQuery.toString(),
+					new MapSqlParameterSource().addValue("OwnerAccountId", ownerAccountId).
+						addValue("NumVal", numVal).addValue("NumVal", numVal),
+					mapper);
+			return domainObjs;
+		}
+		catch (Exception e) {
+			System.out.println("LPJdbcGeneric.findDomainObjectsByNumberInRangeColumns Exception: " + e.getMessage());
 			return null;
 		}
 	}

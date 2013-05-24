@@ -58,13 +58,13 @@ public interface LaborCostMethodDao {
 	public List<LaborCostMethod> findLaborCostMethodsByUserDefinedUMCode(int ownerAccountId,
 			String userDefinedUMCode, boolean caseSensitive, Set<String> currentStatuses, boolean headerOnly);
 
-	// get all LaborCostMethods by a given Multiplier
-	public List<LaborCostMethod> findLaborCostMethodsByMultiplier(int ownerAccountId,
-			double multiplier, Set<String> currentStatuses, boolean headerOnly);
+	// get all LaborCostMethods by a given Multiplier range
+	public List<LaborCostMethod> findLaborCostMethodsByMultiplierRange(int ownerAccountId,
+			double startMultiplier, double endMultiplier, Set<String> currentStatuses, boolean headerOnly);
 
-	// get all LaborCostMethods by the range of [RangeStartQuantity, RangeEndQuantity]
-	public List<LaborCostMethod> findLaborCostMethodsByRangeQuantity(int ownerAccountId,
-			int rangeStartQuantity, int rangeEndQuantity, Set<String> currentStatuses, boolean headerOnly);
+	// get all LaborCostMethods where the input value is in the range [RangeStartQuantity, RangeEndQuantity]
+	public List<LaborCostMethod> findLaborCostMethodsByValueInQuantityRange(int ownerAccountId,
+			int valQuantity, Set<String> currentStatuses, boolean headerOnly);
 
 	// Add a LaborCostMethod. Return the generated database id
 	public int addLaborCostMethod(LaborCostMethod project) 

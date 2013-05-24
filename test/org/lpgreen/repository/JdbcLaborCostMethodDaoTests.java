@@ -203,34 +203,26 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 		}
 	}
 
-	public void TTTtestFindLaborCostMethodsByUnitQuantityCostRange() {
+	public void testFindLaborCostMethodsByUnitQuantityCostRange() {
 		try {
 			// Test to find the laborCostMethods by UnitQuantityCost
 			System.out.println("Test --> testFindLaborCostMethodsByUnitQuantityCostRange");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantityCost [OwnerAccountId=1, UnitQuantity=1.0]");
-			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, null, false);
-			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 7);
-			for (LaborCostMethod laborCostMethod : laborCostMethods) {
-				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
-					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
-			}
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityCost [OwnerAccountId=1, startUnitQuantityCost=16000.00, endUnitQuantityCost=15000.00, Status=Inactive]");
 			Set<String> statuses = new HashSet<String>();
-			statuses.add("Active");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantityCostRange [OwnerAccountId=1, UnitQuantity=1.0, Status=Active]");
-			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, statuses, false);
+			statuses.add("Inactive");
+			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 15000.00, 15000.00, statuses, false);
 			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 5);
+			assertTrue(laborCostMethods.size() == 2);
 			for (LaborCostMethod laborCostMethod : laborCostMethods) {
 				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
 					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
 			statuses.clear();
-			statuses.add("Inactive");
-			System.out.println("    testFindLaborCostMethodsByUnitQuantityCostRange [OwnerAccountId=1, UnitQuantity=1.0, Status=Inactive]");
-			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.0, 1.0, statuses, false);
+			statuses.add("Active");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityCostRange [OwnerAccountId=1, startUnitQuantityCost=1.00, endUnitQuantityCost=100000.00, Status=Active]");
+			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityCostRange(1, 1.00, 100000.00, statuses, false);
 			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
+			assertTrue(laborCostMethods.size() == 4);
 			for (LaborCostMethod laborCostMethod : laborCostMethods) {
 				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
 					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
@@ -242,193 +234,123 @@ public class JdbcLaborCostMethodDaoTests  extends AbstractTransactionalDataSourc
 		}
 	}
 
-	/*
-	public void testFindProjectsByProjectManager2Id() {
+	public void testFindLaborCostMethodsByUnitQuantityUMCode() {
 		try {
-			// Test to find the laborCostMethods by manager2 id
-			System.out.println("Test --> testFindProjectsByProjectManager2Id");
-			System.out.println("    testFindProjectsByProjectManager2Id [OwnerAccountId=2, Manager2Id=5]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByProjectManager2Id(2, 5, currentPhases, false);
+			// Test to find laborCostMethod by UnitQuantityUMCode
+			System.out.println("Test --> testFindLaborCostMethodsByUnitQuantityUMCode");
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityUMCode [OwnerAccountId=1, UnitQuantityUMCode=gallon, Status=Active]");
+			Set<String> statuses = new HashSet<String>();
+			statuses.add("Active");
+			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityUMCode(1, "gallon", true, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 3);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByProjectManager2Id Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByCustomerAccountId() {
-		try {
-			// Test to find the laborCostMethods by customer account id
-			System.out.println("Test --> testFindProjectsByCustomerAccountId");
-			System.out.println("    testFindProjectsByCustomerAccount [OwnerAccountId=2, CustomerAccountId=3]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByCustomerAccountId(2, 3, currentPhases, false);
-			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByCustomerAccountId Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByCustomerContactId() {
-		try {
-			// Test to find the laborCostMethods by customer contact id
-			System.out.println("Test --> testFindProjectsByCustomerContactId");
-			System.out.println("    testFindProjectsByCustomerContact [OwnerAccountId=2, CustomerContactId=07771AE4-236A-49d3-A49E-B1F9E1934D31]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByCustomerContactId(2,
-					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D31"), currentPhases, false);
+			System.out.println("    testFindLaborCostMethodsByUnitQuantityUMCode [OwnerAccountId=1, UnitQuantityUMCode=gallon, Status=Inactive]");
+			statuses.clear();
+			statuses.add("Inactive");
+			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUnitQuantityUMCode(1, "gallon", true, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 1);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByCustomerContactId Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUnitQuantityUMCode Exception: " + e.getMessage());
 		}
 	}
 
-	public void testFindProjectsBySponsorId() {
+	public void testFindLaborCostMethodsByUserDefinedUMCode() {
 		try {
-			// Test to find the laborCostMethods by sponsor id
-			System.out.println("Test --> testFindProjectsBySponsorId");
-			System.out.println("    testFindProjectsBySponsor [OwnerAccountId=2, SponsorId=07771AE4-236A-49d3-A49E-B1F9E1934D20]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsBySponsorId(2,
-					UUID.fromString("07771AE4-236A-49d3-A49E-B1F9E1934D20"), currentPhases, false);
-			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsBySponsorId Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByManagingDeptId() {
-		try {
-			// Test to find the laborCostMethods by managing dept id
-			System.out.println("Test --> testFindProjectsByManagingDeptId");
-			System.out.println("    testFindProjectsByManagingDeptId [OwnerAccountId=2, ManagingDeptId=5]");
-			Set<String> currentPhases = new HashSet<String>();
-			currentPhases.add("Construction");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByManagingDeptId(2, 5, currentPhases, false);
-			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByManagingDeptId Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByStartDateRange() {
-		try {
-			// Test to find the laborCostMethods by StartDateRange
-			System.out.println("Test --> testFindProjectsByStartDateRange");
-			System.out.println("    testFindProjectsByStartDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
-			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2011-06-02 06:08:08");
-			DateTime endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2012-12-30 06:08:08");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByStartDateRange(2, startDate, endDate, null, false);
-			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 3);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
-			}
-			startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-04-01 06:08:08");
-			endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-06-30 06:08:08");
-			laborCostMethods = laborCostMethodDao.findProjectsByStartDateRange(2, startDate, endDate, null, false);
+			// Test to find laborCostMethod by UserDefinedUMCode
+			System.out.println("Test --> testFindLaborCostMethodsByUserDefinedUMCode");
+			System.out.println("    testFindLaborCostMethodsByUserDefinedUMCode [OwnerAccountId=1, UserDefinedUMCode=task, Status=Active]");
+			Set<String> statuses = new HashSet<String>();
+			statuses.add("Active");
+			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUserDefinedUMCode(1, "task", true, statuses, false);
 			assertNotNull(laborCostMethods);
 			assertTrue(laborCostMethods.size() == 1);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
+			}
+			System.out.println("    testFindLaborCostMethodsByUserDefinedUMCode [OwnerAccountId=1, UserDefinedUMCode=task, Status=Inactive]");
+			statuses.clear();
+			statuses.add("Inactive");
+			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByUserDefinedUMCode(1, "task", true, statuses, false);
+			assertNotNull(laborCostMethods);
+			assertTrue(laborCostMethods.size() == 1);
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByStartDateRange Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByUserDefinedUMCode Exception: " + e.getMessage());
 		}
 	}
 
-	public void testFindProjectsByEndDateRange() {
+	public void testFindLaborCostMethodsByMultiplierRange() {
+		try {
+			// Test to find the laborCostMethods by MultiplierRange
+			System.out.println("Test --> testFindLaborCostMethodsByMultiplierRange");
+			System.out.println("    testFindLaborCostMethodsByMultiplierRange [OwnerAccountId=1, startMultiplier=0.05, endMultiplier=5.00]");
+			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByMultiplierRange(1, 0.05, 5.00, null, false);
+			assertNotNull(laborCostMethods);
+			assertTrue(laborCostMethods.size() == 6);
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
+			}
+			System.out.println("     <-- Done.");
+		}
+		catch (Exception e) {
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByMultiplierRange Exception: " + e.getMessage());
+		}
+	}
+
+	public void testFindLaborCostMethodsByValueInQuantityRange() {
 		try {
 			// Test to find the laborCostMethods by EndDateRange
-			System.out.println("Test --> testFindProjectsByEndDateRange");
-			System.out.println("    testFindProjectsByEndDateRange [OwnerAccountId=2, range=[fromDate, toDate]]");
-			DateTime startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2015-02-01 06:08:08");
-			DateTime endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2016-12-30 06:08:08");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByEndDateRange(2, startDate, endDate, null, false);
+			System.out.println("Test --> testFindLaborCostMethodsByValueInQuantityRange");
+			System.out.println("    testFindLaborCostMethodsByValueInQuantityRange [OwnerAccountId=1, valueQuantity=250]");
+			List<LaborCostMethod> laborCostMethods = laborCostMethodDao.findLaborCostMethodsByValueInQuantityRange(1, 250, null, false);
 			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			assertTrue(laborCostMethods.size() == 1);
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
-			startDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-02-16 06:08:08");
-			endDate = StringUtil.parseUTCDateTimeFromString_HHmmss("2013-11-16 06:08:08");
-			laborCostMethods = laborCostMethodDao.findProjectsByEndDateRange(2, startDate, endDate, null, false);
+			System.out.println("    testFindLaborCostMethodsByValueInQuantityRange [OwnerAccountId=1, valueQuantity=600]");
+			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByValueInQuantityRange(1, 600, null, false);
 			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			assertTrue(laborCostMethods.size() == 1);
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
-			System.out.println("     <-- Done.");
-		}
-		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByEndDateRange Exception: " + e.getMessage());
-		}
-	}
-
-	public void testFindProjectsByParentProjectId() {
-		try {
-			// Test to find the laborCostMethods by ParentProjectId
-			System.out.println("Test --> testFindProjectsByParentProjectId");
-			System.out.println("    testFindProjectsByParentProjectId [OwnerAccountId=2, ParentProjectId=5]");
-			List<Project> laborCostMethods = laborCostMethodDao.findProjectsByParentProjectId(2, 4, null, false);
+			System.out.println("    testFindLaborCostMethodsByValueInQuantityRange [OwnerAccountId=1, valueQuantity=900]");
+			laborCostMethods = laborCostMethodDao.findLaborCostMethodsByValueInQuantityRange(1, 900, null, false);
 			assertNotNull(laborCostMethods);
-			assertTrue(laborCostMethods.size() == 2);
-			for (Project project : laborCostMethods) {
-				System.out.println("Project: id=" + project.getId() + "; code=" + project.getProjectCode() +
-						"; Phase=" + project.getCurrentPhase() + "; description=" + project.getDescription());
+			assertTrue(laborCostMethods.size() == 1);
+			for (LaborCostMethod laborCostMethod : laborCostMethods) {
+				System.out.println("LaborCostMethod: id=" + laborCostMethod.getId() + "; costCode=" + laborCostMethod.getCostMethodCode() +
+					"; Status=" + laborCostMethod.getStatus() + "; description=" + laborCostMethod.getDescription());
 			}
 			System.out.println("     <-- Done.");
 		}
 		catch (Exception e) {
-			System.out.println("JdbcProjectDaoTests.testFindProjectsByParentProjectId Exception: " + e.getMessage());
+			System.out.println("JdbcProjectDaoTests.testFindLaborCostMethodsByValueInQuantityRange Exception: " + e.getMessage());
 		}
 	}
 
+	/*
 	public void testAddUpdateDeleteProject() {
 		// Create Project
 		// Note: createdDate, createdById, lastModifiedDate and lastModifiedById
